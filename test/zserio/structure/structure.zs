@@ -68,3 +68,13 @@ struct h_struct_a {
 struct h_struct_b {
     string a;
 };
+
+/**
+ * I
+ */
+struct i_struct_a(int32 a) {};
+
+struct i_struct_b {
+    int32 a;
+    i_struct_a(a) b;
+};

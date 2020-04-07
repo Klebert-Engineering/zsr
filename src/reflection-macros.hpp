@@ -187,24 +187,24 @@
 #define ZSERIO_REFLECT_STRUCTURE_CHOICE_DEFAULT_END() \
     ZSERIO_REFLECT_STRUCTURE_CHOICE_CASE_END()
 
-#define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_BEGIN(NAME)   \
+#define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_BEGIN()       \
     using ParameterTupleType =                            \
         zsr::parameterlist::add_shared_ptr_if_compound_t< \
             zsr::argument_tuple_t<                        \
                 decltype(&CompoundType::initialize)>>;
 
-#define GEN_INIT_PARAMETER_LIST_SET(IDX)                                    \
-    [](zsr::ParameterList& l, zsr::Variant v) {                             \
-        if (!l.list.has_value()) {                                          \
-            l.list = ParameterTupleType{}; /* Empty init unset lists */     \
-        }                                                                   \
-                                                                            \
-        auto* tuple = std::any_cast<ParameterTupleType>(&l.list);           \
-        if (tuple) {                                                        \
-            zsr::parameterlist::set_parameter<IDX>(*tuple, v);              \
-        } else {                                                            \
-            /* TODO: Throw! */                                              \
-        }                                                                   \
+#define GEN_INIT_PARAMETER_LIST_SET(IDX)                                \
+    [](zsr::ParameterList& l, zsr::Variant v) {                         \
+        if (!l.list.has_value()) {                                      \
+            l.list = ParameterTupleType{}; /* Empty init unset lists */ \
+        }                                                               \
+                                                                        \
+        auto* tuple = std::any_cast<ParameterTupleType>(&l.list);       \
+        if (tuple) {                                                    \
+            zsr::parameterlist::set_parameter<IDX>(*tuple, v);          \
+        } else {                                                        \
+            /* TODO: Throw! */                                          \
+        }                                                               \
     };
 
 #define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_PARAMETER_BEGIN(IDX, NAME, GETTER) \
@@ -268,6 +268,12 @@
                     zsr::parameterlist::deref_if_shared(vals)...);      \
             }, *args);                                                  \
         }                                                               \
+    };
+
+#define ZSERIO_REFLECT_STRUCTURE_CHILD_INITIALIZATION()                 \
+    s.initializeChildren = [](zsr::Introspectable& i)                   \
+    {                                                                   \
+        zsr::introspectable_cast<CompoundType>(i).initializeChildren(); \
     };
 
 #define GEN_FIELD_ACCESSORS(GETTER, SETTER)                             \

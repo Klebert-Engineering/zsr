@@ -171,4 +171,12 @@ TEST(StructureTest, h_invalid_field_access) {
                  zsr::IntrospectableCastError);
 }
 
+TEST(StructureTest, i_check_has_initialize_children) {
+    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "i_struct_a");
+    ASSERT_FALSE(meta_struct_a->initializeChildren);
+
+    auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "i_struct_b");
+    ASSERT_TRUE(meta_struct_b->initializeChildren);
+}
+
 }

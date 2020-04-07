@@ -187,6 +187,11 @@ struct Compound {
      * @param Parameter list, see `Parameter::set`.
      */
     std::function<void(Introspectable&, ParameterList)> initialize;
+
+    /**
+     * Optional child initialization function.
+     */
+    std::function<void(Introspectable&)> initializeChildren;
 };
 
 /**
