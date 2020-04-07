@@ -57,3 +57,14 @@ struct f_parent {
 struct g_struct {
     string a[];
 };
+
+/**
+ * H
+ */
+struct h_struct_a {
+    string a;
+};
+
+struct h_struct_b {
+    string a;
+};

@@ -158,4 +158,17 @@ TEST(StructureTest, g_set_get_builtin_array_field) {
     }
 }
 
+TEST(StructureTest, h_invalid_field_access) {
+    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "h_struct_a");
+    auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "h_struct_b");
+    auto* meta_value = zsr::find<zsr::Field>(meta_struct_a, "a");
+
+    /* Alloc instance b */
+    auto instance = meta_struct_b->alloc();
+
+    /* Try write a::a with (wrong) instance of b */
+    EXPECT_THROW(meta_value->set(instance, std::string{"Hello"}),
+                 zsr::IntrospectableCastError);
+}
+
 }
