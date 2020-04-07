@@ -125,8 +125,25 @@ struct Field {
     std::string ident;
     const TypeRef* type;
 
+    /**
+     * Function that returns the fields value.
+     */
     std::function<Variant(const Introspectable&)> get;
+
+    /**
+     * Optional function to set the fields value.
+     */
     std::function<void(Introspectable&, Variant)> set;
+
+    /**
+     * Optional function to check if the field is set.
+     */
+    std::function<bool(const Introspectable&)> has;
+
+    /**
+     * Optional function to reset the optional field.
+     */
+    std::function<void(Introspectable&)> reset;
 };
 
 /**
@@ -189,7 +206,7 @@ struct Compound {
     std::function<void(Introspectable&, ParameterList)> initialize;
 
     /**
-     * Optional child initialization function.
+     * Optional child initializator.
      */
     std::function<void(Introspectable&)> initializeChildren;
 };

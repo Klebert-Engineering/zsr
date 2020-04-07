@@ -130,8 +130,10 @@
  *         TYPE_REF?
  *       STRUCTURE_INITIALIZE_PARAMETER_END
  *     STRUCTURE_INITIALIZE_END
+ *     STRUCTURE_CHILD_INITIALIZATION?
  *     STRUCTURE_FIELD_BEGIN*
  *       TYPE_REF?
+ *       STRUCTURE_FIELD_OPTIONAL?
  *     STRUCTURE_FIELD_END
  *     STRUCTURE_FUNCTION_BEGIN*
  *     STRUCTURE_FUNCTION_END
@@ -241,8 +243,9 @@
         f.set = {}; /* Read-only */                                            \
                                                                                \
         CUR_TYPE(p);                                                           \
-        /*zsr::CTypeTraits<std::tuple_element_t<                               \
-            IDX, ParameterTupleType>>::set(tr.ctype); TODO: ! */               \
+        zsr::CTypeTraits<                                                      \
+            zsr::parameterlist::remove_shared_ptr_t<                           \
+                std::tuple_element_t<IDX, ParameterTupleType>>>::set(tr.ctype);\
         f.type = &tr; /* parameter & field share type pointer */
 
 
@@ -297,6 +300,17 @@
                                                                         \
     f.get = Helper::getFun<CompoundType, MemberType>(getter);          \
     f.set = Helper::setFun<CompoundType, MemberType>(setter);
+
+#define ZSERIO_REFLECT_STRUCTURE_FIELD_OPTIONAL(HASFUN, RESETFUN)   \
+    f.has = [](const zsr::Introspectable& i) -> bool                \
+    {                                                               \
+        return zsr::introspectable_cast<CompoundType>(i).HASFUN();  \
+    };                                                              \
+                                                                    \
+    f.reset = [](zsr::Introspectable& i) -> void                    \
+    {                                                               \
+        zsr::introspectable_cast<CompoundType>(i).RESETFUN();       \
+    };
 
 #define ZSERIO_REFLECT_STRUCTURE_FIELD_BEGIN(NAME, GETTER, SETTER)    \
     {                                                                 \

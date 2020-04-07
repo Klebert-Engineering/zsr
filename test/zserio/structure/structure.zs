@@ -58,9 +58,8 @@ struct g_struct {
     string a[];
 };
 
-/**
- * H
- */
+/** H **/
+
 struct h_struct_a {
     string a;
 };
@@ -69,12 +68,18 @@ struct h_struct_b {
     string a;
 };
 
-/**
- * I
- */
+/** I **/
+
 struct i_struct_a(int32 a) {};
 
 struct i_struct_b {
     int32 a;
     i_struct_a(a) b;
+};
+
+/** J **/
+
+struct j_struct {
+    int32 a;
+    int32 b if a > 0;
 };

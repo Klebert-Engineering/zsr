@@ -179,4 +179,17 @@ TEST(StructureTest, i_check_has_initialize_children) {
     ASSERT_TRUE(meta_struct_b->initializeChildren);
 }
 
+TEST(StructureTest, j_conditional_field) {
+    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "j_struct");
+    auto* meta_field_a = zsr::find<zsr::Field>(meta_struct_a, "a");
+
+    ASSERT_FALSE(meta_field_a->has);
+    ASSERT_FALSE(meta_field_a->reset);
+
+    auto* meta_field_b = zsr::find<zsr::Field>(meta_struct_a, "b");
+
+    ASSERT_TRUE(meta_field_b->has);
+    ASSERT_TRUE(meta_field_b->reset);
+}
+
 }
