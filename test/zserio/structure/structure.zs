@@ -29,7 +29,6 @@ struct d_struct {
     }
 };
 
-
 /**
  * E
  */
@@ -50,4 +49,11 @@ struct f_parent {
     function int32 child_value() {
         return a.a;
     }
+};
+
+/**
+ * G
+ */
+struct g_struct {
+    string a[];
 };

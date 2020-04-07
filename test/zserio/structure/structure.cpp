@@ -138,4 +138,24 @@ TEST(StructureTest, f_set_get_compound_field) {
     ASSERT_VARIANT_EQ(value, int32_t{123});
 }
 
+TEST(StructureTest, g_set_get_builtin_array_field) {
+    auto* s_struct = zsr::find<zsr::Compound>(pkg, "g_struct");
+    auto* m_value = zsr::find<zsr::Field>(s_struct, "a");
+
+    /* Alloc instance */
+    auto instance = s_struct->alloc();
+
+    /* Write & read parameter */
+    m_value->set(instance, std::vector<std::string>{"Hello", "World", "!"});
+
+    if (auto result = m_value->get(instance).get<std::vector<std::string>>()) {
+        auto value = *result;
+        ASSERT_EQ(value[0], "Hello");
+        ASSERT_EQ(value[1], "World");
+        ASSERT_EQ(value[2], "!");
+    } else {
+        FAIL() << "Not a vector of string!";
+    }
+}
+
 }
