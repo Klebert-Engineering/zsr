@@ -27,6 +27,8 @@ public:
 
     ~Introspectable();
 
+    bool isOwning() const;
+
     const Compound* meta;
     std::shared_ptr<impl::InstanceBase> obj;
 };

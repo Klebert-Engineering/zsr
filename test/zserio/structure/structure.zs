@@ -83,3 +83,13 @@ struct j_struct {
     int32 a;
     int32 b if a > 0;
 };
+
+/** K **/
+
+struct k_struct_a {
+    int32 a;
+};
+
+struct k_struct_b {
+    k_struct_a a[];
+};

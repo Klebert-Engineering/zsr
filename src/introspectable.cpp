@@ -35,4 +35,9 @@ Introspectable& Introspectable::operator=(Introspectable&& o)
 Introspectable::~Introspectable()
 {}
 
+bool Introspectable::isOwning() const
+{
+    return obj && obj->isOwning();
+}
+
 }

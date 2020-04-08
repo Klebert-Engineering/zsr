@@ -192,4 +192,56 @@ TEST(StructureTest, j_conditional_field) {
     ASSERT_TRUE(meta_field_b->reset);
 }
 
+TEST(StructureTest, k_nested_compounds) {
+    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "k_struct_a");
+    auto* meta_field_a_a = zsr::find<zsr::Field>(meta_struct_a, "a");
+
+    auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "k_struct_b");
+    auto* meta_field_b_a = zsr::find<zsr::Field>(meta_struct_b, "a");
+
+    /* Alloc root object b */
+    auto instance_b = meta_struct_b->alloc();
+
+    /* Add children of type a */
+    std::vector<zsr::Introspectable> children;
+    for (auto i = 0; i < 10; ++i) {
+        auto child = meta_struct_a->alloc();
+        meta_field_a_a->set(child, int32_t{i});
+
+        children.push_back(child);
+    }
+
+    meta_field_b_a->set(instance_b, children);
+
+    /* Get children, expecting non-owning objects */
+    auto opt_children_a = meta_field_b_a->get(instance_b).get<std::vector<zsr::Introspectable>>();
+
+    ASSERT_TRUE(opt_children_a);
+    ASSERT_EQ(opt_children_a->size(), 10);
+
+    {
+        int32_t idx{0};
+        for (const auto& child : *opt_children_a) {
+            ASSERT_FALSE(child.isOwning());
+            ASSERT_VARIANT_EQ(meta_field_a_a->get(child), idx);
+
+            ++idx;
+        }
+    }
+
+    /* Overwrite/clear the vector of instance b */
+    meta_field_b_a->set(instance_b, std::vector<zsr::Introspectable>{});
+
+    /* Expect all (prev) children to own their referenced object */
+    {
+        int32_t idx{0};
+        for (const auto& child : *opt_children_a) {
+            ASSERT_TRUE(child.isOwning());
+            ASSERT_VARIANT_EQ(meta_field_a_a->get(child), idx);
+
+            ++idx;
+        }
+    }
+}
+
 }

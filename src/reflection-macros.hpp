@@ -8,12 +8,12 @@
             : std::true_type {};                            \
                                                             \
         template <>                                         \
-        struct Type2Compound<:: NS :: NAME>                 \
+        struct meta_for_compound<:: NS :: NAME>             \
         {                                                   \
             static Compound const* ptr;                     \
         };                                                  \
                                                             \
-        Compound const* Type2Compound<:: NS :: NAME>        \
+        Compound const* meta_for_compound<:: NS :: NAME>    \
             ::ptr{nullptr};                                 \
     }
 
@@ -146,12 +146,12 @@
  *   STRUCTURE_END
  */
 
-#define GEN_STRUCTURE_ALLOC()                              \
-    [s = &s]() -> zsr::Introspectable {                       \
-        return zsr::Introspectable{                           \
-            s,                                             \
+#define GEN_STRUCTURE_ALLOC()                             \
+    [s = &s]() -> zsr::Introspectable {                   \
+        return zsr::Introspectable{                       \
+            s,                                            \
             zsr::impl::makeUniqueInstance<CompoundType>() \
-        };                                                 \
+        };                                                \
     };
 
 #define ZSERIO_REFLECT_STRUCTURE_BEGIN(name)         \
@@ -159,14 +159,14 @@
         using CompoundType = PkgNamespace::name;     \
                                                      \
         static zsr::Compound s;                      \
-        zsr::Type2Compound<CompoundType>::ptr = &s;  \
+        zsr::meta_for_compound<CompoundType>::ptr = &s; \
         s.ident = #name;                             \
                                                      \
         s.alloc = GEN_STRUCTURE_ALLOC();             \
         s.initialize = nullptr;
 
 #define ZSERIO_REFLECT_STRUCTURE_END() \
-        p.compounds.push_back(&s);    \
+        p.compounds.push_back(&s);     \
     }
 
 #define ZSERIO_REFLECT_STRUCTURE_CHOICE_BEGIN()
@@ -221,7 +221,7 @@
                 zsr::RemoveVectorT<MemberType>>::value;                        \
                                                                                \
         using Helper =                                                         \
-            zsr::GenFieldAccessorHelper<IsStruct>;                             \
+            zsr::GenFieldAccessorHelper<MemberType>;                           \
                                                                                \
         auto fieldGetter = [](const auto& obj)                                 \
             -> std::conditional_t<IsStruct, const MemberType&, MemberType>     \
@@ -239,7 +239,7 @@
         f.ident = #NAME;                                                       \
         f.type = nullptr;                                                      \
                                                                                \
-        f.get = Helper::getFun<CompoundType, MemberType>(fieldGetter);        \
+        f.get = Helper::getFun<CompoundType>(fieldGetter, &f);     \
         f.set = {}; /* Read-only */                                            \
                                                                                \
         CUR_TYPE(p);                                                           \
@@ -284,7 +284,7 @@
         zsr::IsCompound<                                                \
             zsr::RemoveVectorT<MemberType>>::value;                     \
     using Helper =                                                      \
-        zsr::GenFieldAccessorHelper<IsStruct>;                          \
+        zsr::GenFieldAccessorHelper<MemberType>;                        \
                                                                         \
     auto getter = [](const auto& obj)                                   \
         -> std::conditional_t<IsStruct, const MemberType&, MemberType>  \
@@ -298,8 +298,8 @@
         return obj.SETTER(val);                                         \
     };                                                                  \
                                                                         \
-    f.get = Helper::getFun<CompoundType, MemberType>(getter);          \
-    f.set = Helper::setFun<CompoundType, MemberType>(setter);
+    f.get = Helper::getFun<CompoundType>(getter, &f);       \
+    f.set = Helper::setFun<CompoundType>(setter, &f);
 
 #define ZSERIO_REFLECT_STRUCTURE_FIELD_OPTIONAL(HASFUN, RESETFUN)   \
     f.has = [](const zsr::Introspectable& i) -> bool                \
