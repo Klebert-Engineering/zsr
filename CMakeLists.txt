@@ -31,6 +31,10 @@ target_include_directories(zsr
   PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}")
 
+target_link_libraries(zsr
+  PUBLIC
+    zserio-rt)
+
 function(add_zserio_module NAME ROOT ENTRY)
   set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.zserio-gen/")
 

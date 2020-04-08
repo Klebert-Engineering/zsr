@@ -154,16 +154,33 @@
         };                                                \
     };
 
-#define ZSERIO_REFLECT_STRUCTURE_BEGIN(name)         \
-    {                                                \
-        using CompoundType = PkgNamespace::name;     \
-                                                     \
-        static zsr::Compound s;                      \
-        zsr::meta_for_compound<CompoundType>::ptr = &s; \
-        s.ident = #name;                             \
-                                                     \
-        s.alloc = GEN_STRUCTURE_ALLOC();             \
-        s.initialize = nullptr;
+#define ZSERIO_REFLECT_STRUCTURE_BEGIN(name)                    \
+    {                                                           \
+        using CompoundType = PkgNamespace::name;                \
+                                                                \
+        static zsr::Compound s;                                 \
+        zsr::meta_for_compound<CompoundType>::ptr = &s;         \
+        s.ident = #name;                                        \
+                                                                \
+        s.alloc = GEN_STRUCTURE_ALLOC();                        \
+                                                                \
+        s.compare = [](const zsr::Introspectable& a,            \
+                       const zsr::Introspectable& b) {          \
+            return zsr::introspectable_cast<CompoundType>(a) == \
+                   zsr::introspectable_cast<CompoundType>(b);   \
+        };                                                      \
+                                                                \
+        s.read = [](zsr::Introspectable& i,                     \
+                    ::zserio::BitStreamReader& r) {             \
+            return zsr::introspectable_cast<CompoundType>(i).   \
+                read(r);                                        \
+        };                                                      \
+                                                                \
+        s.write = [](zsr::Introspectable& i,                    \
+                     ::zserio::BitStreamWriter& w) {            \
+            return zsr::introspectable_cast<CompoundType>(i).   \
+                write(w);                                       \
+        };
 
 #define ZSERIO_REFLECT_STRUCTURE_END() \
         p.compounds.push_back(&s);     \

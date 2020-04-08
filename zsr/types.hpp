@@ -1,5 +1,9 @@
 #pragma once
 
+#include <zserio/BitStreamReader.h>
+#include <zserio/BitStreamWriter.h>
+#include <zserio/PreWriteAction.h>
+
 #include "zsr/variant.hpp"
 
 #include <string>
@@ -193,7 +197,8 @@ struct Compound {
      * For compounds that have parameters, `initialize`
      * must be called.
      */
-    std::function<Introspectable()> alloc;
+    std::function<Introspectable()> alloc
+        = nullptr;
 
     /**
      * Optional initialization function.
@@ -203,12 +208,32 @@ struct Compound {
      * @param Instance of the introspectable to initialize.
      * @param Parameter list, see `Parameter::set`.
      */
-    std::function<void(Introspectable&, ParameterList)> initialize;
+    std::function<void(Introspectable&, ParameterList)> initialize
+        = nullptr;
 
     /**
      * Optional child initializator.
      */
-    std::function<void(Introspectable&)> initializeChildren;
+    std::function<void(Introspectable&)> initializeChildren
+        = nullptr;
+
+    /**
+     * Comparison function.
+     */
+    std::function<bool(const Introspectable&, const Introspectable&)> compare
+        = nullptr;
+
+    /**
+     * Deserialization function.
+     */
+    std::function<void(Introspectable&, ::zserio::BitStreamReader&)> read
+        = nullptr;
+
+    /**
+     * Serialization function.
+     */
+    std::function<void(Introspectable&, ::zserio::BitStreamWriter&)> write
+        = nullptr;
 };
 
 /**
