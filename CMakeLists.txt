@@ -89,17 +89,6 @@ function(add_zserio_module NAME ROOT ENTRY)
     ${NAME})
 endfunction()
 
-## ZSerio modules
-add_zserio_module(nds-core
-  "/home/jwolf/Downloads/nds.live.core/schema" "core/_module.zs")
-#add_zserio_module(nds-guidance
-#  "/home/jwolf/Downloads/nds.live.guidance/schema" "guidance/_module.zs")
-#add_zserio_module(nds-display
-#  "/home/jwolf/Downloads/nds.live.display/schema" "display/_module.zs")
-#add_zserio_module(nds-lane
-#  "/home/jwolf/Downloads/nds.live.lane/schema" "lane/_module.zs")
-#
-
 ## Test
 ####
 
