@@ -134,6 +134,7 @@ enable_testing()
 add_zsr_test(variant-test "${TEST_SRC}/variant-test.cpp")
 
 add_zsr_module_test(test_bitmask)
+add_zsr_module_test(choice_test)
 add_zsr_module_test(enumeration)
 add_zsr_module_test(constant)
 add_zsr_module_test(structure)
