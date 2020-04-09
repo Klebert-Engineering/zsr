@@ -15,7 +15,8 @@ struct Compound;
  *
  * Instanciated by `Compound::alloc`.
  */
-class Introspectable {
+class Introspectable
+{
 public:
     Introspectable(const Compound*, std::shared_ptr<impl::InstanceBase>);
 
@@ -33,4 +34,4 @@ public:
     std::shared_ptr<impl::InstanceBase> obj;
 };
 
-}
+} // namespace zsr

@@ -10,21 +10,25 @@ void check_isa(const zsr::Introspectable& i) noexcept(false)
 }
 
 template <class _Compound>
-_Compound& introspectable_cast(zsr::Introspectable& i) {
+_Compound& introspectable_cast(zsr::Introspectable& i)
+{
     check_isa<_Compound>(i);
     return *i.obj->as<_Compound>().obj;
 }
 
 template <class _Compound>
-const _Compound& introspectable_cast(const zsr::Introspectable& i) {
+const _Compound& introspectable_cast(const zsr::Introspectable& i)
+{
     check_isa<_Compound>(i);
     return *i.obj->as<_Compound>().obj;
 }
 
 template <class _Compound>
-std::shared_ptr<_Compound> shared_introspectable_cast(const zsr::Introspectable& i) {
+std::shared_ptr<_Compound>
+shared_introspectable_cast(const zsr::Introspectable& i)
+{
     check_isa<_Compound>(i);
     return i.obj->as<_Compound>().obj;
 }
 
-}
+} // namespace zsr

@@ -5,13 +5,18 @@
 namespace zsr {
 namespace impl {
 
-template <class> struct child_iter {};
+template <class>
+struct child_iter
+{};
 
-#define DECL_ITER(TYPE, PARENT_TYPE, LIST)                           \
-    template <> struct child_iter<TYPE> {                            \
-        static auto get(const PARENT_TYPE* r) {                      \
-            return std::make_pair(r->LIST.cbegin(), r->LIST.cend()); \
-        }                                                            \
+#define DECL_ITER(TYPE, PARENT_TYPE, LIST)                                     \
+    template <>                                                                \
+    struct child_iter<TYPE>                                                    \
+    {                                                                          \
+        static auto get(const PARENT_TYPE* r)                                  \
+        {                                                                      \
+            return std::make_pair(r->LIST.cbegin(), r->LIST.cend());           \
+        }                                                                      \
     };
 
 /* clang-format off */
@@ -33,7 +38,7 @@ DECL_ITER(ChoiceCase,      Compound,    cases)
 
 #undef DECL_ITER
 
-}
+} // namespace impl
 
 /**
  * Utility functions for searching metadata.
@@ -53,4 +58,4 @@ const _Type* find(const _Root* r, const std::string& ident)
     return nullptr;
 }
 
-}
+} // namespace zsr

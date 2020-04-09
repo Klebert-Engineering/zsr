@@ -7,7 +7,8 @@ namespace zsr {
 /**
  * Exception base class.
  */
-struct Error : std::exception {};
+struct Error : std::exception
+{};
 
 struct ParameterListTypeError : Error
 {
@@ -19,4 +20,4 @@ struct IntrospectableCastError : Error
     const char* what() const noexcept override;
 };
 
-}
+} // namespace zsr

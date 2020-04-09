@@ -3,11 +3,11 @@
  */
 #pragma once
 
-#include <type_traits>
 #include <memory>
+#include <type_traits>
 
-#include "zsr/variant.hpp"
 #include "zsr/types.hpp"
+#include "zsr/variant.hpp"
 
 namespace zsr::parameterlist {
 
@@ -18,9 +18,9 @@ template <class... _Types>
 struct add_shared_ptr_if_compound<std::tuple<_Types...>>
 {
     using input_type = std::tuple<_Types...>;
-    using type = std::tuple<
-        std::conditional_t<
-            is_compound<_Types>::value, std::shared_ptr<_Types>, _Types>...>;
+    using type = std::tuple<std::conditional_t<is_compound<_Types>::value,
+                                               std::shared_ptr<_Types>,
+                                               _Types>...>;
 };
 
 /**
@@ -84,12 +84,14 @@ auto& deref_if_shared(_Type&& v)
 
 
 template <class _Type>
-struct remove_shared_ptr {
+struct remove_shared_ptr
+{
     using type = _Type;
 };
 
 template <class _Type>
-struct remove_shared_ptr<std::shared_ptr<_Type>> {
+struct remove_shared_ptr<std::shared_ptr<_Type>>
+{
     using type = _Type;
 };
 
@@ -139,7 +141,8 @@ struct unpack_variant<std::vector<_Type>, true>
             std::vector<_Type> casted;
             casted.reserve(unpacked->size());
 
-            std::transform(unpacked->begin(), unpacked->end(),
+            std::transform(unpacked->begin(),
+                           unpacked->end(),
                            std::back_inserter(casted),
                            [](const auto& i) {
                                introspectable_cast<_Type>(i);
@@ -158,12 +161,11 @@ struct unpack_variant<std::vector<_Type>, true>
 template <size_t _Idx, class _Tuple>
 auto set_parameter(_Tuple& list, const Variant& value)
 {
-    using element_type =
-        std::tuple_element_t<_Idx, _Tuple>;
+    using element_type = std::tuple_element_t<_Idx, _Tuple>;
 
     std::get<_Idx>(list) =
         unpack_variant<remove_shared_ptr_t<element_type>>::unpack(value);
 }
 
 
-}
+} // namespace zsr::parameterlist

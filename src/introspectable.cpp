@@ -9,9 +9,7 @@ Introspectable::Introspectable(const Compound* meta,
     this->obj->meta = meta;
 }
 
-Introspectable::Introspectable(const Introspectable& o)
-    : obj(o.obj)
-{}
+Introspectable::Introspectable(const Introspectable& o) : obj(o.obj) {}
 
 Introspectable& Introspectable::operator=(const Introspectable& o)
 {
@@ -19,9 +17,7 @@ Introspectable& Introspectable::operator=(const Introspectable& o)
     return *this;
 }
 
-Introspectable::Introspectable(Introspectable&& o)
-    : obj(std::move(o.obj))
-{}
+Introspectable::Introspectable(Introspectable&& o) : obj(std::move(o.obj)) {}
 
 Introspectable& Introspectable::operator=(Introspectable&& o)
 {
@@ -29,17 +25,13 @@ Introspectable& Introspectable::operator=(Introspectable&& o)
     return *this;
 }
 
-Introspectable::~Introspectable()
-{}
+Introspectable::~Introspectable() {}
 
-bool Introspectable::isOwning() const
-{
-    return obj && obj->isOwning();
-}
+bool Introspectable::isOwning() const { return obj && obj->isOwning(); }
 
 const Compound* Introspectable::meta() const
 {
     return obj ? obj->meta : nullptr;
 }
 
-}
+} // namespace zsr

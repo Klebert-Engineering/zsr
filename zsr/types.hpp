@@ -6,11 +6,11 @@
 
 #include "zsr/variant.hpp"
 
-#include <string>
-#include <vector>
+#include <any>
 #include <functional>
 #include <memory>
-#include <any>
+#include <string>
+#include <vector>
 
 namespace zsr {
 
@@ -18,15 +18,18 @@ namespace zsr {
  * Generic parameter list.
  * See `Parameter::set`.
  */
-struct ParameterList {
+struct ParameterList
+{
     std::any list;
 };
 
 /**
  * ZSerio type information.
  */
-struct ZType {
-    enum {
+struct ZType
+{
+    enum
+    {
         UInt,
         Int,
         VarUInt,
@@ -50,8 +53,10 @@ struct ZType {
 /**
  * Generated C++ type information.
  */
-struct CType {
-    enum {
+struct CType
+{
+    enum
+    {
         Bool,
         UInt,
         Int,
@@ -65,7 +70,8 @@ struct CType {
     bool array;  /* Array (vector) of type */
 };
 
-struct TypeRef {
+struct TypeRef
+{
     std::string package;
     std::string ident;
 
@@ -76,7 +82,8 @@ struct TypeRef {
 /**
  * Subtype
  */
-struct SubType {
+struct SubType
+{
     std::string ident;
     const TypeRef* type;
 };
@@ -84,7 +91,8 @@ struct SubType {
 /**
  * Package constant
  */
-struct Constant {
+struct Constant
+{
     std::string ident;
     Variant value;
     const TypeRef* type;
@@ -93,7 +101,8 @@ struct Constant {
 /**
  * Bitmask value
  */
-struct BitmaskValue {
+struct BitmaskValue
+{
     std::string ident;
     Variant value;
 };
@@ -101,7 +110,8 @@ struct BitmaskValue {
 /**
  * Bitmask
  */
-struct Bitmask {
+struct Bitmask
+{
     std::string ident;
     std::vector<const BitmaskValue*> values;
 };
@@ -109,7 +119,8 @@ struct Bitmask {
 /**
  * Enumeration item
  */
-struct EnumerationItem {
+struct EnumerationItem
+{
     std::string ident;
     Variant value;
 };
@@ -117,7 +128,8 @@ struct EnumerationItem {
 /**
  * Enumeration
  */
-struct Enumeration {
+struct Enumeration
+{
     std::string ident;
     std::vector<const EnumerationItem*> items;
 };
@@ -125,7 +137,8 @@ struct Enumeration {
 /**
  * Compound field/member
  */
-struct Field {
+struct Field
+{
     std::string ident;
     const TypeRef* type;
 
@@ -153,7 +166,8 @@ struct Field {
 /**
  * Compound parameter
  */
-struct Parameter {
+struct Parameter
+{
     std::string ident;
     const TypeRef* type;
 
@@ -163,7 +177,8 @@ struct Parameter {
 /**
  * Function
  */
-struct Function {
+struct Function
+{
     std::string ident;
     const TypeRef* type;
 
@@ -173,7 +188,8 @@ struct Function {
 /**
  * Choice case
  */
-struct ChoiceCase {
+struct ChoiceCase
+{
     /**
      * Pointer to field of parent compound `fields` or null.
      */
@@ -183,7 +199,8 @@ struct ChoiceCase {
 /**
  * Compound (Structure, Choice or Union)
  */
-struct Compound {
+struct Compound
+{
     std::string ident;
 
     std::vector<const Parameter*> parameters;
@@ -197,8 +214,7 @@ struct Compound {
      * For compounds that have parameters, `initialize`
      * must be called.
      */
-    std::function<Introspectable()> alloc
-        = nullptr;
+    std::function<Introspectable()> alloc = nullptr;
 
     /**
      * Optional initialization function.
@@ -208,38 +224,37 @@ struct Compound {
      * @param Instance of the introspectable to initialize.
      * @param Parameter list, see `Parameter::set`.
      */
-    std::function<void(Introspectable&, ParameterList)> initialize
-        = nullptr;
+    std::function<void(Introspectable&, ParameterList)> initialize = nullptr;
 
     /**
      * Optional child initializator.
      */
-    std::function<void(Introspectable&)> initializeChildren
-        = nullptr;
+    std::function<void(Introspectable&)> initializeChildren = nullptr;
 
     /**
      * Comparison function.
      */
-    std::function<bool(const Introspectable&, const Introspectable&)> compare
-        = nullptr;
+    std::function<bool(const Introspectable&, const Introspectable&)> compare =
+        nullptr;
 
     /**
      * Deserialization function.
      */
-    std::function<void(Introspectable&, ::zserio::BitStreamReader&)> read
-        = nullptr;
+    std::function<void(Introspectable&, ::zserio::BitStreamReader&)> read =
+        nullptr;
 
     /**
      * Serialization function.
      */
-    std::function<void(Introspectable&, ::zserio::BitStreamWriter&)> write
-        = nullptr;
+    std::function<void(Introspectable&, ::zserio::BitStreamWriter&)> write =
+        nullptr;
 };
 
 /**
  * Package
  */
-struct Package {
+struct Package
+{
     std::string ident;
 
     std::vector<const SubType*> subTypes;
@@ -252,10 +267,11 @@ struct Package {
 /**
  * Metadata registry
  */
-struct Registry {
+struct Registry
+{
     std::vector<const Package*> packages;
 };
 
 Registry& registry();
 
-}
+} // namespace zsr

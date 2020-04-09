@@ -2,9 +2,9 @@
 
 #include "zsr/error.hpp"
 
+#include <assert.h>
 #include <unordered_map>
 #include <vector>
-#include <assert.h>
 
 namespace zsr {
 
@@ -85,11 +85,13 @@ struct InstanceBase
      * parent.
      */
     std::shared_ptr<InstanceBase> parent;
-    std::unordered_map<uintptr_t, std::vector<std::weak_ptr<InstanceBase>>> children;
+    std::unordered_map<uintptr_t, std::vector<std::weak_ptr<InstanceBase>>>
+        children;
 };
 
 template <class _T>
-struct Instance : InstanceBase {
+struct Instance : InstanceBase
+{
     Instance(std::shared_ptr<_T> obj, bool owning)
         : owning(owning)
         , obj(obj)
@@ -127,8 +129,8 @@ auto makeWeakInstance(const std::shared_ptr<InstanceBase>& master,
     assert(meta);
     assert(obj);
 
-    auto instance = std::make_shared<Instance<_T>>(
-        std::shared_ptr<_T>(master, obj), false);
+    auto instance =
+        std::make_shared<Instance<_T>>(std::shared_ptr<_T>(master, obj), false);
 
     master->children[reinterpret_cast<uintptr_t>(meta)].push_back(instance);
     instance->parent = master;
@@ -139,9 +141,8 @@ auto makeWeakInstance(const std::shared_ptr<InstanceBase>& master,
 template <class _T>
 auto makeUniqueInstance()
 {
-    return std::make_shared<Instance<_T>>(
-        std::make_shared<_T>(), true);
+    return std::make_shared<Instance<_T>>(std::make_shared<_T>(), true);
 }
 
-}
-}
+} // namespace impl
+} // namespace zsr
