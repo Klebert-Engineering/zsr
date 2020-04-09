@@ -7,6 +7,9 @@
 #include <assert.h>
 
 namespace zsr {
+
+struct Compound;
+
 namespace impl {
 
 template <class _T>
@@ -54,6 +57,12 @@ struct InstanceBase
      * reference to its zserio object.
      */
     virtual bool isOwning() const = 0;
+
+
+    /**
+     * Introspection metadata.
+     */
+    const Compound* meta;
 
     /**
      * Introspectable has to keep parameters alive

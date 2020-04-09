@@ -19,20 +19,20 @@ namespace impl {
  * List of types and their internal representation.
  */
 #define TYPELIST(_)                             \
-    /* external    internal */                  \
-    _(bool,        uint64_t)                    \
-    _(uint8_t,     uint64_t)                    \
-    _(uint16_t,    uint64_t)                    \
-    _(uint32_t,    uint64_t)                    \
-    _(uint64_t,    uint64_t)                    \
-    _(int8_t,      int64_t)                     \
-    _(int16_t,     int64_t)                     \
-    _(int32_t,     int64_t)                     \
-    _(int64_t,     int64_t)                     \
-    _(float,       double)                      \
-    _(double,      double)                      \
-    _(const char*, std::string)                 \
-    _(std::string, std::string)                 \
+    /* external       internal */               \
+    _(bool,           uint64_t)                 \
+    _(uint8_t,        uint64_t)                 \
+    _(uint16_t,       uint64_t)                 \
+    _(uint32_t,       uint64_t)                 \
+    _(uint64_t,       uint64_t)                 \
+    _(int8_t,         int64_t)                  \
+    _(int16_t,        int64_t)                  \
+    _(int32_t,        int64_t)                  \
+    _(int64_t,        int64_t)                  \
+    _(float,          double)                   \
+    _(double,         double)                   \
+    _(const char*,    std::string)              \
+    _(std::string,    std::string)              \
     _(Introspectable, Introspectable)
 
 #define GEN_EXT2INT(from, to)                   \
@@ -132,7 +132,7 @@ struct VariantCast<std::bitset<_N>, _Target> {
 }
 
 /**
- *
+ * Zsr value container.
  */
 class Variant final {
 public:

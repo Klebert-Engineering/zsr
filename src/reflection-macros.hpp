@@ -4,7 +4,7 @@
         /* Note: Base template defined in lib-prefix.cpp */ \
                                                             \
         template <>                                         \
-        struct IsCompound<:: NS :: NAME>                    \
+        struct is_compound<:: NS :: NAME>                   \
             : std::true_type {};                            \
                                                             \
         template <>                                         \
@@ -231,11 +231,11 @@
         using MemberType =                                                     \
             std::decay_t<                                                      \
                 std::remove_reference_t<                                       \
-                    decltype(((CompoundType*)0)-> GETTER ())>>;               \
+                    decltype(((CompoundType*)0)-> GETTER ())>>;                \
                                                                                \
         constexpr bool IsStruct =                                              \
-            zsr::IsCompound<                                                   \
-                zsr::RemoveVectorT<MemberType>>::value;                        \
+            zsr::is_compound<                                                  \
+                zsr::remove_vector_t<MemberType>>::value;                      \
                                                                                \
         using Helper =                                                         \
             zsr::GenFieldAccessorHelper<MemberType>;                           \
@@ -256,7 +256,7 @@
         f.ident = #NAME;                                                       \
         f.type = nullptr;                                                      \
                                                                                \
-        f.get = Helper::getFun<CompoundType>(fieldGetter, &f);     \
+        f.get = Helper::getFun<CompoundType>(fieldGetter, &f);                 \
         f.set = {}; /* Read-only */                                            \
                                                                                \
         CUR_TYPE(p);                                                           \
@@ -298,8 +298,8 @@
 
 #define GEN_FIELD_ACCESSORS(GETTER, SETTER)                             \
     constexpr bool IsStruct =                                           \
-        zsr::IsCompound<                                                \
-            zsr::RemoveVectorT<MemberType>>::value;                     \
+        zsr::is_compound<                                               \
+            zsr::remove_vector_t<MemberType>>::value;                   \
     using Helper =                                                      \
         zsr::GenFieldAccessorHelper<MemberType>;                        \
                                                                         \
@@ -315,7 +315,7 @@
         return obj.SETTER(val);                                         \
     };                                                                  \
                                                                         \
-    f.get = Helper::getFun<CompoundType>(getter, &f);       \
+    f.get = Helper::getFun<CompoundType>(getter, &f);                   \
     f.set = Helper::setFun<CompoundType>(setter, &f);
 
 #define ZSERIO_REFLECT_STRUCTURE_FIELD_OPTIONAL(HASFUN, RESETFUN)   \
@@ -334,7 +334,7 @@
         using MemberType =                                            \
             std::decay_t<                                             \
                 std::remove_reference_t<                              \
-                    decltype(((CompoundType*)0)-> GETTER ())>>;      \
+                    decltype(((CompoundType*)0)-> GETTER ())>>;       \
                                                                       \
         static zsr::Field f;                                          \
         f.ident = #NAME;                                              \
@@ -354,12 +354,12 @@
         using ReturnType =                                        \
             std::decay_t<                                         \
                 std::remove_reference_t<                          \
-                    decltype(((CompoundType*)0)-> FUNNAME ())>>; \
+                    decltype(((CompoundType*)0)-> FUNNAME ())>>;  \
                                                                   \
         static zsr::Function f;                                   \
         f.ident = #NAME;                                          \
                                                                   \
-        f.call = [](const zsr::Introspectable& i) -> zsr::Variant {  \
+        f.call = [](const zsr::Introspectable& i) -> zsr::Variant {\
             return {                                              \
                 zsr::introspectable_cast<CompoundType>(i)         \
                     . FUNNAME ()                                  \

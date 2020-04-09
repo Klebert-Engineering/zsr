@@ -12,7 +12,7 @@ TEST(StructureTest, a_alloc_empty) {
     ASSERT_FALSE(meta_struct->initialize);
 
     auto introspectable = meta_struct->alloc();
-    ASSERT_EQ(introspectable.meta, meta_struct);
+    ASSERT_EQ(introspectable.meta(), meta_struct);
 }
 
 TEST(StructureTest, b_alloc_init_parameterized) {
@@ -79,7 +79,7 @@ TEST(StructureTest, c_alloc_init_parameterized_instance) {
     auto instance = value.get<zsr::Introspectable>();
 
     ASSERT_TRUE(instance);
-    ASSERT_TRUE(instance->meta);
+    ASSERT_TRUE(instance->meta());
 
     auto* m_ca_a = zsr::find<zsr::Field>(s_parameter, "a");
     ASSERT_VARIANT_EQ(m_ca_a->get(*instance), std::string{"Hola"});

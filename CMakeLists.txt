@@ -100,21 +100,6 @@ add_zserio_module(nds-core
 #  "/home/jwolf/Downloads/nds.live.lane/schema" "lane/_module.zs")
 #
 
-# Zsr test
-add_executable(zsr-test
-  test.cpp)
-
-target_include_directories(zsr-test
-  PRIVATE
-  "${CMAKE_CURRENT_SOURCE_DIR}")
-
-target_link_libraries(zsr-test
-  nds-core
-  nds-core-reflection
-  #nds-guidance
-  #nds-guidance-reflection
-   )
-
 ## Test
 ####
 

@@ -20,7 +20,7 @@ struct add_shared_ptr_if_compound<std::tuple<_Types...>>
     using input_type = std::tuple<_Types...>;
     using type = std::tuple<
         std::conditional_t<
-            IsCompound<_Types>::value, std::shared_ptr<_Types>, _Types>...>;
+            is_compound<_Types>::value, std::shared_ptr<_Types>, _Types>...>;
 };
 
 /**
@@ -105,7 +105,7 @@ template <class _Type>
 using remove_shared_ptr_t = typename remove_shared_ptr<_Type>::type;
 
 
-template <class _Type, bool _IsCompound = IsCompound<_Type>::value>
+template <class _Type, bool _IsCompound = is_compound<_Type>::value>
 struct unpack_variant
 {
     static _Type unpack(const Variant& v)
