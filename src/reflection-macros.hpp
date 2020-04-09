@@ -138,10 +138,8 @@
  *     STRUCTURE_FUNCTION_BEGIN*
  *     STRUCTURE_FUNCTION_END
  *     STRUCTURE_CHOICE_BEGIN?
- *       STRUCTURE_CHOICE_CASE_BEGIN*
- *       STRUCTURE_CHOICE_CASE_END
- *       STRUCTURE_CHOICE_DEFAULT_BEGIN?
- *       STRUCTURE_CHOICE_DEFAULT_END
+ *       STRUCTURE_CHOICE_CASE*
+ *       STRUCTURE_CHOICE_DEFAULT?
  *     STRUCTURE_CHOICE_END
  *   STRUCTURE_END
  */
@@ -190,21 +188,17 @@
 #define ZSERIO_REFLECT_STRUCTURE_CHOICE_END()
 
 /* TODO: Add more metadata to choice cases */
-#define ZSERIO_REFLECT_STRUCTURE_CHOICE_CASE_BEGIN(FIELD_NAME) \
-    {                                                          \
-        static zsr::ChoiceCase cc;                             \
-        cc.field = zsr::find<zsr::Field>(&s, #FIELD_NAME);
-
-#define ZSERIO_REFLECT_STRUCTURE_CHOICE_CASE_END() \
-        s.cases.push_back(&cc);                    \
+#define ZSERIO_REFLECT_STRUCTURE_CHOICE_CASE(FIELD_NAME)   \
+    {                                                      \
+        static zsr::ChoiceCase cc;                         \
+        cc.field = zsr::find<zsr::Field>(&s, #FIELD_NAME); \
+                                                           \
+        s.cases.push_back(&cc);                            \
     }
 
 /* TODO: Distinguish between choice-case and choice-default */
-#define ZSERIO_REFLECT_STRUCTURE_CHOICE_DEFAULT_BEGIN(FIELD_NAME) \
-    ZSERIO_REFLECT_STRUCTURE_CHOICE_CASE_BEGIN(FIELD_NAME)
-
-#define ZSERIO_REFLECT_STRUCTURE_CHOICE_DEFAULT_END() \
-    ZSERIO_REFLECT_STRUCTURE_CHOICE_CASE_END()
+#define ZSERIO_REFLECT_STRUCTURE_CHOICE_DEFAULT(FIELD_NAME) \
+    ZSERIO_REFLECT_STRUCTURE_CHOICE_CASE(FIELD_NAME)
 
 #define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_BEGIN()       \
     using ParameterTupleType =                            \
