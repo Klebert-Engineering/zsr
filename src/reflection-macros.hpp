@@ -1,3 +1,4 @@
+/* clang-format off */
 
 #define ZSERIO_REFLECT_IS_COMPOUND_TRAIT(NAME, NS)          \
     namespace zsr {                                         \
@@ -426,3 +427,5 @@
                                                   \
         b.values.push_back(&bv);                  \
     }
+
+/* clang-format on */

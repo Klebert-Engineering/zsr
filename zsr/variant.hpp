@@ -18,6 +18,7 @@ namespace impl {
 /**
  * List of types and their internal representation.
  */
+/* clang-format off */
 #define TYPELIST(_)                             \
     /* external       internal */               \
     _(bool,           uint64_t)                 \
@@ -34,6 +35,7 @@ namespace impl {
     _(const char*,    std::string)              \
     _(std::string,    std::string)              \
     _(Introspectable, Introspectable)
+/* clang-format on */
 
 #define GEN_EXT2INT(from, to)                   \
     template <>                                 \

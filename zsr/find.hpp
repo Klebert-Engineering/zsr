@@ -14,6 +14,7 @@ template <class> struct child_iter {};
         }                                                            \
     };
 
+/* clang-format off */
 /*        Target           Source       Member */
 DECL_ITER(Enumeration,     Package,     enumerations)
 DECL_ITER(EnumerationItem, Enumeration, items)
@@ -28,6 +29,7 @@ DECL_ITER(Field,           Compound,    fields)
 DECL_ITER(Parameter,       Compound,    parameters)
 DECL_ITER(Function,        Compound,    functions)
 DECL_ITER(ChoiceCase,      Compound,    cases)
+/* clang-format on */
 
 #undef DECL_ITER
 

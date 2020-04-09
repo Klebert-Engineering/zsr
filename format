@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+
+find src zsr -iname "*.c*" -or -iname "*.h*" -exec clang-format -i {} \;
