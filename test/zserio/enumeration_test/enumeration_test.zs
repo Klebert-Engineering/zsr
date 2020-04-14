@@ -1,4 +1,4 @@
-package enumeration;
+package enumeration_test;
 
 enum uint8 Enum {
     A, B, C = 0xff

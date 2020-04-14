@@ -1,4 +1,4 @@
-package constant;
+package constant_test;
 
 const uint32  A = 1;
 const int32   B = 2;

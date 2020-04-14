@@ -7,18 +7,19 @@ set(SRC "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # This does not set -fPIC :(
 set(CMAKE_CXX_FLAGS "-fPIC")
 
-set(ZSERIO_TLP "nds")
+## ZSERIO C++ runtime
+####
 
-## ZSERIO RT
-file(GLOB ZSERIO_RT_SRC "/home/jwolf/Workspace/zserio/compiler/extensions/cpp/runtime/src/zserio/*.cpp")
-add_library(zserio-rt SHARED
-  "${ZSERIO_RT_SRC}")
+option(ZSERIO_RT_DIR "Directory of zserio C++ runtime CMakeLists.txt (e.g. extensions/cpp/runtime/src)")
+if (ZSERIO_RT_DIR)
+  add_subdirectory("${ZSERIO_RT_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/zserio-cpp-rt")
+else ()
+  message(FATAL_ERROR "Option ZSERIO_RT_DIR is empty.")
+endif()
 
-target_include_directories(zserio-rt
-  PUBLIC
-    "/home/jwolf/Workspace/zserio/compiler/extensions/cpp/runtime/src/")
+## ZSR Runtime
+####
 
-## ZSR
 add_library(zsr SHARED
   "${SRC}/src/types.cpp"
   "${SRC}/src/error.cpp"
@@ -33,7 +34,9 @@ target_include_directories(zsr
 
 target_link_libraries(zsr
   PUBLIC
-    zserio-rt)
+    ZserioCppRuntime)
+
+set(ZSERIO_TLP "nds") # Zserio top-level-package
 
 function(add_zserio_module NAME ROOT ENTRY)
   set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.zserio-gen/")
@@ -58,7 +61,7 @@ function(add_zserio_module NAME ROOT ENTRY)
       PUBLIC "${GEN_SRC_ROOT}")
 
     target_link_libraries(${NAME}
-      PUBLIC zserio-rt)
+      PUBLIC ZserioCppRuntime)
   else()
     add_library(${NAME} INTERFACE)
 
@@ -66,7 +69,7 @@ function(add_zserio_module NAME ROOT ENTRY)
       INTERFACE "${GEN_SRC_ROOT}")
 
     target_link_libraries(${NAME}
-      INTERFACE zserio-rt)
+      INTERFACE ZserioCppRuntime)
   endif()
 
   add_library(${NAME}-reflection SHARED
@@ -95,15 +98,20 @@ endfunction()
 function(add_zsr_test TARGET FILE)
   add_executable(${TARGET}
     "${FILE}")
+
   target_include_directories(${TARGET}
     PRIVATE "${SRC}" "${TEST_SRC}/zserio")
+
   target_link_libraries(${TARGET}
     PRIVATE zsr gtest gtest_main)
+
   target_compile_options(${TARGET}
     PRIVATE
-      "-std=c++17"
       "-Wall"
       "-Werror")
+
+  target_compile_features(${TARGET}
+    PUBLIC cxx_std_17)
 
   add_test(NAME "${TARGET}"
     COMMAND ${TARGET})
@@ -122,9 +130,9 @@ enable_testing()
 
 add_zsr_test(variant-test "${TEST_SRC}/variant-test.cpp")
 
-add_zsr_module_test(test_bitmask)
+add_zsr_module_test(bitmask_test)
 add_zsr_module_test(choice_test)
 add_zsr_module_test(union_test)
-add_zsr_module_test(enumeration)
-add_zsr_module_test(constant)
-add_zsr_module_test(structure)
+add_zsr_module_test(enumeration_test)
+add_zsr_module_test(constant_test)
+add_zsr_module_test(structure_test)
