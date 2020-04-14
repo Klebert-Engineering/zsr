@@ -12,4 +12,9 @@ const char* IntrospectableCastError::what() const noexcept
     return "Introspectable cast error";
 }
 
+const char* VariantCastError::what() const noexcept
+{
+    return "Variant cast error";
+}
+
 }

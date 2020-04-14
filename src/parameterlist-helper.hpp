@@ -8,6 +8,7 @@
 
 #include "zsr/types.hpp"
 #include "zsr/variant.hpp"
+#include "zsr/error.hpp"
 
 namespace zsr::parameterlist {
 
@@ -115,7 +116,7 @@ struct unpack_variant
         if (auto unpacked = v.get<_Type>())
             return *unpacked;
 
-        throw std::runtime_error("Wrong type"); /* TODO: Use custom exception */
+        throw VariantCastError{};
     }
 };
 
@@ -128,7 +129,7 @@ struct unpack_variant<_Type, true>
             return shared_introspectable_cast<_Type>(*unpacked);
         }
 
-        throw std::runtime_error("Wrong type"); /* TODO: Use custom exception */
+        throw VariantCastError{};
     }
 };
 
@@ -150,7 +151,7 @@ struct unpack_variant<std::vector<_Type>, true>
             return casted;
         }
 
-        throw std::runtime_error("Wrong type"); /* TODO: Use custom exception */
+        throw VariantCastError{};
     }
 };
 

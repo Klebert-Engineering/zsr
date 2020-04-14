@@ -20,4 +20,9 @@ struct IntrospectableCastError : Error
     const char* what() const noexcept override;
 };
 
+struct VariantCastError : Error
+{
+    const char* what() const noexcept override;
+};
+
 } // namespace zsr

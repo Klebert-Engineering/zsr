@@ -217,7 +217,7 @@
         if (tuple) {                                                    \
             zsr::parameterlist::set_parameter<IDX>(*tuple, v);          \
         } else {                                                        \
-            /* TODO: Throw! */                                          \
+            throw zsr::ParameterListTypeError{};                        \
         }                                                               \
     };
 

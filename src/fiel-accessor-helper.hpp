@@ -33,7 +33,7 @@ struct GenFieldAccessorHelper<_Type, false, _IsVector>
             if (auto vv = v.get<Type>())
                 fun(obj, std::move(*vv));
             else
-                /* TODO: Throw */;
+                throw zsr::VariantCastError{};
         };
     }
 };
@@ -90,7 +90,7 @@ struct GenFieldAccessorHelper<_Type, true /* IsCompound */, true /* IsVector */>
 
                 fun(obj, std::move(zserioVector));
             } else {
-                ; /* TODO: Throw */
+                throw zsr::VariantCastError{};
             }
         };
     }
@@ -126,7 +126,7 @@ struct GenFieldAccessorHelper<_Type,
 
                 fun(obj, *vv->obj->as<Type>().obj);
             } else
-                /* TODO: Throw */;
+                throw zsr::VariantCastError{};
         };
     }
 };
