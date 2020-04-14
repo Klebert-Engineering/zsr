@@ -128,6 +128,8 @@ endfunction()
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/googletest/googletest")
 enable_testing()
 
+set(ZSERIO_TLP "zsr")
+
 add_zsr_test(variant-test "${TEST_SRC}/variant-test.cpp")
 
 add_zsr_module_test(bitmask_test)
