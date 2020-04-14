@@ -34,3 +34,10 @@ Test
 ====
 
 > ctest --verbose
+
+Hacking
+=======
+
+Use the ./format script to apply cmake-format on all sources.
+
+Sources under /zsr are public, sources under /src are private.
