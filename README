@@ -10,3 +10,27 @@
   ##################################  #########
 
      Z S E R I O  C + +  R E F L E C T I O N
+
+
+Java Extension
+==============
+
+https://github.com/Klebert-Engineering/zserio-cpp-introspection
+
+Build
+=====
+
+> mkdir build && cd build
+> cmake -DZSERIO_RT_DIR=<path-to-zserio-cpp-rt-dir> ..
+> cmake --build .
+
+The build expects a zserio binary in your PATH env.
+Basic wrapper script:
+
+> #!/bin/sh
+> java -jar <path-to-zserio-rt-jar> $@
+
+Test
+====
+
+> ctest --verbose
