@@ -28,7 +28,7 @@ The build expects a zserio binary in your PATH env.
 Basic wrapper script:
 
 > #!/bin/sh
-> java -jar <path-to-zserio-rt-jar> $@
+> java -jar <path-to-zserio-jar> $@
 
 Test
 ====
