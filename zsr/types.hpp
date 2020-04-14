@@ -25,6 +25,12 @@ struct ParameterList
 
 /**
  * ZSerio type information.
+ *
+ * TODO: Take ZType data with grain of salt. Especially array types
+ *       might be incomplete.
+ *
+ * Use information from CType for type detection/conversion.
+ * The ZType does not have to match the CType.
  */
 struct ZType
 {
@@ -46,8 +52,8 @@ struct ZType
         Structure,
     } type;
 
-    size_t size; /* Size in bits */
-    bool array;  /* Array of type */
+    size_t size = 0;    /* Size in bits */
+    bool array = false; /* Array of type */
 };
 
 /**
@@ -66,8 +72,8 @@ struct CType
         Structure,
     } type;
 
-    size_t size; /* Size in bits */
-    bool array;  /* Array (vector) of type */
+    size_t size = 0;    /* Size in bits */
+    bool array = false; /* Array (vector) of type */
 };
 
 struct TypeRef
@@ -85,7 +91,7 @@ struct TypeRef
 struct SubType
 {
     std::string ident;
-    const TypeRef* type;
+    const TypeRef* type = nullptr;
 };
 
 /**
@@ -95,7 +101,7 @@ struct Constant
 {
     std::string ident;
     Variant value;
-    const TypeRef* type;
+    const TypeRef* type = nullptr;
 };
 
 /**
@@ -140,27 +146,27 @@ struct Enumeration
 struct Field
 {
     std::string ident;
-    const TypeRef* type;
+    const TypeRef* type = nullptr;
 
     /**
      * Function that returns the fields value.
      */
-    std::function<Variant(const Introspectable&)> get;
+    std::function<Variant(const Introspectable&)> get = nullptr;
 
     /**
      * Optional function to set the fields value.
      */
-    std::function<void(Introspectable&, Variant)> set;
+    std::function<void(Introspectable&, Variant)> set = nullptr;
 
     /**
      * Optional function to check if the field is set.
      */
-    std::function<bool(const Introspectable&)> has;
+    std::function<bool(const Introspectable&)> has = nullptr;
 
     /**
      * Optional function to reset the optional field.
      */
-    std::function<void(Introspectable&)> reset;
+    std::function<void(Introspectable&)> reset = nullptr;
 };
 
 /**
@@ -169,9 +175,9 @@ struct Field
 struct Parameter
 {
     std::string ident;
-    const TypeRef* type;
+    const TypeRef* type = nullptr;
 
-    std::function<void(ParameterList&, Variant)> set;
+    std::function<void(ParameterList&, Variant)> set = nullptr;
 };
 
 /**
@@ -180,9 +186,9 @@ struct Parameter
 struct Function
 {
     std::string ident;
-    const TypeRef* type;
+    const TypeRef* type = nullptr;
 
-    std::function<Variant(const Introspectable&)> call;
+    std::function<Variant(const Introspectable&)> call = nullptr;
 };
 
 /**
@@ -193,7 +199,7 @@ struct ChoiceCase
     /**
      * Pointer to field of parent compound `fields` or null.
      */
-    const Field* field;
+    const Field* field = nullptr;
 };
 
 /**
