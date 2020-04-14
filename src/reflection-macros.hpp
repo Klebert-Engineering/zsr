@@ -55,21 +55,21 @@
  *   PACKAGE_END
  */
 
-#define ZSERIO_REFLECT_PACKAGE_BEGIN(NAME, NS)  \
-    namespace NS {}                             \
-                                                \
-    static const bool UID(init, __COUNTER__) =  \
-    []() {                                      \
-        namespace PkgNamespace = :: NS;         \
-                                                \
-        static zsr::Package p;                  \
-        zsr::registry().packages.push_back(&p); \
-                                                \
-        p.ident = #NAME;
+#define ZSERIO_REFLECT_PACKAGE_BEGIN(NAME, NS)      \
+    namespace NS {}                                 \
+                                                    \
+    struct init__ ## NAME {                         \
+        init__ ## NAME () {                         \
+            namespace PkgNamespace = :: NS;         \
+                                                    \
+            static zsr::Package p;                  \
+            zsr::registry().packages.push_back(&p); \
+                                                    \
+            p.ident = #NAME;
 
-#define ZSERIO_REFLECT_PACKAGE_END() \
-        return true;                 \
-    }();
+#define ZSERIO_REFLECT_PACKAGE_END()                \
+        }                                           \
+    } static const UID(init, __COUNTER__){};
 
 /**
  * Subtype
