@@ -7,6 +7,27 @@ set(SRC "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # This does not set -fPIC :(
 set(CMAKE_CXX_FLAGS "-fPIC")
 
+## ZSerio binary
+####
+option(ZSERIO_JAR_PATH "Path to zserio jar.")
+if (ZSERIO_JAR_PATH)
+  set(ZSERIO "java")
+  list(APPEND ZSERIO "-jar")
+  list(APPEND ZSERIO "${ZSERIO_JAR_PATH}")
+
+  message("Using zserio jar: ${ZSERIO_JAR_PATH}")
+else()
+  find_program(ZSERIO zserio)
+  if (NOT ZSERIO)
+    message(FATAL_ERROR
+      "Could not find zserio binary! "
+      "Add zserio to PATH or set "
+      "ZSERIO_JAR_PATH to the zserio jar.")
+  else()
+    message("Using zserio binary: ${ZSERIO}")
+  endif()
+endif()
+
 ## ZSERIO C++ runtime
 ####
 
@@ -44,11 +65,11 @@ function(add_zserio_module NAME ROOT ENTRY)
   file(MAKE_DIRECTORY "${GEN_SRC_ROOT}")
 
   execute_process(
-    COMMAND zserio -setTopLevelPackage ${ZSERIO_TLP}
-                   -cpp ${GEN_SRC_ROOT}
-                   -cpp_reflect ${GEN_SRC_ROOT}
-                   -src ${ROOT}
-                   ${ENTRY})
+    COMMAND ${ZSERIO} -setTopLevelPackage ${ZSERIO_TLP}
+                      -cpp ${GEN_SRC_ROOT}
+                      -cpp_reflect ${GEN_SRC_ROOT}
+                      -src ${ROOT}
+                      ${ENTRY})
 
   file(GLOB_RECURSE GEN_SRC
     "${GEN_SRC_ROOT}/${ZSERIO_TLP}/*.cpp")
