@@ -73,10 +73,14 @@ function(add_zserio_module NAME ROOT ENTRY)
   endif()
 
   add_library(${NAME}-reflection SHARED
+    "${SRC}/zsr/stub.hpp"
     "${SRC}/src/lib-prefix.cpp")
 
   target_compile_definitions(${NAME}-reflection
-    PRIVATE REFLECTION_DEFS_INCLUDE="${GEN_SRC_ROOT}/reflection-defs.cpp")
+    PRIVATE
+      REFLECTION_DEFS_INCLUDE="${GEN_SRC_ROOT}/reflection-defs.cpp"
+    PUBLIC
+      ZSR_GENERATE_LOAD_STUB=1)
 
   target_compile_options(${NAME}-reflection
     PRIVATE
@@ -123,9 +127,6 @@ function(add_zsr_module_test NAME)
 
   target_link_libraries(${NAME}
     PRIVATE zs-${NAME} zs-${NAME}-reflection)
-
-  target_link_options(${NAME}
-    PRIVATE -z now)
 endfunction()
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/googletest/googletest")
