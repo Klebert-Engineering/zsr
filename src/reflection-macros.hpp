@@ -267,8 +267,8 @@
     }
 
 #define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_END()                       \
-    s.initialize = [s = &s](zsr::Introspectable& i,                     \
-                            zsr::ParameterList l)                       \
+    s.initialize = [](zsr::Introspectable& i,                           \
+                      zsr::ParameterList l)                             \
     {                                                                   \
         if (!std::any_cast<ParameterTupleType>(&l.list))                \
             throw zsr::ParameterListTypeError{};                        \
