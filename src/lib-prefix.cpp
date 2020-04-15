@@ -5,6 +5,7 @@
 #include "zsr/types.hpp"
 #include "zsr/error.hpp"
 #include "zsr/find.hpp"
+#include "zsr/stub.hpp"
 
 namespace zsr {
 
@@ -36,4 +37,11 @@ struct meta_for_compound;
 #    include REFLECTION_DEFS_INCLUDE
 #else
 #    error "Missing definition of 'REFLECTION_DEFS_INCLUDE'!"
+#endif
+
+/* Generate optional load stub */
+#ifdef ZSR_GENERATE_LOAD_STUB
+namespace zsr {
+void loadStub() {}
+}
 #endif
