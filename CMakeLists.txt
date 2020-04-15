@@ -123,6 +123,9 @@ function(add_zsr_module_test NAME)
 
   target_link_libraries(${NAME}
     PRIVATE zs-${NAME} zs-${NAME}-reflection)
+
+  target_link_options(${NAME}
+    PRIVATE -z now)
 endfunction()
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/googletest/googletest")
