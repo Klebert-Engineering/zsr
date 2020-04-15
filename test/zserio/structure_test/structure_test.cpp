@@ -11,6 +11,7 @@ TEST(StructureTest, a_alloc_empty)
     ASSERT_TRUE(meta_struct);
     ASSERT_TRUE(meta_struct->alloc);
     ASSERT_FALSE(meta_struct->initialize);
+    ASSERT_EQ(meta_struct->type, zsr::Compound::Type::Structure);
 
     auto introspectable = meta_struct->alloc();
     ASSERT_EQ(introspectable.meta(), meta_struct);

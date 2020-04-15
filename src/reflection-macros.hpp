@@ -153,13 +153,14 @@
         };                                                \
     };
 
-#define ZSERIO_REFLECT_STRUCTURE_BEGIN(name)                    \
+#define ZSERIO_REFLECT_STRUCTURE_BEGIN(NAME, TYPE)              \
     {                                                           \
-        using CompoundType = PkgNamespace::name;                \
+        using CompoundType = PkgNamespace::NAME;                \
                                                                 \
         static zsr::Compound s;                                 \
         zsr::meta_for_compound<CompoundType>::ptr = &s;         \
-        s.ident = #name;                                        \
+        s.ident = #NAME;                                        \
+        s.type = zsr::Compound::Type::TYPE;                     \
                                                                 \
         s.alloc = GEN_STRUCTURE_ALLOC();                        \
                                                                 \

@@ -208,6 +208,11 @@ struct ChoiceCase
 struct Compound
 {
     std::string ident;
+    enum class Type {
+        Structure,
+        Choice,
+        Union,
+    } type;
 
     std::vector<const Parameter*> parameters;
     std::vector<const Field*> fields;
