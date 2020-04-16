@@ -20,24 +20,19 @@ https://github.com/Klebert-Engineering/zserio-cpp-introspection
 Build
 =====
 
-> mkdir build && cd build
-> cmake -DZSERIO_RT_DIR=<path-to-zserio-cpp-rt-dir> ..
-> cmake --build .
-
-The build expects a zserio binary in your PATH env.
-Basic wrapper script:
-
-> #!/bin/sh
-> java -jar <path-to-zserio-jar> $@
+>   mkdir build && cd build
+>   cmake -DZSERIO_RT_DIR=<path-to-zserio-cpp-rt-dir> \
+>         -DZSERIO_JAR_PATH=<path-to-zserio-jar> ..
+>
+>   cmake --build .
 
 Test
 ====
 
-> ctest --verbose
+>   ctest --verbose
 
 Hacking
 =======
 
-Use the ./format script to apply cmake-format on all sources.
-
-Sources under /zsr are public, sources under /src are private.
+- Use the ./format script to apply cmake-format on all sources.
+- Sources under /zsr are public, sources under /src are private.

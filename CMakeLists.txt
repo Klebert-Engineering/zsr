@@ -10,21 +10,22 @@ set(CMAKE_CXX_FLAGS "-fPIC")
 ## ZSerio binary
 ####
 option(ZSERIO_JAR_PATH "Path to zserio jar.")
+
 if (ZSERIO_JAR_PATH)
-  set(ZSERIO "java")
+  find_program(JAVA java)
+  if (NOT JAVA)
+    message(FATAL_ERROR "Could not find java!")
+  endif()
+
+  set(ZSERIO ${JAVA})
   list(APPEND ZSERIO "-jar")
   list(APPEND ZSERIO "${ZSERIO_JAR_PATH}")
-
-  message("Using zserio jar: ${ZSERIO_JAR_PATH}")
 else()
   find_program(ZSERIO zserio)
   if (NOT ZSERIO)
     message(FATAL_ERROR
       "Could not find zserio binary! "
-      "Add zserio to PATH or set "
-      "ZSERIO_JAR_PATH to the zserio jar.")
-  else()
-    message("Using zserio binary: ${ZSERIO}")
+      "Add zserio to PATH or set ZSERIO_JAR_PATH to the zserio jar.")
   endif()
 endif()
 
