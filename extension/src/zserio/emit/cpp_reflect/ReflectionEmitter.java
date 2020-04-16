@@ -18,6 +18,15 @@ import java.lang.Integer;
 
 public class ReflectionEmitter extends EmitterBase
 {
+    /**
+     * Compound types.
+     *
+     * Strings match zsr::Compound::Type enum items.
+     */
+    final String COMPOUND_TYPE_STRUCTURE = "Structure";
+    final String COMPOUND_TYPE_CHOICE    = "Choice";
+    final String COMPOUND_TYPE_UNION     = "Union";
+
     public ReflectionEmitter(BufferedWriter writer, Parameters extensionParameters)
     {
         super(writer, extensionParameters);
@@ -279,6 +288,7 @@ public class ReflectionEmitter extends EmitterBase
     {
         List<String> args = Arrays.asList(new String[] {
             structureType.getName(),
+            COMPOUND_TYPE_STRUCTURE
         });
 
         beginReflect("STRUCTURE", args);
@@ -309,6 +319,7 @@ public class ReflectionEmitter extends EmitterBase
     {
         List<String> args = Arrays.asList(new String[] {
             choiceType.getName(),
+            COMPOUND_TYPE_CHOICE
         });
 
         beginReflect("STRUCTURE", args);
@@ -332,6 +343,7 @@ public class ReflectionEmitter extends EmitterBase
     {
         List<String> args = Arrays.asList(new String[] {
             unionType.getName(),
+            COMPOUND_TYPE_UNION
         });
 
         beginReflect("STRUCTURE", args);
