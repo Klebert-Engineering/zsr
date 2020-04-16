@@ -1,6 +1,12 @@
 #include <memory>
 #include <assert.h>
 
+/**
+ * Version that has to match the version generated
+ * by zserio.
+ */
+#define ZSR_VERSION 1
+
 /* Public */
 #include "zsr/types.hpp"
 #include "zsr/error.hpp"
