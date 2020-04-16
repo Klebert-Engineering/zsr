@@ -1,0 +1,42 @@
+name: Ubuntu CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Setup
+      run: |
+        mkdir build-extension
+        mkdir build-runtime
+    - name: Clone zserio
+      run: |
+        git clone https://github.com/ndsev/zserio.git zserio
+    - name: Configure extension
+      working-directory: build-extension
+      run: |
+        cmake ../extension
+    - name: Configure runtime
+      working-directory: build-runtime
+      run: |
+        cmake -DZSERIO_JAR_PATH=../build-extension/zserio.jar \
+              -DZSERIO_RT_DIR=../zserio/compiler/extensions/cpp/runtime/src \
+              ../runtime
+    - name: Build runtime
+      working-directory: build-runtime
+      run: |
+        cmake --build .
+    - name: Run CTest
+      working-directory: build-runtime
+      run: |
+        ctest --verbose
