@@ -62,16 +62,26 @@ spotbugs.home_dir               - Location of the spotbugs tool. If not set, spo
         </filterchain>
     </loadfile>
 
+    <property name="zserio_bin_zip_name" value="zserio-${zserio_cpp_reflect.version}-bin.zip"/>
+
     <target name="clean">
         <delete dir="${zserio_cpp_reflect.build_dir}"/>
     </target>
 
-    <target name="download">
+    <target name="check-download">
+        <available
+                file="${zserio_cpp_reflect.download_dir}/${zserio_bin_zip_name}"
+                property="zserio_bin_zip.present"/>
+    </target>
+
+    <target name="download" depends="check-download" unless="zserio_bin_zip.present">
         <mkdir dir="${zserio_cpp_reflect.download_dir}"/>
         <property name="github_https_download" value="https://github.com/ndsev/zserio/releases/download"/>
-        <property name="zserio_bin_zip_name" value="zserio-${zserio_cpp_reflect.version}-bin.zip"/>
         <get src="${github_https_download}/v${zserio_cpp_reflect.version}/${zserio_bin_zip_name}"
             dest="${zserio_cpp_reflect.download_dir}" usetimestamp="true"/>
+
+    </target>
+    <target name="unzip" depends="download">
         <unzip src="${zserio_cpp_reflect.download_dir}/${zserio_bin_zip_name}" dest="${zserio_cpp_reflect.download_dir}">
             <patternset>
                 <include name="zserio_libs/"/>
@@ -86,7 +96,7 @@ spotbugs.home_dir               - Location of the spotbugs tool. If not set, spo
         </unzip>
     </target>
 
-    <target name="compile" depends="download">
+    <target name="compile" depends="unzip">
         <mkdir dir="${zserio_cpp_reflect.classes_dir}"/>
         <depend srcDir="${zserio_cpp_reflect.src_dir}" destDir="${zserio_cpp_reflect.classes_dir}"
             cache="${zserio_cpp_reflect.build_dir}/depend-cache"/>
