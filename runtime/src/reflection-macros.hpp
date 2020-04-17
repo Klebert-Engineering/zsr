@@ -56,14 +56,12 @@
  */
 
 #define ZSERIO_REFLECT_PACKAGE_BEGIN(NAME, NS)      \
-    namespace NS {}                                 \
-                                                    \
     struct init__ ## NAME {                         \
         init__ ## NAME () {                         \
             namespace PkgNamespace = :: NS;         \
                                                     \
             static zsr::Package p;                  \
-            zsr::registry().packages.push_back(&p); \
+            lpackages().push_back(&p);              \
                                                     \
             p.ident = #NAME;
 

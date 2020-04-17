@@ -275,14 +275,4 @@ struct Package
     std::vector<const Compound*> compounds;
 };
 
-/**
- * Metadata registry
- */
-struct Registry
-{
-    std::vector<const Package*> packages;
-};
-
-Registry& registry();
-
 } // namespace zsr

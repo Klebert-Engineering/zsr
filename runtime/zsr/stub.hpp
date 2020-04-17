@@ -1,9 +1,11 @@
 #pragma once
 
+#include <vector>
+
 namespace zsr {
 
-#ifdef ZSR_GENERATE_LOAD_STUB
-void loadStub();
-#endif
+struct Package;
+
+const std::vector<const Package*>& packages();
 
 }
