@@ -100,9 +100,7 @@ function(add_zserio_module NAME ROOT ENTRY)
 
   target_compile_definitions(${NAME}-reflection
     PRIVATE
-      REFLECTION_DEFS_INCLUDE="${GEN_SRC_ROOT}/reflection-defs.cpp"
-    PUBLIC
-      ZSR_GENERATE_LOAD_STUB=1)
+      REFLECTION_DEFS_INCLUDE="${GEN_SRC_ROOT}/reflection-defs.cpp")
 
   target_compile_options(${NAME}-reflection
     PRIVATE

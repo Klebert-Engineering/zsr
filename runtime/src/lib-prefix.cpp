@@ -38,6 +38,12 @@ struct meta_for_compound;
 
 #include "reflection-macros.hpp"
 
+static std::vector<const zsr::Package*>& lpackages()
+{
+    static std::vector<const zsr::Package*> packages;
+    return packages;
+}
+
 /* -- Generated Source Begins Here -- */
 #ifdef REFLECTION_DEFS_INCLUDE
 #    include REFLECTION_DEFS_INCLUDE
@@ -45,9 +51,12 @@ struct meta_for_compound;
 #    error "Missing definition of 'REFLECTION_DEFS_INCLUDE'!"
 #endif
 
-/* Generate optional load stub */
-#ifdef ZSR_GENERATE_LOAD_STUB
-namespace zsr {
-void loadStub() {}
+namespace zsr
+{
+
+const std::vector<const Package*>& packages ()
+{
+    return lpackages();
 }
-#endif
+
+}
