@@ -4,8 +4,10 @@ project(zsr)
 set(TEST_SRC "${CMAKE_CURRENT_SOURCE_DIR}/test")
 set(SRC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON) # This does not set -fPIC :(
-set(CMAKE_CXX_FLAGS "-fPIC")
+if (NOT MSVC)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON) # This does not set -fPIC :(
+  set(CMAKE_CXX_FLAGS -fPIC)
+endif()
 
 ## ZSerio binary
 ####
@@ -70,7 +72,16 @@ function(add_zserio_module NAME ROOT ENTRY)
                       -cpp ${GEN_SRC_ROOT}
                       -cpp_reflect ${GEN_SRC_ROOT}
                       -src ${ROOT}
-                      ${ENTRY})
+                      ${ENTRY}
+    RESULT_VARIABLE ZSERIO_RES
+    ERROR_VARIABLE ZSERIO_STDERR
+    OUTPUT_QUIET)
+
+  if (NOT ZSERIO_RES EQUAL 0)
+    message(FATAL_ERROR "Generating sources failed.\n"
+                        "ZSerio returned: ${ZSERIO_RES}\n"
+                        "Error: ${ZSERIO_ERROR}")
+  endif()
 
   file(GLOB_RECURSE GEN_SRC
     "${GEN_SRC_ROOT}/${ZSERIO_TLP}/*.cpp")
@@ -104,8 +115,8 @@ function(add_zserio_module NAME ROOT ENTRY)
 
   target_compile_options(${NAME}-reflection
     PRIVATE
-      "-Werror"
-      "-Wall")
+      $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>)
 
   target_include_directories(${NAME}-reflection
     PRIVATE
@@ -131,8 +142,8 @@ function(add_zsr_test TARGET FILE)
 
   target_compile_options(${TARGET}
     PRIVATE
-      "-Wall"
-      "-Werror")
+      $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>)
 
   target_compile_features(${TARGET}
     PUBLIC cxx_std_17)
