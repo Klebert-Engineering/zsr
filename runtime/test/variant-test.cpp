@@ -108,7 +108,7 @@ TEST(VariantTest, string_set_get) {
 
     /* Supported conversions */
 
-    v.set<const char*>("const char");
+    v.set("const char");
     ASSERT_EQ("const char", *v.get<std::string>());
 
     v.set<std::string>("std string");
