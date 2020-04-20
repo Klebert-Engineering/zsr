@@ -160,16 +160,23 @@ function(add_zsr_module_test NAME)
     PRIVATE zs-${NAME} zs-${NAME}-reflection)
 endfunction()
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/googletest/googletest")
-enable_testing()
+# Enable tests by default
+if (NOT DEFINED ZSR_ENABLE_TESTING)
+  set(ZSR_ENABLE_TESTING On)
+endif()
 
-set(ZSERIO_TLP "zsr")
+if (ZSR_ENABLE_TESTING)
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/googletest/googletest")
+  enable_testing()
 
-add_zsr_test(variant-test "${TEST_SRC}/variant-test.cpp")
+  set(ZSERIO_TLP "zsr")
 
-add_zsr_module_test(bitmask_test)
-add_zsr_module_test(choice_test)
-add_zsr_module_test(union_test)
-add_zsr_module_test(enumeration_test)
-add_zsr_module_test(constant_test)
-add_zsr_module_test(structure_test)
+  add_zsr_test(variant-test "${TEST_SRC}/variant-test.cpp")
+
+  add_zsr_module_test(bitmask_test)
+  add_zsr_module_test(choice_test)
+  add_zsr_module_test(union_test)
+  add_zsr_module_test(enumeration_test)
+  add_zsr_module_test(constant_test)
+  add_zsr_module_test(structure_test)
+endif()
