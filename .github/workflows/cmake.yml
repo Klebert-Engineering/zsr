@@ -65,15 +65,19 @@ jobs:
       working-directory: build-extension
       run: |
         cmake ../extension
+      shell: cmd
     - name: Configure runtime
       working-directory: build-runtime
-      run: cmake -DZSERIO_JAR_PATH=../build-extension/zserio.jar -DZSERIO_RT_DIR=../zserio/compiler/extensions/cpp/runtime/src ../runtime
+      run: |
+        cmake -DZSERIO_JAR_PATH=../build-extension/zserio.jar -DZSERIO_RT_DIR=../zserio/compiler/extensions/cpp/runtime/src ../runtime
       shell: cmd
     - name: Build runtime
       working-directory: build-runtime
       run: |
         cmake --build .
+      shell: cmd
     - name: Run CTest
       working-directory: build-runtime
       run: |
         ctest --verbose
+      shell: cmd
