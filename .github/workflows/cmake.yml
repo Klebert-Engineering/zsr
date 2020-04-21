@@ -70,7 +70,7 @@ jobs:
       working-directory: build-runtime
       run: >
         cmake
-        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_BUILD_TYPE=Debug
         -DZSERIO_JAR_PATH=../build-extension/zserio.jar
         -DZSERIO_RT_DIR=../zserio/compiler/extensions/cpp/runtime/src
         ../runtime
@@ -83,5 +83,5 @@ jobs:
     - name: Run CTest
       working-directory: build-runtime
       run: |
-        ctest --verbose
+        ctest -C Debug --verbose
       shell: cmd
