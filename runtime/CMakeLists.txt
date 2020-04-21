@@ -14,8 +14,8 @@ endif()
 
 ## ZSerio binary
 ####
-option(ZSERIO_JAR_PATH "Path to zserio jar.")
 
+option(ZSERIO_JAR_PATH "Path to zserio jar.")
 if (ZSERIO_JAR_PATH)
   find_program(JAVA java)
   if (NOT JAVA)
@@ -25,6 +25,9 @@ if (ZSERIO_JAR_PATH)
   set(ZSERIO ${JAVA})
   list(APPEND ZSERIO "-jar")
   list(APPEND ZSERIO "${ZSERIO_JAR_PATH}")
+
+  # File used as dependency for generating sources
+  set(ZSERIO_GENERATOR_DEP "${ZSERIO_JAR_PATH}")
 else()
   find_program(ZSERIO zserio)
   if (NOT ZSERIO)
@@ -32,6 +35,8 @@ else()
       "Could not find zserio binary! "
       "Add zserio to PATH or set ZSERIO_JAR_PATH to the zserio jar.")
   endif()
+
+  set(ZSERIO_GENERATOR_DEP "${ZSERIO}")
 endif()
 
 ## ZSERIO C++ runtime
@@ -63,50 +68,34 @@ target_link_libraries(zsr
   PUBLIC
     ZserioCppRuntime)
 
-set(ZSERIO_TLP "nds") # Zserio top-level-package
-
 function(add_zserio_module NAME ROOT ENTRY)
   set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.zserio-gen/")
-
   file(MAKE_DIRECTORY "${GEN_SRC_ROOT}")
 
-  execute_process(
+  add_custom_command(
+    DEPENDS "${ZSERIO_GENERATOR_DEP}"
+    OUTPUT "${GEN_SRC_ROOT}/reflection-defs.cpp"
     COMMAND ${ZSERIO} -setTopLevelPackage ${ZSERIO_TLP}
                       -cpp ${GEN_SRC_ROOT}
                       -cpp_reflect ${GEN_SRC_ROOT}
                       -src ${ROOT}
-                      ${ENTRY}
-    RESULT_VARIABLE ZSERIO_RES
-    ERROR_VARIABLE ZSERIO_STDERR
-    OUTPUT_QUIET)
+                      ${ENTRY})
 
-  if (NOT ZSERIO_RES EQUAL 0)
-    message(FATAL_ERROR "Generating sources failed.\n"
-                        "ZSerio returned: ${ZSERIO_RES}\n"
-                        "Error: ${ZSERIO_ERROR}")
-  endif()
+  add_custom_command(
+    DEPENDS "${GEN_SRC_ROOT}/reflection-defs.cpp"
+    OUTPUT "${GEN_SRC_ROOT}/amalgamation.cpp"
+    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake"
+                                "${GEN_SRC_ROOT}/${ZSERIO_TLP}"
+                                "${GEN_SRC_ROOT}/amalgamation.cpp")
 
-  file(GLOB_RECURSE GEN_SRC
-    "${GEN_SRC_ROOT}/${ZSERIO_TLP}/*.cpp")
+  add_library(${NAME} SHARED
+    "${GEN_SRC_ROOT}/amalgamation.cpp")
 
-  if (GEN_SRC)
-    add_library(${NAME} SHARED
-      ${GEN_SRC})
+  target_include_directories(${NAME}
+    PUBLIC "${GEN_SRC_ROOT}")
 
-    target_include_directories(${NAME}
-      PUBLIC "${GEN_SRC_ROOT}")
-
-    target_link_libraries(${NAME}
-      PUBLIC ZserioCppRuntime)
-  else()
-    add_library(${NAME} INTERFACE)
-
-    target_include_directories(${NAME}
-      INTERFACE "${GEN_SRC_ROOT}")
-
-    target_link_libraries(${NAME}
-      INTERFACE ZserioCppRuntime)
-  endif()
+  target_link_libraries(${NAME}
+    PUBLIC ZserioCppRuntime)
 
   add_library(${NAME}-reflection SHARED
     "${SRC}/zsr/stub.hpp"
