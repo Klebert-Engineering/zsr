@@ -1,4 +1,4 @@
-name: Ubuntu CI
+name: CI
 
 on:
   push:
@@ -7,14 +7,18 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-    name: Build and test
+  build-linux:
+    name: Linux
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: true
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
     - name: Setup
       run: |
         mkdir build-extension
@@ -29,9 +33,7 @@ jobs:
     - name: Configure runtime
       working-directory: build-runtime
       run: |
-        cmake -DZSERIO_JAR_PATH=../build-extension/zserio.jar \
-              -DZSERIO_RT_DIR=../zserio/compiler/extensions/cpp/runtime/src \
-              ../runtime
+        cmake -DZSERIO_JAR_PATH=../build-extension/zserio.jar -DZSERIO_RT_DIR=../zserio/compiler/extensions/cpp/runtime/src ../runtime
     - name: Build runtime
       working-directory: build-runtime
       run: |
@@ -40,3 +42,46 @@ jobs:
       working-directory: build-runtime
       run: |
         ctest --verbose
+  build-windows:
+    name: Windows
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Setup
+      run: |
+        mkdir build-extension
+        mkdir build-runtime
+    - name: Clone zserio
+      run: |
+        git clone https://github.com/ndsev/zserio.git zserio
+    - name: Configure extension
+      working-directory: build-extension
+      run: |
+        cmake ../extension
+      shell: cmd
+    - name: Configure runtime
+      working-directory: build-runtime
+      run: >
+        cmake
+        -DCMAKE_BUILD_TYPE=Debug
+        -DZSERIO_JAR_PATH=../build-extension/zserio.jar
+        -DZSERIO_RT_DIR=../zserio/compiler/extensions/cpp/runtime/src
+        ../runtime
+      shell: cmd
+    - name: Build runtime
+      working-directory: build-runtime
+      run: |
+        cmake --build .
+      shell: cmd
+    - name: Run CTest
+      working-directory: build-runtime
+      run: |
+        ctest -C Debug --verbose
+      shell: cmd

@@ -240,11 +240,11 @@
             return obj.GETTER();                                               \
         };                                                                     \
                                                                                \
-        static zsr::Parameter p;                                               \
-        p.ident = #NAME;                                                       \
-        p.type = nullptr;                                                      \
+        static zsr::Parameter param;                                           \
+        param.ident = #NAME;                                                   \
+        param.type = nullptr;                                                  \
                                                                                \
-        p.set = GEN_INIT_PARAMETER_LIST_SET(IDX);                              \
+        param.set = GEN_INIT_PARAMETER_LIST_SET(IDX);                          \
                                                                                \
         static zsr::Field f;                                                   \
         f.ident = #NAME;                                                       \
@@ -253,15 +253,15 @@
         f.get = Helper::getFun<CompoundType>(fieldGetter, &f);                 \
         f.set = {}; /* Read-only */                                            \
                                                                                \
-        CUR_TYPE(p);                                                           \
+        CUR_TYPE(param);                                                       \
         zsr::CTypeTraits<                                                      \
             zsr::parameterlist::remove_shared_ptr_t<                           \
                 std::tuple_element_t<IDX, ParameterTupleType>>>::set(tr.ctype);\
-        f.type = &tr; /* parameter & field share type pointer */
+        f.type = &tr; /* NOTE: parameter & field share type pointer */
 
 
 #define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_PARAMETER_END()        \
-        s.parameters.push_back(&p);                                \
+        s.parameters.push_back(&param);                            \
         s.fields.push_back(&f);                                    \
     }
 

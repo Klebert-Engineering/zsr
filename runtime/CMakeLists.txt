@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10.2)
 project(zsr)
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
+
 set(TEST_SRC "${CMAKE_CURRENT_SOURCE_DIR}/test")
 set(SRC "${CMAKE_CURRENT_SOURCE_DIR}")
 
