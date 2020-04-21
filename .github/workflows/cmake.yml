@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-linux:
-    name: Build & Test
+    name: Linux
     runs-on: ubuntu-latest
 
     steps:
@@ -43,7 +43,7 @@ jobs:
       run: |
         ctest --verbose
   build-windows:
-    name: Build & Test
+    name: Windows
     runs-on: windows-latest
 
     steps:
