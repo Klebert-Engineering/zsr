@@ -1,5 +1,6 @@
 function(zsr_amalgamate_sources ROOT TARGET)
-  message("Amalgamating to ${TARGET}...")
+  get_filename_component(TARGET_NAME ${TARGET} NAME)
+  message("Amalgamating generated zserio sources to ${TARGET_NAME}...")
 
   file(WRITE "${TARGET}" "")
 
@@ -7,7 +8,8 @@ function(zsr_amalgamate_sources ROOT TARGET)
     "${ROOT}/*.cpp")
 
   foreach(SRC ${SOURCES})
-    message(STATUS "  ${SRC}")
+    get_filename_component(SRC_NAME ${SRC} NAME)
+    message(STATUS "${SRC_NAME}")
 
     file(READ ${SRC} CONTENTS)
     file(APPEND ${TARGET} "${CONTENTS}")

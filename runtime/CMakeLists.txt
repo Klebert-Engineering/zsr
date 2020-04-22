@@ -1,52 +1,27 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(zsr)
+project(zserio-cpp-introspection-runtime)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
 
-set(TEST_SRC "${CMAKE_CURRENT_SOURCE_DIR}/test")
-set(SRC "${CMAKE_CURRENT_SOURCE_DIR}")
+set(SRC  "${CMAKE_CURRENT_SOURCE_DIR}")
+set(TEST "${SRC}/test")
 
 if (NOT MSVC)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON) # This does not set -fPIC :(
   set(CMAKE_CXX_FLAGS -fPIC)
 endif()
 
-## ZSerio binary
+## ZSERIO C++ runtime (optional)
 ####
 
-option(ZSERIO_JAR_PATH "Path to zserio jar.")
-if (ZSERIO_JAR_PATH)
-  find_program(JAVA java)
-  if (NOT JAVA)
-    message(FATAL_ERROR "Could not find java!")
+if (NOT TARGET ZserioCppRuntime)
+  option(ZSERIO_RT_DIR "Directory of zserio C++ runtime CMakeLists.txt (e.g. extensions/cpp/runtime/src)")
+  if (ZSERIO_RT_DIR)
+    add_subdirectory("${ZSERIO_RT_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/zserio-cpp-rt")
+  else ()
+    message(FATAL_ERROR "Option ZSERIO_RT_DIR is empty.")
   endif()
-
-  set(ZSERIO ${JAVA})
-  list(APPEND ZSERIO "-jar")
-  list(APPEND ZSERIO "${ZSERIO_JAR_PATH}")
-
-  # File used as dependency for generating sources
-  set(ZSERIO_GENERATOR_DEP "${ZSERIO_JAR_PATH}")
-else()
-  find_program(ZSERIO zserio)
-  if (NOT ZSERIO)
-    message(FATAL_ERROR
-      "Could not find zserio binary! "
-      "Add zserio to PATH or set ZSERIO_JAR_PATH to the zserio jar.")
-  endif()
-
-  set(ZSERIO_GENERATOR_DEP "${ZSERIO}")
-endif()
-
-## ZSERIO C++ runtime
-####
-
-option(ZSERIO_RT_DIR "Directory of zserio C++ runtime CMakeLists.txt (e.g. extensions/cpp/runtime/src)")
-if (ZSERIO_RT_DIR)
-  add_subdirectory("${ZSERIO_RT_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/zserio-cpp-rt")
-else ()
-  message(FATAL_ERROR "Option ZSERIO_RT_DIR is empty.")
 endif()
 
 ## ZSR Runtime
@@ -62,18 +37,44 @@ target_compile_features(zsr
 
 target_include_directories(zsr
   PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}")
+    "${SRC}")
 
 target_link_libraries(zsr
   PUBLIC
     ZserioCppRuntime)
 
+set_target_properties(zsr
+  PROPERTIES
+    src_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_custom_target(zsr-amalgamate
+  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
+
+set_target_properties(zsr-amalgamate
+  PROPERTIES
+    src "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
+
 function(add_zserio_module NAME ROOT ENTRY)
   set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.zserio-gen/")
   file(MAKE_DIRECTORY "${GEN_SRC_ROOT}")
 
+  find_program(JAVA java)
+  if (NOT JAVA)
+    message(FATAL_ERROR "Could not find java!")
+  endif()
+
+  set(ZSERIO ${JAVA})
+
+  get_target_property(JAR_PATH zserio jar)
+  if (${JAR_PATH} EQUAL "NOTFOUND")
+    message(FATAL_ERROR "Could not read property 'jar' from target 'zserio'.")
+  endif()
+
+  list(APPEND ZSERIO "-jar")
+  list(APPEND ZSERIO "${JAR_PATH}")
+
   add_custom_command(
-    DEPENDS "${ZSERIO_GENERATOR_DEP}"
+    DEPENDS zserio
     OUTPUT "${GEN_SRC_ROOT}/reflection-defs.cpp"
     COMMAND ${ZSERIO} -setTopLevelPackage ${ZSERIO_TLP}
                       -cpp ${GEN_SRC_ROOT}
@@ -81,10 +82,13 @@ function(add_zserio_module NAME ROOT ENTRY)
                       -src ${ROOT}
                       ${ENTRY})
 
+  # Generated source amalgamation
+  get_target_property(AMALGAMATE zsr-amalgamate src)
+
   add_custom_command(
     DEPENDS "${GEN_SRC_ROOT}/reflection-defs.cpp"
     OUTPUT "${GEN_SRC_ROOT}/amalgamation.cpp"
-    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake"
+    COMMAND ${CMAKE_COMMAND} -P "${AMALGAMATE}"
                                 "${GEN_SRC_ROOT}/${ZSERIO_TLP}"
                                 "${GEN_SRC_ROOT}/amalgamation.cpp")
 
@@ -97,9 +101,12 @@ function(add_zserio_module NAME ROOT ENTRY)
   target_link_libraries(${NAME}
     PUBLIC ZserioCppRuntime)
 
+  # Reflection runtime lib
+  get_target_property(ZSR_SRC zsr src_dir)
+
   add_library(${NAME}-reflection SHARED
-    "${SRC}/zsr/stub.hpp"
-    "${SRC}/src/lib-prefix.cpp")
+    "${ZSR_SRC}/zsr/stub.hpp"
+    "${ZSR_SRC}/src/lib-prefix.cpp")
 
   target_compile_definitions(${NAME}-reflection
     PRIVATE
@@ -112,7 +119,7 @@ function(add_zserio_module NAME ROOT ENTRY)
 
   target_include_directories(${NAME}-reflection
     PRIVATE
-      "${SRC}/src")
+      "${ZSR_SRC}/src")
 
   target_link_libraries(${NAME}-reflection
     zsr
@@ -127,7 +134,7 @@ function(add_zsr_test TARGET FILE)
     "${FILE}")
 
   target_include_directories(${TARGET}
-    PRIVATE "${SRC}" "${TEST_SRC}/zserio")
+    PRIVATE "${TEST}/zserio")
 
   target_link_libraries(${TARGET}
     PRIVATE zsr gtest gtest_main)
@@ -145,8 +152,8 @@ function(add_zsr_test TARGET FILE)
 endfunction()
 
 function(add_zsr_module_test NAME)
-  add_zserio_module(zs-${NAME} "${TEST_SRC}/zserio/${NAME}" "${NAME}.zs")
-  add_zsr_test(${NAME} "${TEST_SRC}/zserio/${NAME}/${NAME}.cpp")
+  add_zserio_module(zs-${NAME} "${TEST}/zserio/${NAME}" "${NAME}.zs")
+  add_zsr_test(${NAME} "${TEST}/zserio/${NAME}/${NAME}.cpp")
 
   target_link_libraries(${NAME}
     PRIVATE zs-${NAME} zs-${NAME}-reflection)
@@ -163,7 +170,7 @@ if (ZSR_ENABLE_TESTING)
 
   set(ZSERIO_TLP "zsr")
 
-  add_zsr_test(variant-test "${TEST_SRC}/variant-test.cpp")
+  add_zsr_test(variant-test "${TEST}/variant-test.cpp")
 
   add_zsr_module_test(bitmask_test)
   add_zsr_module_test(choice_test)
