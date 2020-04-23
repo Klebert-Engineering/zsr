@@ -12,35 +12,14 @@
      Z S E R I O  C + +  R E F L E C T I O N
 
 
-Extension
-=========
-
 Build
------
+=====
 
->   cd extension
->   ant install
-
-Runtime
-=======
-
-Build
------
-
->   cd runtime
->   mkdir build && cd build
->   cmake -DZSERIO_RT_DIR=<path-to-zserio-cpp-rt-dir> \
->         -DZSERIO_JAR_PATH=<path-to-zserio-jar> ..
->
->   cmake --build .
+> mkdir build && cd build
+> cmake -DZSERIO_RT_DIR=<path-to-zserio-cpp-rt-dir> ..
+> cmake --build .
 
 Test
-----
+====
 
->   ctest --verbose
-
-Hacking
--------
-
-- Use the ./format script to apply cmake-format on all sources.
-- Sources under /zsr are public, sources under /src are private.
+> ctest --verbose
