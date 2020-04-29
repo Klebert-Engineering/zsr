@@ -5,7 +5,7 @@
  * Version that has to match the version generated
  * by zserio.
  */
-#define ZSR_VERSION 1
+#define ZSR_VERSION 2
 
 /* Public */
 #include "zsr/types.hpp"
@@ -26,6 +26,9 @@ struct is_compound : std::false_type {};
 
 template <class _T>
 struct meta_for_compound;
+
+template <class _T>
+struct is_enumeration : std::false_type {};
 
 }
 

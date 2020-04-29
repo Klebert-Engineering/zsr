@@ -55,7 +55,7 @@ public class CppReflectExtension implements Extension
             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 
             try {
-                final int VERSION = 1;
+                final int VERSION = 2;
 
                 writer.write("#if defined(ZSR_VERSION) && ZSR_VERSION != " + Integer.toString(VERSION) + "\n" +
                              "    #error \"zsr version does not match version of the generate code.\"\n" +

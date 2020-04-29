@@ -53,4 +53,15 @@ public class TraitsEmitter extends EmitterBase
 
         reflect("IS_COMPOUND_TRAIT", args);
     }
+
+    @Override
+    public void beginEnumeration(EnumType enumType) throws ZserioEmitException
+    {
+        List<String> args = Arrays.asList(new String[] {
+            enumType.getName(),
+            packageNameToNamespace(enumType.getPackage().getPackageName())
+        });
+
+        reflect("IS_ENUMERATION_TRAIT", args);
+    }
 }

@@ -9,11 +9,11 @@ template <class _Type, class _Enable = void>
 struct CTypeTraits;
 
 template <class _Type>
-struct CTypeTraits<std::vector<_Type>>
+struct CTypeTraits<std::vector<_Type>, void>
 {
     static auto set(CType& type)
     {
-        CTypeTraits<_Type>::set(type);
+        CTypeTraits<std::decay_t<_Type>>::set(type);
         type.array = true;
     }
 };
@@ -36,6 +36,19 @@ struct CTypeTraits<_Type, std::enable_if_t<std::is_unsigned<_Type>::value>>
     {
         type.type = CType::UInt;
         type.size = sizeof(_Type);
+        type.array = false;
+    }
+};
+
+/* Zserio bitmask enum */
+template <class _Type>
+struct CTypeTraits<_Type,
+                   std::enable_if_t<std::is_enum<typename _Type::Values>::value>>
+{
+    static auto set(CType& type)
+    {
+        type.type = CType::UInt;
+        type.size = sizeof(std::underlying_type_t<typename _Type::Values>);
         type.array = false;
     }
 };
@@ -65,8 +78,11 @@ struct CTypeTraits<_Type,
     }
 };
 
+/* C++ Enums */
 template <class _Type>
-struct CTypeTraits<_Type, std::enable_if_t<std::is_enum<_Type>::value>>
+struct CTypeTraits<_Type,
+                   std::enable_if_t<is_enumeration<_Type>::value &&
+                                    std::is_enum<_Type>::value>>
 {
     static auto set(CType& type)
     {
@@ -82,6 +98,17 @@ struct CTypeTraits<std::string>
     static auto set(CType& type)
     {
         type.type = CType::String;
+        type.size = 0u;
+        type.array = false;
+    }
+};
+
+template <>
+struct CTypeTraits<zserio::BitBuffer>
+{
+    static auto set(CType& type)
+    {
+        type.type = CType::BitBuffer;
         type.size = 0u;
         type.array = false;
     }

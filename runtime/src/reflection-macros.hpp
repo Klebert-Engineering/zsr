@@ -18,6 +18,15 @@
             ::ptr{nullptr};                                 \
     }
 
+#define ZSERIO_REFLECT_IS_ENUMERATION_TRAIT(NAME, NS)       \
+    namespace zsr {                                         \
+        /* Note: Base template defined in lib-prefix.cpp */ \
+                                                            \
+        template <>                                         \
+        struct is_enumeration<:: NS :: NAME>                \
+            : std::true_type {};                            \
+    }
+
 /**
  * Expose the current objects `type` member for further
  * use by `ZSERIO_REFLECT_TYPE_REF`.
@@ -55,14 +64,15 @@
  *   PACKAGE_END
  */
 
-#define ZSERIO_REFLECT_PACKAGE_BEGIN(NAME, NS)      \
-    struct init__ ## NAME {                         \
-        init__ ## NAME () {                         \
-            namespace PkgNamespace = :: NS;         \
-                                                    \
-            static zsr::Package p;                  \
-            lpackages().push_back(&p);              \
-                                                    \
+#define ZSERIO_REFLECT_PACKAGE_BEGIN(NAME, SNAME, NS) \
+    namespace NS {}                                   \
+    struct init__ ## SNAME {                          \
+        init__ ## SNAME () {                          \
+            namespace PkgNamespace = :: NS;           \
+                                                      \
+            static zsr::Package p;                    \
+            lpackages().push_back(&p);                \
+                                                      \
             p.ident = #NAME;
 
 #define ZSERIO_REFLECT_PACKAGE_END()                \

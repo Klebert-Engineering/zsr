@@ -70,6 +70,7 @@ struct CType
         Enum,
         String,
         Structure,
+        BitBuffer,
     } type;
 
     size_t size = 0;    /* Size in bits */

@@ -31,12 +31,13 @@ public class ReflectionEmitter extends EmitterBase
     {
         super(writer, extensionParameters);
     }
-    
+   
     @Override
     public void beginPackage(Package pkg) throws ZserioEmitException
     {
         List<String> args = Arrays.asList(new String[] {
             pkg.getPackageName().toString(),
+            pkg.getPackageName().toString().replaceAll("\\.", "_S_").toString(),
             packageNameToNamespace(pkg.getPackageName())
         });
 
