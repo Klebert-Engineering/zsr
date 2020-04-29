@@ -132,7 +132,21 @@ struct VariantCast
 {
     static _Target cast(const _Source& s)
     {
-        return ((_Target)s);
+        return static_cast<_Target>(s);
+    }
+};
+
+/**
+ * A -> B (Bitmask)
+ */
+template <class _Source, class _Target>
+struct VariantCast<_Source,
+                   _Target,
+                   std::enable_if_t<std::is_enum<typename _Target::Values>::value>>
+{
+    static _Target cast(const _Source& s)
+    {
+        return static_cast<_Target>(std::underlying_type_t<typename _Target::Values>(s));
     }
 };
 
