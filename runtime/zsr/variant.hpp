@@ -132,7 +132,7 @@ struct VariantCast
 {
     static _Target cast(const _Source& s)
     {
-        return static_cast<_Target>(s);
+        return ((_Target)s);
     }
 };
 
