@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "zsr/introspectable.hpp"
+#include "zserio/BitBuffer.h"
 
 namespace zsr {
 namespace impl {
@@ -19,22 +20,23 @@ namespace impl {
  * List of types and their internal representation.
  */
 /* clang-format off */
-#define TYPELIST(_)                             \
-    /* external       internal */               \
-    _(bool,           uint64_t)                 \
-    _(uint8_t,        uint64_t)                 \
-    _(uint16_t,       uint64_t)                 \
-    _(uint32_t,       uint64_t)                 \
-    _(uint64_t,       uint64_t)                 \
-    _(int8_t,         int64_t)                  \
-    _(int16_t,        int64_t)                  \
-    _(int32_t,        int64_t)                  \
-    _(int64_t,        int64_t)                  \
-    _(float,          double)                   \
-    _(double,         double)                   \
-    _(const char*,    std::string)              \
-    _(std::string,    std::string)              \
-    _(Introspectable, Introspectable)
+#define TYPELIST(_)                         \
+    /* external          internal */        \
+    _(bool,              uint64_t)          \
+    _(uint8_t,           uint64_t)          \
+    _(uint16_t,          uint64_t)          \
+    _(uint32_t,          uint64_t)          \
+    _(uint64_t,          uint64_t)          \
+    _(int8_t,            int64_t)           \
+    _(int16_t,           int64_t)           \
+    _(int32_t,           int64_t)           \
+    _(int64_t,           int64_t)           \
+    _(float,             double)            \
+    _(double,            double)            \
+    _(const char*,       std::string)       \
+    _(std::string,       std::string)       \
+    _(zserio::BitBuffer, zserio::BitBuffer) \
+    _(Introspectable,    Introspectable)
 /* clang-format on */
 
 #define GEN_EXT2INT(from, to)                                                  \
@@ -81,6 +83,12 @@ struct Ext2Int<_T, std::enable_if_t<std::is_enum<_T>::value>>
     using Type = Ext2IntT<std::underlying_type_t<_T>>;
 };
 
+template <class _T>
+struct Ext2Int<_T, std::enable_if_t<std::is_enum<typename _T::Values>::value>>
+{
+    using Type = Ext2IntT<std::underlying_type_t<typename _T::Values>>;
+};
+
 /**
  * Type casting between external and internal types.
  * See TYPELIST.
@@ -98,6 +106,21 @@ struct VariantCast<_Target, _Target, void>
     static _Target cast(_Input&& s)
     {
         return std::forward<_Input>(s);
+    }
+};
+
+/**
+ * Bitmask<A> -> B
+ */
+template <class _Source, class _Target>
+struct VariantCast<_Source,
+                   _Target,
+                   std::enable_if_t<std::is_enum<typename _Source::Values>::value>>
+{
+    template <class _Input>
+    static _Target cast(_Input&& s)
+    {
+        return static_cast<_Target>(s.getValue());
     }
 };
 
@@ -204,6 +227,11 @@ public:
             impl::Ext2IntT<std::decay_t<_T>>>::cast(std::forward<_T>(v));
     }
 
+    bool empty() const
+    {
+        return val_.index() == 0;
+    }
+
 private:
     std::variant<std::monostate,
                  /* non-array */
@@ -211,12 +239,14 @@ private:
                  int64_t,
                  double,
                  std::string,
+                 zserio::BitBuffer,
                  Introspectable,
                  /* array */
                  std::vector<uint64_t>,
                  std::vector<int64_t>,
                  std::vector<double>,
                  std::vector<std::string>,
+                 std::vector<zserio::BitBuffer>,
                  std::vector<Introspectable>>
         val_;
 };
