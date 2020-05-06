@@ -27,7 +27,15 @@ Introspectable& Introspectable::operator=(Introspectable&& o)
 
 Introspectable::~Introspectable() {}
 
-bool Introspectable::isOwning() const { return obj && obj->isOwning(); }
+Introspectable Introspectable::copy() const
+{
+    return Introspectable(obj->meta, obj->copy());
+}
+
+bool Introspectable::isOwning() const
+{
+    return obj && obj->isOwning();
+}
 
 const Compound* Introspectable::meta() const
 {

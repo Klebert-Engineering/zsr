@@ -28,6 +28,8 @@ public:
 
     ~Introspectable();
 
+    Introspectable copy() const;
+
     bool isOwning() const;
     const Compound* meta() const;
 
