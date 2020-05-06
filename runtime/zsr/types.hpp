@@ -176,6 +176,7 @@ struct Parameter
 {
     std::string ident;
     const TypeRef* type = nullptr;
+    const Field* field = nullptr; /* Matching field (read-only) */
 
     std::function<void(ParameterList&, Variant)> set = nullptr;
 };

@@ -257,6 +257,7 @@
         param.set = GEN_INIT_PARAMETER_LIST_SET(IDX);                          \
                                                                                \
         static zsr::Field f;                                                   \
+        param.field = &f;                                                      \
         f.ident = #NAME;                                                       \
         f.type = nullptr;                                                      \
                                                                                \

@@ -199,8 +199,8 @@ public:
         set<_T>(std::forward<_T>(v));
     }
 
-    Variant(const Variant&) = delete;
-    Variant& operator=(const Variant&) = delete;
+    Variant(const Variant&) = default;
+    Variant& operator=(const Variant&) = default;
 
     Variant(Variant&& o)
         : val_(std::move(o.val_))
