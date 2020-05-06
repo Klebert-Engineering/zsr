@@ -33,7 +33,7 @@ TEST(EnumTest, enum_member) {
 
     auto* type = meta_field->type;
     ASSERT_TRUE(type);
-    ASSERT_EQ(type->ctype.type, zsr::CType::Enum);
+    ASSERT_EQ(type->ctype.type, zsr::CType::UInt);
     ASSERT_FALSE(type->ctype.array);
 }
 

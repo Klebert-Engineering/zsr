@@ -86,9 +86,7 @@ struct CTypeTraits<_Type,
 {
     static auto set(CType& type)
     {
-        type.type = CType::Enum;
-        type.size = sizeof(std::underlying_type_t<_Type>);
-        type.array = false;
+        CTypeTraits<std::underlying_type_t<_Type>>::set(type);
     }
 };
 
