@@ -67,13 +67,12 @@ struct CType
         UInt,
         Int,
         Float,
-        Enum,
         String,
         Structure,
         BitBuffer,
     } type;
 
-    size_t size = 0;    /* Size in bits */
+    size_t size = 0;    /* Size in bytes */
     bool array = false; /* Array (vector) of type */
 };
 
