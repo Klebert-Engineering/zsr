@@ -250,6 +250,12 @@ struct Compound
         nullptr;
 
     /**
+     * Hash function.
+     */
+    std::function<int(const Introspectable&)> hash =
+        nullptr;
+
+    /**
      * Deserialization function.
      */
     std::function<void(Introspectable&, ::zserio::BitStreamReader&)> read =
