@@ -178,6 +178,11 @@
                    zsr::introspectable_cast<CompoundType>(b);   \
         };                                                      \
                                                                 \
+        s.hash = [](const zsr::Introspectable& i) -> int {      \
+            return zsr::introspectable_cast<CompoundType>(i).   \
+                hashCode();                                     \
+        };                                                      \
+                                                                \
         s.read = [](zsr::Introspectable& i,                     \
                     ::zserio::BitStreamReader& r) {             \
             return zsr::introspectable_cast<CompoundType>(i).   \
