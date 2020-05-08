@@ -47,6 +47,11 @@ struct InstanceBase
     }
 
     /**
+     * Copies the pointed to zserio compound
+     */
+    virtual std::shared_ptr<InstanceBase> copy() = 0;
+
+    /**
      * Copies the pointed to zserio compound if it is a weak-ref.
      */
     virtual void makeOwning() = 0;
@@ -96,6 +101,12 @@ struct Instance : InstanceBase
         : owning(owning)
         , obj(obj)
     {}
+
+    std::shared_ptr<InstanceBase> copy() override
+    {
+        return std::make_shared<Instance<_T>>(
+            std::make_shared<_T>(*obj), true);
+    }
 
     void makeOwning() override
     {
