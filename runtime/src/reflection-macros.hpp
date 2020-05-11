@@ -183,6 +183,11 @@
                 hashCode();                                     \
         };                                                      \
                                                                 \
+        s.bitSize = [](const zsr::Introspectable& i) -> size_t {\
+            return zsr::introspectable_cast<CompoundType>(i).   \
+                bitSizeOf();                                    \
+        };                                                      \
+                                                                \
         s.read = [](zsr::Introspectable& i,                     \
                     ::zserio::BitStreamReader& r) {             \
             return zsr::introspectable_cast<CompoundType>(i).   \

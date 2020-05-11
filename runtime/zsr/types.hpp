@@ -256,6 +256,12 @@ struct Compound
         nullptr;
 
     /**
+     * Bitsize function.
+     */
+    std::function<size_t(const Introspectable&)> bitSize =
+        nullptr;
+
+    /**
      * Deserialization function.
      */
     std::function<void(Introspectable&, ::zserio::BitStreamReader&)> read =
