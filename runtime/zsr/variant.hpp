@@ -13,6 +13,20 @@
 #include "zsr/introspectable.hpp"
 #include "zserio/BitBuffer.h"
 
+/**
+ * List of types the variant stores (+ vectors of them).
+ */
+/* clang-format off */
+#define ZSR_VARIANT_TYPES(_)                    \
+    _(int64_t)                                  \
+    _(uint64_t)                                 \
+    _(double)                                   \
+    _(bool)                                     \
+    _(std::string)                              \
+    _(zserio::BitBuffer)                        \
+    _(zsr::Introspectable)
+/* clang-format on */
+
 namespace zsr {
 namespace impl {
 
@@ -247,22 +261,39 @@ public:
     }
 
 private:
-    std::variant<std::monostate,
-                 /* non-array */
-                 uint64_t,
-                 int64_t,
-                 double,
-                 std::string,
-                 zserio::BitBuffer,
-                 Introspectable,
-                 /* array */
-                 std::vector<uint64_t>,
-                 std::vector<int64_t>,
-                 std::vector<double>,
-                 std::vector<std::string>,
-                 std::vector<zserio::BitBuffer>,
-                 std::vector<Introspectable>>
+#define GEN(type)                               \
+        , type, std::vector<type>
+
+    std::variant<std::monostate
+                 ZSR_VARIANT_TYPES(GEN)
+                 >
         val_;
+
+#undef GEN
 };
+
+
+
+/**
+ * Function for visiting variant values.
+ *
+ * _Fun must implement ()(T) and ()(std::vector<T>).
+ */
+template <class _Fun>
+auto visit(const zsr::Variant& v, _Fun& f)
+{
+#define GEN(type)                                   \
+    if (auto val = v.get< type >()) {               \
+        return f(*val);                             \
+    }                                               \
+    if (auto val = v.get<std::vector< type >>()) {  \
+        return f(*val);                             \
+    }
+
+    ZSR_VARIANT_TYPES(GEN)
+
+#undef GEN
+}
+
 
 } // namespace zsr
