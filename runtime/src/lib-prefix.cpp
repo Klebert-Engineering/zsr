@@ -1,5 +1,6 @@
 #include <memory>
-#include <assert.h>
+#include <cassert>
+#include <cstring>
 
 /**
  * Version that has to match the version generated
@@ -40,6 +41,27 @@ struct is_enumeration : std::false_type {};
 #include "c-type-helper.hpp"
 
 #include "reflection-macros.hpp"
+
+#ifdef _MSC_VER
+#pragma warning(disable:4505) /* MSVC does not honor the unused attribute */
+#endif
+
+[[maybe_unused]]
+static auto identToSnake(const char* ident)
+{
+    std::string snake;
+    snake.reserve(strlen(ident) + 1);
+
+    auto wasLower = islower(*ident);
+    do {
+        if (isupper(*ident) && wasLower)
+            snake.push_back('_');
+        snake.push_back((char)tolower(*ident));
+        wasLower = islower(*ident);
+    } while (*++ident);
+
+    return snake;
+}
 
 static std::vector<const zsr::Package*>& lpackages()
 {
