@@ -52,7 +52,7 @@ static auto identToSnake(const char* ident)
     do {
         if (isupper(*ident) && wasLower)
             snake.push_back('_');
-        snake.push_back(tolower(*ident));
+        snake.push_back((char)tolower(*ident));
         wasLower = islower(*ident);
     } while (*++ident);
 
