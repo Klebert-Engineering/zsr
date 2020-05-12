@@ -42,6 +42,10 @@ struct is_enumeration : std::false_type {};
 
 #include "reflection-macros.hpp"
 
+#ifdef _MSC_VER
+#pragma warning(disable:4505) /* MSVC does not honor the unused attribute */
+#endif
+
 [[maybe_unused]]
 static auto identToSnake(const char* ident)
 {
