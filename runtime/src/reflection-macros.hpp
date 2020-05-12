@@ -1,5 +1,16 @@
 /* clang-format off */
 
+#ifdef ZSR_PYTHONIC_IDENTIFIERS
+    #define FIELD_IDENT(x) (identToSnake(x))
+    #define PARAMETER_IDENT(x) (identToSnake(x))
+    #define FUNCTION_IDENT(x) (identToSnake(x))
+#else
+    #define FIELD_IDENT(x) (x)
+    #define PARAMETER_IDENT(x) (x)
+    #define FUNCTION_IDENT(x) (x)
+#endif
+
+
 #define ZSERIO_REFLECT_IS_COMPOUND_TRAIT(NAME, NS)          \
     namespace zsr {                                         \
         /* Note: Base template defined in lib-prefix.cpp */ \
@@ -261,14 +272,14 @@
         };                                                                     \
                                                                                \
         static zsr::Parameter param;                                           \
-        param.ident = #NAME;                                                   \
+        param.ident = PARAMETER_IDENT(#NAME);                                  \
         param.type = nullptr;                                                  \
                                                                                \
         param.set = GEN_INIT_PARAMETER_LIST_SET(IDX);                          \
                                                                                \
         static zsr::Field f;                                                   \
         param.field = &f;                                                      \
-        f.ident = #NAME;                                                       \
+        f.ident = FIELD_IDENT(#NAME);                                          \
         f.type = nullptr;                                                      \
                                                                                \
         f.get = Helper::getFun<CompoundType>(fieldGetter, &f);                 \
@@ -352,7 +363,7 @@
                     decltype(((CompoundType*)0)-> GETTER ())>>;       \
                                                                       \
         static zsr::Field f;                                          \
-        f.ident = #NAME;                                              \
+        f.ident = FIELD_IDENT(#NAME);                                 \
         f.type = nullptr;                                             \
                                                                       \
         GEN_FIELD_ACCESSORS(GETTER, SETTER)                           \
@@ -372,7 +383,7 @@
                     decltype(((CompoundType*)0)-> FUNNAME ())>>;  \
                                                                   \
         static zsr::Function f;                                   \
-        f.ident = #NAME;                                          \
+        f.ident = FUNCTION_IDENT(#NAME);                          \
                                                                   \
         f.call = [](const zsr::Introspectable& i) -> zsr::Variant {\
             return {                                              \
