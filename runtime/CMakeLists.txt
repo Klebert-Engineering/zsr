@@ -54,8 +54,17 @@ set_target_properties(zsr-amalgamate
   PROPERTIES
     src "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
 
-function(add_zserio_module NAME ROOT ENTRY)
-  set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.zserio-gen/")
+function(add_zserio_module ZSR_MODULE_NAME)
+  cmake_parse_arguments(PARSE_ARGV 0
+    ZSR_MODULE "" "ROOT;ENTRY;TOP_LEVEL_PKG" "")
+
+  if (NOT ZSR_MODULE_ROOT)
+    message(FATAL_ERROR "Missing zserio-module argument ROOT!")
+  elseif (NOT ZSR_MODULE_ENTRY)
+    message(FATAL_ERROR "Missing zserio-module argument ENTRY!")
+  endif()
+
+  set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${ZSR_MODULE_NAME}.zserio-gen/")
   file(MAKE_DIRECTORY "${GEN_SRC_ROOT}")
 
   find_program(JAVA java)
@@ -73,14 +82,19 @@ function(add_zserio_module NAME ROOT ENTRY)
   list(APPEND ZSERIO "-jar")
   list(APPEND ZSERIO "${JAR_PATH}")
 
+  set(zserio_top_level_arg "")
+  if (ZSR_MODULE_TOP_LEVEL_PKG)
+    set(zserio_top_level_arg "-setTopLevelPackage")
+  endif()
+
   add_custom_command(
     DEPENDS zserio
     OUTPUT "${GEN_SRC_ROOT}/reflection-defs.cpp"
-    COMMAND ${ZSERIO} -setTopLevelPackage ${ZSERIO_TLP}
+    COMMAND ${ZSERIO} ${zserio_top_level_arg} ${ZSR_MODULE_TOP_LEVEL_PKG}
                       -cpp ${GEN_SRC_ROOT}
                       -cpp_reflect ${GEN_SRC_ROOT}
-                      -src ${ROOT}
-                      ${ENTRY})
+                      -src ${ZSR_MODULE_ROOT}
+                      ${ZSR_MODULE_ENTRY})
 
   # Generated source amalgamation
   get_target_property(AMALGAMATE zsr-amalgamate src)
@@ -89,41 +103,41 @@ function(add_zserio_module NAME ROOT ENTRY)
     DEPENDS "${GEN_SRC_ROOT}/reflection-defs.cpp"
     OUTPUT "${GEN_SRC_ROOT}/amalgamation.cpp"
     COMMAND ${CMAKE_COMMAND} -P "${AMALGAMATE}"
-                                "${GEN_SRC_ROOT}/${ZSERIO_TLP}"
+                                "${GEN_SRC_ROOT}/${ZSR_MODULE_TOP_LEVEL_PKG}"
                                 "${GEN_SRC_ROOT}/amalgamation.cpp")
 
-  add_library(${NAME} SHARED
+  add_library(${ZSR_MODULE_NAME} SHARED
     "${GEN_SRC_ROOT}/amalgamation.cpp")
 
-  target_include_directories(${NAME}
+  target_include_directories(${ZSR_MODULE_NAME}
     PUBLIC "${GEN_SRC_ROOT}")
 
-  target_link_libraries(${NAME}
+  target_link_libraries(${ZSR_MODULE_NAME}
     PUBLIC ZserioCppRuntime)
 
   # Reflection runtime lib
   get_target_property(ZSR_SRC zsr src_dir)
 
-  add_library(${NAME}-reflection SHARED
+  add_library(${ZSR_MODULE_NAME}-reflection SHARED
     "${ZSR_SRC}/zsr/stub.hpp"
     "${ZSR_SRC}/src/lib-prefix.cpp")
 
-  target_compile_definitions(${NAME}-reflection
+  target_compile_definitions(${ZSR_MODULE_NAME}-reflection
     PRIVATE
       REFLECTION_DEFS_INCLUDE="${GEN_SRC_ROOT}/reflection-defs.cpp")
 
-  target_compile_options(${NAME}-reflection
+  target_compile_options(${ZSR_MODULE_NAME}-reflection
     PRIVATE
       $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
       $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>)
 
-  target_include_directories(${NAME}-reflection
+  target_include_directories(${ZSR_MODULE_NAME}-reflection
     PRIVATE
       "${ZSR_SRC}/src")
 
-  target_link_libraries(${NAME}-reflection
+  target_link_libraries(${ZSR_MODULE_NAME}-reflection
     zsr
-    ${NAME})
+    ${ZSR_MODULE_NAME})
 endfunction()
 
 ## Test
@@ -152,7 +166,11 @@ function(add_zsr_test TARGET FILE)
 endfunction()
 
 function(add_zsr_module_test NAME)
-  add_zserio_module(zs-${NAME} "${TEST}/zserio/${NAME}" "${NAME}.zs")
+  cmake_parse_arguments(PARSE_ARGV 1
+    ZSR_TEST "" "TOP_LEVEL_PKG" "")
+
+  add_zserio_module(zs-${NAME}
+    ROOT "${TEST}/zserio/${NAME}" ENTRY "${NAME}.zs" TOP_LEVEL_PKG "${ZSR_TEST_TOP_LEVEL_PKG}")
   add_zsr_test(${NAME} "${TEST}/zserio/${NAME}/${NAME}.cpp")
 
   target_link_libraries(${NAME}
@@ -168,14 +186,12 @@ if (ZSR_ENABLE_TESTING)
   add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/googletest/googletest")
   enable_testing()
 
-  set(ZSERIO_TLP "zsr")
-
   add_zsr_test(variant-test "${TEST}/variant-test.cpp")
 
-  add_zsr_module_test(bitmask_test)
-  add_zsr_module_test(choice_test)
-  add_zsr_module_test(union_test)
-  add_zsr_module_test(enumeration_test)
-  add_zsr_module_test(constant_test)
-  add_zsr_module_test(structure_test)
+  add_zsr_module_test(bitmask_test TOP_LEVEL_PKG zsr)
+  add_zsr_module_test(choice_test TOP_LEVEL_PKG zsr)
+  add_zsr_module_test(union_test TOP_LEVEL_PKG zsr)
+  add_zsr_module_test(enumeration_test TOP_LEVEL_PKG zsr)
+  add_zsr_module_test(constant_test TOP_LEVEL_PKG zsr)
+  add_zsr_module_test(structure_test TOP_LEVEL_PKG zsr)
 endif()
