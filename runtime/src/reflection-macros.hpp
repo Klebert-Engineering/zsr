@@ -215,22 +215,6 @@
         p.compounds.push_back(&s);     \
     }
 
-#define ZSERIO_REFLECT_STRUCTURE_CHOICE_BEGIN()
-#define ZSERIO_REFLECT_STRUCTURE_CHOICE_END()
-
-/* TODO: Add more metadata to choice cases */
-#define ZSERIO_REFLECT_STRUCTURE_CHOICE_CASE(FIELD_NAME)   \
-    {                                                      \
-        static zsr::ChoiceCase cc;                         \
-        cc.field = zsr::find<zsr::Field>(&s, #FIELD_NAME); \
-                                                           \
-        s.cases.push_back(&cc);                            \
-    }
-
-/* TODO: Distinguish between choice-case and choice-default */
-#define ZSERIO_REFLECT_STRUCTURE_CHOICE_DEFAULT(FIELD_NAME) \
-    ZSERIO_REFLECT_STRUCTURE_CHOICE_CASE(FIELD_NAME)
-
 #define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_BEGIN()       \
     using ParameterTupleType =                            \
         zsr::parameterlist::add_shared_ptr_if_compound_t< \

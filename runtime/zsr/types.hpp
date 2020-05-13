@@ -193,17 +193,6 @@ struct Function
 };
 
 /**
- * Choice case
- */
-struct ChoiceCase
-{
-    /**
-     * Pointer to field of parent compound `fields` or null.
-     */
-    const Field* field = nullptr;
-};
-
-/**
  * Compound (Structure, Choice or Union)
  */
 struct Compound
@@ -218,7 +207,6 @@ struct Compound
     std::vector<const Parameter*> parameters;
     std::vector<const Field*> fields;
     std::vector<const Function*> functions;
-    std::vector<const ChoiceCase*> cases;
 
     /**
      * Returns a new instance of the compound.

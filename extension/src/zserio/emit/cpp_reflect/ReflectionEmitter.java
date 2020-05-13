@@ -297,24 +297,6 @@ public class ReflectionEmitter extends EmitterBase
         endReflect("STRUCTURE");
     }
 
-    private void reflectChoiceCase(ChoiceCase c)
-    {
-        List<String> args = Arrays.asList(new String[] {
-            c.getField() != null ? c.getField().getName() : "",
-        });
-
-        reflect("STRUCTURE_CHOICE_CASE", args); /* TODO: Add case information */
-    }
-
-    private void reflectChoiceDefault(ChoiceDefault c)
-    {
-        List<String> args = Arrays.asList(new String[] {
-            c.getField() != null ? c.getField().getName() : "",
-        });
-
-        reflect("STRUCTURE_CHOICE_DEFAULT", args);
-    }
-
     @Override
     public void beginChoice(ChoiceType choiceType) throws ZserioEmitException
     {
@@ -325,17 +307,6 @@ public class ReflectionEmitter extends EmitterBase
 
         beginReflect("STRUCTURE", args);
         reflectCompoundType(choiceType);
-        beginReflect("STRUCTURE_CHOICE", null);
-
-        for (ChoiceCase c : choiceType.getChoiceCases()) {
-            reflectChoiceCase(c);
-        }
-
-        if (choiceType.getChoiceDefault() != null) {
-            reflectChoiceDefault(choiceType.getChoiceDefault());
-        }
-
-        endReflect("STRUCTURE_CHOICE");
         endReflect("STRUCTURE");
     }
 
