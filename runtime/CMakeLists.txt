@@ -115,6 +115,9 @@ function(add_zserio_module ZSR_MODULE_NAME)
   target_link_libraries(${ZSR_MODULE_NAME}
     PUBLIC ZserioCppRuntime)
 
+  set_target_properties(${ZSR_MODULE_NAME} PROPERTIES
+    WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
   # Reflection runtime lib
   get_target_property(ZSR_SRC zsr src_dir)
 
@@ -138,6 +141,9 @@ function(add_zserio_module ZSR_MODULE_NAME)
   target_link_libraries(${ZSR_MODULE_NAME}-reflection
     zsr
     ${ZSR_MODULE_NAME})
+
+  set_target_properties(${ZSR_MODULE_NAME}-reflection PROPERTIES
+    WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endfunction()
 
 ## Test
