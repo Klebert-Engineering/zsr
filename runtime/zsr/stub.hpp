@@ -1,11 +1,12 @@
 #pragma once
 
+#include "export.hpp"
 #include <vector>
 
 namespace zsr {
 
 struct Package;
 
-const std::vector<const Package*>& packages();
+ZSR_EXPORT const std::vector<const Package*>& packages();
 
 }

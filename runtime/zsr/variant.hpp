@@ -13,6 +13,11 @@
 #include "zsr/introspectable.hpp"
 #include "zserio/BitBuffer.h"
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4251)
+#endif
+
 /**
  * List of types the variant stores (+ vectors of them).
  */
@@ -201,7 +206,7 @@ struct VariantCast<std::bitset<_N>, _Target>
 /**
  * Zsr value container.
  */
-class Variant final
+class ZSR_EXPORT Variant final
 {
 public:
     Variant()
@@ -295,5 +300,8 @@ auto visit(const zsr::Variant& v, _Fun& f)
 #undef GEN
 }
 
-
 } // namespace zsr
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

@@ -54,6 +54,15 @@ set_target_properties(zsr-amalgamate
   PROPERTIES
     src "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
 
+target_compile_definitions(zsr
+  PRIVATE
+    ZSR_BUILD=1)
+
+target_compile_options(zsr
+  PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror -fvisibility=hidden>)
+
 function(add_zserio_module ZSR_MODULE_NAME)
   cmake_parse_arguments(PARSE_ARGV 0
     ZSR_MODULE "" "ROOT;ENTRY;TOP_LEVEL_PKG" "")
@@ -127,12 +136,13 @@ function(add_zserio_module ZSR_MODULE_NAME)
 
   target_compile_definitions(${ZSR_MODULE_NAME}-reflection
     PRIVATE
-      REFLECTION_DEFS_INCLUDE="${GEN_SRC_ROOT}/reflection-defs.cpp")
+      REFLECTION_DEFS_INCLUDE="${GEN_SRC_ROOT}/reflection-defs.cpp"
+      ZSR_BUILD=1)
 
   target_compile_options(${ZSR_MODULE_NAME}-reflection
     PRIVATE
       $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>)
+      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror -fvisibility=hidden>)
 
   target_include_directories(${ZSR_MODULE_NAME}-reflection
     PRIVATE
@@ -141,9 +151,6 @@ function(add_zserio_module ZSR_MODULE_NAME)
   target_link_libraries(${ZSR_MODULE_NAME}-reflection
     zsr
     ${ZSR_MODULE_NAME})
-
-  set_target_properties(${ZSR_MODULE_NAME}-reflection PROPERTIES
-    WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endfunction()
 
 ## Test

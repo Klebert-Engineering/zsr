@@ -12,13 +12,19 @@
 #include <string>
 #include <vector>
 
+#if _MSC_VER
+/* Disable warnings about unexported template instantiations */
+#pragma warning(push)
+#pragma warning(disable: 4251)
+#endif
+
 namespace zsr {
 
 /**
  * Generic parameter list.
  * See `Parameter::set`.
  */
-struct ParameterList
+struct ZSR_EXPORT ParameterList
 {
     std::any list;
 };
@@ -32,7 +38,7 @@ struct ParameterList
  * Use information from CType for type detection/conversion.
  * The ZType does not have to match the CType.
  */
-struct ZType
+struct ZSR_EXPORT ZType
 {
     enum
     {
@@ -59,7 +65,7 @@ struct ZType
 /**
  * Generated C++ type information.
  */
-struct CType
+struct ZSR_EXPORT CType
 {
     enum
     {
@@ -76,7 +82,7 @@ struct CType
     bool array = false; /* Array (vector) of type */
 };
 
-struct TypeRef
+struct ZSR_EXPORT TypeRef
 {
     std::string package;
     std::string ident;
@@ -88,7 +94,7 @@ struct TypeRef
 /**
  * Subtype
  */
-struct SubType
+struct ZSR_EXPORT SubType
 {
     std::string ident;
     const TypeRef* type = nullptr;
@@ -97,7 +103,7 @@ struct SubType
 /**
  * Package constant
  */
-struct Constant
+struct ZSR_EXPORT Constant
 {
     std::string ident;
     Variant value;
@@ -107,7 +113,7 @@ struct Constant
 /**
  * Bitmask value
  */
-struct BitmaskValue
+struct ZSR_EXPORT BitmaskValue
 {
     std::string ident;
     Variant value;
@@ -116,7 +122,7 @@ struct BitmaskValue
 /**
  * Bitmask
  */
-struct Bitmask
+struct ZSR_EXPORT Bitmask
 {
     std::string ident;
     std::vector<const BitmaskValue*> values;
@@ -125,7 +131,7 @@ struct Bitmask
 /**
  * Enumeration item
  */
-struct EnumerationItem
+struct ZSR_EXPORT EnumerationItem
 {
     std::string ident;
     Variant value;
@@ -134,7 +140,7 @@ struct EnumerationItem
 /**
  * Enumeration
  */
-struct Enumeration
+struct ZSR_EXPORT Enumeration
 {
     std::string ident;
     std::vector<const EnumerationItem*> items;
@@ -143,7 +149,7 @@ struct Enumeration
 /**
  * Compound field/member
  */
-struct Field
+struct ZSR_EXPORT Field
 {
     std::string ident;
     const TypeRef* type = nullptr;
@@ -172,7 +178,7 @@ struct Field
 /**
  * Compound parameter
  */
-struct Parameter
+struct ZSR_EXPORT Parameter
 {
     std::string ident;
     const TypeRef* type = nullptr;
@@ -184,7 +190,7 @@ struct Parameter
 /**
  * Function
  */
-struct Function
+struct ZSR_EXPORT Function
 {
     std::string ident;
     const TypeRef* type = nullptr;
@@ -195,7 +201,7 @@ struct Function
 /**
  * Compound (Structure, Choice or Union)
  */
-struct Compound
+struct ZSR_EXPORT Compound
 {
     std::string ident;
     enum class Type {
@@ -265,7 +271,7 @@ struct Compound
 /**
  * Package
  */
-struct Package
+struct ZSR_EXPORT Package
 {
     std::string ident;
 
@@ -277,3 +283,7 @@ struct Package
 };
 
 } // namespace zsr
+
+#if _MSC_VER
+#pragma warning(pop)
+#endif
