@@ -6,12 +6,12 @@ namespace zsr {
 namespace impl {
 
 template <class>
-struct child_iter
+struct ZSR_EXPORT child_iter
 {};
 
 #define DECL_ITER(TYPE, PARENT_TYPE, LIST)                                     \
     template <>                                                                \
-    struct child_iter<TYPE>                                                    \
+    struct ZSR_EXPORT child_iter<TYPE>                                         \
     {                                                                          \
         static auto get(const PARENT_TYPE* r)                                  \
         {                                                                      \

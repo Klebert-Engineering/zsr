@@ -3,7 +3,13 @@
 #include <any>
 #include <memory>
 
+#include "export.hpp"
 #include "introspectable-private.hpp"
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4251)
+#endif
 
 namespace zsr {
 
@@ -15,7 +21,7 @@ struct Compound;
  *
  * Instanciated by `Compound::alloc`.
  */
-class Introspectable
+class ZSR_EXPORT Introspectable
 {
 public:
     Introspectable(const Compound*, std::shared_ptr<impl::InstanceBase>);
@@ -37,3 +43,7 @@ public:
 };
 
 } // namespace zsr
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
