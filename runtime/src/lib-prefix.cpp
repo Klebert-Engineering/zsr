@@ -1,6 +1,7 @@
 #include <memory>
 #include <cassert>
 #include <cstring>
+#include <deque>
 
 /**
  * Version that has to match the version generated
@@ -63,9 +64,9 @@ static auto identToSnake(const char* ident)
     return snake;
 }
 
-static std::vector<const zsr::Package*>& lpackages()
+static std::deque<zsr::Package>& lpackages()
 {
-    static std::vector<const zsr::Package*> packages;
+    static std::deque<zsr::Package> packages;
     return packages;
 }
 
@@ -79,7 +80,7 @@ static std::vector<const zsr::Package*>& lpackages()
 namespace zsr
 {
 
-const std::vector<const Package*>& packages ()
+const std::deque<Package>& packages ()
 {
     return lpackages();
 }

@@ -8,7 +8,7 @@
 #include "zsr/stub.hpp"
 
 #define PKG                                     \
-    static auto* pkg = zsr::packages().front();
+    static const auto& pkg = zsr::packages().front();
 
 template <class _Type>
 ::testing::AssertionResult AssertVariantEq(const char* expr1,

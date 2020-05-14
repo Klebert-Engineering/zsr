@@ -43,8 +43,7 @@
  * use by `ZSERIO_REFLECT_TYPE_REF`.
  */
 #define CUR_TYPE(var)                           \
-    static zsr::TypeRef tr;                     \
-    var.type = &tr;
+    zsr::TypeRef& tr = (var).type.emplace();
 
 #define ZSERIO_REFLECT_TYPE_REF(ZTYPE, BIT_SIZE, IS_ARRAY, PKG_NAME, NAME) \
     {                                                                      \
@@ -75,15 +74,14 @@
  *   PACKAGE_END
  */
 
-#define ZSERIO_REFLECT_PACKAGE_BEGIN(NAME, SNAME, NS) \
-    namespace NS {}                                   \
-    struct init__ ## SNAME {                          \
-        init__ ## SNAME () {                          \
-            namespace PkgNamespace = :: NS;           \
-                                                      \
-            static zsr::Package p;                    \
-            lpackages().push_back(&p);                \
-                                                      \
+#define ZSERIO_REFLECT_PACKAGE_BEGIN(NAME, SNAME, NS)     \
+    namespace NS {}                                       \
+    struct init__ ## SNAME {                              \
+        init__ ## SNAME () {                              \
+            namespace PkgNamespace = :: NS;               \
+                                                          \
+            zsr::Package& p = lpackages().emplace_back(); \
+                                                          \
             p.ident = #NAME;
 
 #define ZSERIO_REFLECT_PACKAGE_END()                \
@@ -100,7 +98,7 @@
 
 #define ZSERIO_REFLECT_SUBTYPE_BEGIN(NAME, PACKAGE, TYPE) \
     {                                                     \
-        static zsr::SubType t;                            \
+        zsr::SubType& t = p.subTypes.emplace_back();      \
         t.ident = #NAME;                                  \
                                                           \
         CUR_TYPE(t);                                      \
@@ -108,7 +106,6 @@
         tr.ident = #TYPE;
 
 #define ZSERIO_REFLECT_SUBTYPE_END() \
-        p.subTypes.push_back(&t);    \
     }
 
 /**
@@ -120,23 +117,21 @@
  *   CONST_END
  */
 
-#define ZSERIO_REFLECT_CONST_BEGIN(NAME)             \
-    {                                                \
-        using ConstType =                            \
-            std::decay_t<                            \
-                std::remove_const_t<                 \
-                    decltype(PkgNamespace:: NAME)>>; \
-                                                     \
-        static zsr::Constant c;                      \
-        c.ident = #NAME;                             \
-        c.type = nullptr;                            \
-        c.value.set(PkgNamespace:: NAME);            \
-                                                     \
-        CUR_TYPE(c);                                 \
+#define ZSERIO_REFLECT_CONST_BEGIN(NAME)               \
+    {                                                  \
+        using ConstType =                              \
+            std::decay_t<                              \
+                std::remove_const_t<                   \
+                    decltype(PkgNamespace:: NAME)>>;   \
+                                                       \
+        zsr::Constant& c = p.constants.emplace_back(); \
+        c.ident = #NAME;                               \
+        c.value.set(PkgNamespace:: NAME);              \
+                                                       \
+        CUR_TYPE(c);                                   \
         zsr::CTypeTraits<ConstType>::set(tr.ctype);
 
 #define ZSERIO_REFLECT_CONST_END()       \
-        p.constants.push_back(&c);       \
     }
 
 
@@ -176,7 +171,7 @@
     {                                                           \
         using CompoundType = PkgNamespace::NAME;                \
                                                                 \
-        static zsr::Compound s;                                 \
+        zsr::Compound& s = p.compounds.emplace_back();          \
         zsr::meta_for_compound<CompoundType>::ptr = &s;         \
         s.ident = #NAME;                                        \
         s.type = zsr::Compound::Type::TYPE;                     \
@@ -212,7 +207,6 @@
         };
 
 #define ZSERIO_REFLECT_STRUCTURE_END() \
-        p.compounds.push_back(&s);     \
     }
 
 #define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_BEGIN()       \
@@ -255,30 +249,26 @@
             return obj.GETTER();                                               \
         };                                                                     \
                                                                                \
-        static zsr::Parameter param;                                           \
+        zsr::Parameter& param = s.parameters.emplace_back();                   \
         param.ident = PARAMETER_IDENT(#NAME);                                  \
-        param.type = nullptr;                                                  \
                                                                                \
         param.set = GEN_INIT_PARAMETER_LIST_SET(IDX);                          \
                                                                                \
-        static zsr::Field f;                                                   \
+        zsr::Field& f = s.fields.emplace_back();                               \
         param.field = &f;                                                      \
         f.ident = FIELD_IDENT(#NAME);                                          \
-        f.type = nullptr;                                                      \
                                                                                \
         f.get = Helper::getFun<CompoundType>(fieldGetter, &f);                 \
         f.set = {}; /* Read-only */                                            \
                                                                                \
-        CUR_TYPE(param);                                                       \
+        CUR_TYPE(f);                                                           \
         zsr::CTypeTraits<                                                      \
             zsr::parameterlist::remove_shared_ptr_t<                           \
                 std::tuple_element_t<IDX, ParameterTupleType>>>::set(tr.ctype);\
-        f.type = &tr; /* NOTE: parameter & field share type pointer */
+        param.type = &tr;
 
 
 #define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_PARAMETER_END()        \
-        s.parameters.push_back(&param);                            \
-        s.fields.push_back(&f);                                    \
     }
 
 #define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_END()                       \
@@ -346,9 +336,8 @@
                 std::remove_reference_t<                              \
                     decltype(((CompoundType*)0)-> GETTER ())>>;       \
                                                                       \
-        static zsr::Field f;                                          \
+        zsr::Field& f = s.fields.emplace_back();                      \
         f.ident = FIELD_IDENT(#NAME);                                 \
-        f.type = nullptr;                                             \
                                                                       \
         GEN_FIELD_ACCESSORS(GETTER, SETTER)                           \
                                                                       \
@@ -356,7 +345,6 @@
         zsr::CTypeTraits<MemberType>::set(tr.ctype);
 
 #define ZSERIO_REFLECT_STRUCTURE_FIELD_END() \
-        s.fields.push_back(&f);              \
     }
 
 #define ZSERIO_REFLECT_STRUCTURE_FUNCTION_BEGIN(NAME, FUNNAME)    \
@@ -366,7 +354,7 @@
                 std::remove_reference_t<                          \
                     decltype(((CompoundType*)0)-> FUNNAME ())>>;  \
                                                                   \
-        static zsr::Function f;                                   \
+        zsr::Function& f = s.functions.emplace_back();            \
         f.ident = FUNCTION_IDENT(#NAME);                          \
                                                                   \
         f.call = [](const zsr::Introspectable& i) -> zsr::Variant {\
@@ -380,7 +368,6 @@
         zsr::CTypeTraits<ReturnType>::set(tr.ctype);
 
 #define ZSERIO_REFLECT_STRUCTURE_FUNCTION_END() \
-        s.functions.push_back(&f);              \
     }
 
 /**
@@ -392,25 +379,22 @@
  *   ENUMERATION_END
  */
 
-#define ZSERIO_REFLECT_ENUMERATION_BEGIN(NAME) \
-    {                                          \
-        using EnumType =                       \
-            PkgNamespace:: NAME ;              \
-                                               \
-        static zsr::Enumeration e;             \
+#define ZSERIO_REFLECT_ENUMERATION_BEGIN(NAME)               \
+    {                                                        \
+        using EnumType =                                     \
+            PkgNamespace:: NAME ;                            \
+                                                             \
+        zsr::Enumeration& e = p.enumerations.emplace_back(); \
         e.ident = #NAME;
 
 #define ZSERIO_REFLECT_ENUMERATION_END() \
-        p.enumerations.push_back(&e);    \
     }
 
-#define ZSERIO_REFLECT_ENUMERATION_ITEM(NAME) \
-    {                                         \
-        static zsr::EnumerationItem ei;       \
-        ei.ident = #NAME;                     \
-        ei.value.set(EnumType:: NAME);        \
-                                              \
-        e.items.push_back(&ei);               \
+#define ZSERIO_REFLECT_ENUMERATION_ITEM(NAME)              \
+    {                                                      \
+        zsr::EnumerationItem& ei = e.items.emplace_back(); \
+        ei.ident = #NAME;                                  \
+        ei.value.set(EnumType:: NAME);                     \
     }
 
 /**
@@ -422,25 +406,22 @@
  *   BITMASK_END
  */
 
-#define ZSERIO_REFLECT_BITMASK_BEGIN(NAME) \
-    {                                      \
-        using BitmaskType =                \
-            PkgNamespace:: NAME ;          \
-                                           \
-        static zsr::Bitmask b;             \
+#define ZSERIO_REFLECT_BITMASK_BEGIN(NAME)           \
+    {                                                \
+        using BitmaskType =                          \
+            PkgNamespace:: NAME ;                    \
+                                                     \
+        zsr::Bitmask& b = p.bitmasks.emplace_back(); \
         b.ident = #NAME;
 
 #define ZSERIO_REFLECT_BITMASK_END() \
-        p.bitmasks.push_back(&b);    \
     }
 
-#define ZSERIO_REFLECT_BITMASK_VALUE(NAME)        \
-    {                                             \
-        static zsr::BitmaskValue bv;              \
-        bv.ident = #NAME;                         \
-        bv.value.set(BitmaskType::Values:: NAME); \
-                                                  \
-        b.values.push_back(&bv);                  \
+#define ZSERIO_REFLECT_BITMASK_VALUE(NAME)               \
+    {                                                    \
+        zsr::BitmaskValue& bv = b.values.emplace_back(); \
+        bv.ident = #NAME;                                \
+        bv.value.set(BitmaskType::Values:: NAME);        \
     }
 
 /* clang-format on */

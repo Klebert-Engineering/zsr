@@ -10,7 +10,8 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <vector>
+#include <deque>
+#include <optional>
 
 #if _MSC_VER
 /* Disable warnings about unexported template instantiations */
@@ -97,7 +98,7 @@ struct ZSR_EXPORT TypeRef
 struct ZSR_EXPORT SubType
 {
     std::string ident;
-    const TypeRef* type = nullptr;
+    std::optional<TypeRef> type;
 };
 
 /**
@@ -107,7 +108,7 @@ struct ZSR_EXPORT Constant
 {
     std::string ident;
     Variant value;
-    const TypeRef* type = nullptr;
+    std::optional<TypeRef> type;
 };
 
 /**
@@ -125,7 +126,7 @@ struct ZSR_EXPORT BitmaskValue
 struct ZSR_EXPORT Bitmask
 {
     std::string ident;
-    std::vector<const BitmaskValue*> values;
+    std::deque<BitmaskValue> values;
 };
 
 /**
@@ -143,7 +144,7 @@ struct ZSR_EXPORT EnumerationItem
 struct ZSR_EXPORT Enumeration
 {
     std::string ident;
-    std::vector<const EnumerationItem*> items;
+    std::deque<EnumerationItem> items;
 };
 
 /**
@@ -152,7 +153,7 @@ struct ZSR_EXPORT Enumeration
 struct ZSR_EXPORT Field
 {
     std::string ident;
-    const TypeRef* type = nullptr;
+    std::optional<TypeRef> type;
 
     /**
      * Function that returns the fields value.
@@ -193,7 +194,7 @@ struct ZSR_EXPORT Parameter
 struct ZSR_EXPORT Function
 {
     std::string ident;
-    const TypeRef* type = nullptr;
+    std::optional<TypeRef> type;
 
     std::function<Variant(const Introspectable&)> call = nullptr;
 };
@@ -210,9 +211,9 @@ struct ZSR_EXPORT Compound
         Union,
     } type;
 
-    std::vector<const Parameter*> parameters;
-    std::vector<const Field*> fields;
-    std::vector<const Function*> functions;
+    std::deque<Parameter> parameters;
+    std::deque<Field> fields;
+    std::deque<Function> functions;
 
     /**
      * Returns a new instance of the compound.
@@ -275,11 +276,11 @@ struct ZSR_EXPORT Package
 {
     std::string ident;
 
-    std::vector<const SubType*> subTypes;
-    std::vector<const Constant*> constants;
-    std::vector<const Enumeration*> enumerations;
-    std::vector<const Bitmask*> bitmasks;
-    std::vector<const Compound*> compounds;
+    std::deque<SubType> subTypes;
+    std::deque<Constant> constants;
+    std::deque<Enumeration> enumerations;
+    std::deque<Bitmask> bitmasks;
+    std::deque<Compound> compounds;
 };
 
 } // namespace zsr
