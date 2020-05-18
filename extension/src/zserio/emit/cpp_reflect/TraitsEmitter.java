@@ -5,63 +5,107 @@ import zserio.ast.Package;
 import zserio.emit.common.ZserioEmitException;
 import zserio.emit.common.DefaultEmitter;
 import zserio.tools.Parameters;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.Collection;
+import java.nio.file.Path;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.lang.Integer;
-
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import zserio.emit.common.FreeMarkerUtil;
 
 public class TraitsEmitter extends EmitterBase
 {
-    public TraitsEmitter(BufferedWriter writer, Parameters extensionParameters)
+    public TraitsEmitter(Path outputDir, Parameters extensionParameters)
     {
-        super(writer, extensionParameters);
+        super(outputDir, extensionParameters);
+
+        this.data = new TraitsTemplateData();
+    }
+
+    public void process()
+    {
+        try {
+            final String hppFilename =
+                outputDir.resolve("reflection-traits.hpp").toString();
+
+            FreeMarkerUtil.processTemplate("reflection-traits.hpp.ftl",
+                                           data,
+                                           new File(hppFilename),
+                                           false);
+        } catch (ZserioEmitException e) {
+            System.out.println("Failed to generate reflection-traits.\n" +
+                               "Error: " + e);
+        }
     }
 
     @Override
-    public void beginStructure(StructureType structureType) throws ZserioEmitException
+    public void beginStructure(StructureType type)
     {
-        List<String> args = Arrays.asList(new String[] {
-            structureType.getName(),
-            packageNameToNamespace(structureType.getPackage().getPackageName())
-        });
+        writeInclude(type.getPackage(), type.getName());
 
-        reflect("IS_COMPOUND_TRAIT", args);
+        addCompound(type);
     }
 
     @Override
-    public void beginChoice(ChoiceType choiceType) throws ZserioEmitException
+    public void beginChoice(ChoiceType type)
     {
-        List<String> args = Arrays.asList(new String[] {
-            choiceType.getName(),
-            packageNameToNamespace(choiceType.getPackage().getPackageName())
-        });
+        writeInclude(type.getPackage(), type.getName());
 
-        reflect("IS_COMPOUND_TRAIT", args);
+        addCompound(type);
     }
 
     @Override
-    public void beginUnion(UnionType unionType) throws ZserioEmitException
+    public void beginUnion(UnionType type)
     {
-        List<String> args = Arrays.asList(new String[] {
-            unionType.getName(),
-            packageNameToNamespace(unionType.getPackage().getPackageName())
-        });
+        writeInclude(type.getPackage(), type.getName());
 
-        reflect("IS_COMPOUND_TRAIT", args);
+        addCompound(type);
     }
 
     @Override
-    public void beginEnumeration(EnumType enumType) throws ZserioEmitException
+    public void beginEnumeration(EnumType type)
     {
-        List<String> args = Arrays.asList(new String[] {
-            enumType.getName(),
-            packageNameToNamespace(enumType.getPackage().getPackageName())
-        });
+        writeInclude(type.getPackage(), type.getName());
 
-        reflect("IS_ENUMERATION_TRAIT", args);
+        addEnum(type);
     }
+
+    protected void addCompound(CompoundType type)
+    {
+        final String ident = packageNameToNamespace(
+            type.getPackage().getPackageName()) + "::" +
+            type.getName();
+
+        data.compoundTypes.add(ident);
+    }
+
+    protected void addEnum(EnumType type)
+    {
+        final String ident = packageNameToNamespace(
+            type.getPackage().getPackageName()) + "::" +
+            type.getName();
+
+        data.enumTypes.add(ident);
+    }
+
+    @Override
+    protected void writeInclude(Package pkg, String objectName)
+    {
+        String prefix = StreamSupport.stream(topLevelPackageList.spliterator(), false)
+            .collect(Collectors.joining("/"));
+
+        if (prefix.length() > 0)
+            prefix += "/";
+
+        data.includes.add(prefix
+                          + pkg.getPackageName().toFilesystemPath()
+                          + "/"
+                          + objectName
+                          + ".h");
+    }
+
+    public TraitsTemplateData data;
 }

@@ -19,6 +19,14 @@
 #pragma warning(disable: 4251)
 #endif
 
+/* Delete copy & move operators */
+#define NOCOPY(TYPE)                            \
+    TYPE() {};                                  \
+    TYPE(const TYPE &) = delete;                \
+    TYPE(TYPE &&) = delete;                     \
+    TYPE& operator=(const TYPE &) = delete;     \
+    TYPE& operator=(TYPE &&) = delete;
+
 namespace zsr {
 
 /**
@@ -97,6 +105,8 @@ struct ZSR_EXPORT TypeRef
  */
 struct ZSR_EXPORT SubType
 {
+    NOCOPY(SubType)
+
     std::string ident;
     std::optional<TypeRef> type;
 };
@@ -106,6 +116,8 @@ struct ZSR_EXPORT SubType
  */
 struct ZSR_EXPORT Constant
 {
+    NOCOPY(Constant)
+
     std::string ident;
     Variant value;
     std::optional<TypeRef> type;
@@ -116,6 +128,8 @@ struct ZSR_EXPORT Constant
  */
 struct ZSR_EXPORT BitmaskValue
 {
+    NOCOPY(BitmaskValue)
+
     std::string ident;
     Variant value;
 };
@@ -125,6 +139,8 @@ struct ZSR_EXPORT BitmaskValue
  */
 struct ZSR_EXPORT Bitmask
 {
+    NOCOPY(Bitmask)
+
     std::string ident;
     std::deque<BitmaskValue> values;
 };
@@ -134,6 +150,8 @@ struct ZSR_EXPORT Bitmask
  */
 struct ZSR_EXPORT EnumerationItem
 {
+    NOCOPY(EnumerationItem)
+
     std::string ident;
     Variant value;
 };
@@ -143,6 +161,8 @@ struct ZSR_EXPORT EnumerationItem
  */
 struct ZSR_EXPORT Enumeration
 {
+    NOCOPY(Enumeration)
+
     std::string ident;
     std::deque<EnumerationItem> items;
 };
@@ -152,6 +172,8 @@ struct ZSR_EXPORT Enumeration
  */
 struct ZSR_EXPORT Field
 {
+    NOCOPY(Field)
+
     std::string ident;
     std::optional<TypeRef> type;
 
@@ -181,6 +203,8 @@ struct ZSR_EXPORT Field
  */
 struct ZSR_EXPORT Parameter
 {
+    NOCOPY(Parameter)
+
     std::string ident;
     const TypeRef* type = nullptr;
     const Field* field = nullptr; /* Matching field (read-only) */
@@ -193,6 +217,8 @@ struct ZSR_EXPORT Parameter
  */
 struct ZSR_EXPORT Function
 {
+    NOCOPY(Function)
+
     std::string ident;
     std::optional<TypeRef> type;
 
@@ -204,6 +230,8 @@ struct ZSR_EXPORT Function
  */
 struct ZSR_EXPORT Compound
 {
+    NOCOPY(Compound)
+
     std::string ident;
     enum class Type {
         Structure,
@@ -274,6 +302,8 @@ struct ZSR_EXPORT Compound
  */
 struct ZSR_EXPORT Package
 {
+    NOCOPY(Package)
+
     std::string ident;
 
     std::deque<SubType> subTypes;

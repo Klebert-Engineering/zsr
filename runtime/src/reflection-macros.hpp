@@ -11,33 +11,6 @@
 #endif
 
 
-#define ZSERIO_REFLECT_IS_COMPOUND_TRAIT(NAME, NS)          \
-    namespace zsr {                                         \
-        /* Note: Base template defined in lib-prefix.cpp */ \
-                                                            \
-        template <>                                         \
-        struct is_compound<:: NS :: NAME>                   \
-            : std::true_type {};                            \
-                                                            \
-        template <>                                         \
-        struct meta_for_compound<:: NS :: NAME>             \
-        {                                                   \
-            static Compound const* ptr;                     \
-        };                                                  \
-                                                            \
-        Compound const* meta_for_compound<:: NS :: NAME>    \
-            ::ptr{nullptr};                                 \
-    }
-
-#define ZSERIO_REFLECT_IS_ENUMERATION_TRAIT(NAME, NS)       \
-    namespace zsr {                                         \
-        /* Note: Base template defined in lib-prefix.cpp */ \
-                                                            \
-        template <>                                         \
-        struct is_enumeration<:: NS :: NAME>                \
-            : std::true_type {};                            \
-    }
-
 /**
  * Expose the current objects `type` member for further
  * use by `ZSERIO_REFLECT_TYPE_REF`.
@@ -74,19 +47,15 @@
  *   PACKAGE_END
  */
 
-#define ZSERIO_REFLECT_PACKAGE_BEGIN(NAME, SNAME, NS)     \
-    namespace NS {}                                       \
-    struct init__ ## SNAME {                              \
-        init__ ## SNAME () {                              \
-            namespace PkgNamespace = :: NS;               \
-                                                          \
-            zsr::Package& p = lpackages().emplace_back(); \
-                                                          \
-            p.ident = #NAME;
+#define ZSERIO_REFLECT_PACKAGE_BEGIN(NAME, SNAME, NS)    \
+    {                                                    \
+    namespace PkgNamespace = :: NS;                      \
+                                                         \
+    zsr::Package& p = pkgs.emplace_back();               \
+    p.ident = #NAME;
 
-#define ZSERIO_REFLECT_PACKAGE_END()                \
-        }                                           \
-    } static const UID(init, __COUNTER__){};
+#define ZSERIO_REFLECT_PACKAGE_END()            \
+    }
 
 /**
  * Subtype
@@ -136,7 +105,7 @@
 
 
 /**
- * Stucture/Choice
+ * Stucture/Choice/Union
  *
  * Structure:
  *   STRUCTURE_BEGIN
@@ -167,43 +136,45 @@
         };                                                \
     };
 
-#define ZSERIO_REFLECT_STRUCTURE_BEGIN(NAME, TYPE)              \
-    {                                                           \
-        using CompoundType = PkgNamespace::NAME;                \
-                                                                \
-        zsr::Compound& s = p.compounds.emplace_back();          \
-        zsr::meta_for_compound<CompoundType>::ptr = &s;         \
-        s.ident = #NAME;                                        \
-        s.type = zsr::Compound::Type::TYPE;                     \
-                                                                \
-        s.alloc = GEN_STRUCTURE_ALLOC();                        \
-                                                                \
-        s.compare = [](const zsr::Introspectable& a,            \
-                       const zsr::Introspectable& b) {          \
-            return zsr::introspectable_cast<CompoundType>(a) == \
-                   zsr::introspectable_cast<CompoundType>(b);   \
-        };                                                      \
-                                                                \
-        s.hash = [](const zsr::Introspectable& i) -> int {      \
-            return zsr::introspectable_cast<CompoundType>(i).   \
-                hashCode();                                     \
-        };                                                      \
-                                                                \
-        s.bitSize = [](const zsr::Introspectable& i) -> size_t {\
-            return zsr::introspectable_cast<CompoundType>(i).   \
-                bitSizeOf();                                    \
-        };                                                      \
-                                                                \
-        s.read = [](zsr::Introspectable& i,                     \
-                    ::zserio::BitStreamReader& r) {             \
-            return zsr::introspectable_cast<CompoundType>(i).   \
-                read(r);                                        \
-        };                                                      \
-                                                                \
-        s.write = [](zsr::Introspectable& i,                    \
-                     ::zserio::BitStreamWriter& w) {            \
-            return zsr::introspectable_cast<CompoundType>(i).   \
-                write(w);                                       \
+#define ZSERIO_REFLECT_STRUCTURE_BEGIN(NAME, TYPE)                   \
+    {                                                                \
+        using CompoundType = PkgNamespace::NAME;                     \
+                                                                     \
+        zsr::Compound& s = p.compounds.emplace_back();               \
+        t2c[std::type_index(typeid(CompoundType))] =                 \
+            &s;                                                      \
+                                                                     \
+        s.ident = #NAME;                                             \
+        s.type = zsr::Compound::Type::TYPE;                          \
+                                                                     \
+        s.alloc = GEN_STRUCTURE_ALLOC();                             \
+                                                                     \
+        s.compare = [&](const zsr::Introspectable& a,                \
+                        const zsr::Introspectable& b) {              \
+            return zsr::introspectable_cast<CompoundType>(a, t2c) == \
+                   zsr::introspectable_cast<CompoundType>(b, t2c);   \
+        };                                                           \
+                                                                     \
+        s.hash = [&](const zsr::Introspectable& i) -> int {          \
+            return zsr::introspectable_cast<CompoundType>(i, t2c).   \
+                hashCode();                                          \
+        };                                                           \
+                                                                     \
+        s.bitSize = [&](const zsr::Introspectable& i) -> size_t {    \
+            return zsr::introspectable_cast<CompoundType>(i, t2c).   \
+                bitSizeOf();                                         \
+        };                                                           \
+                                                                     \
+        s.read = [&](zsr::Introspectable& i,                         \
+                     ::zserio::BitStreamReader& r) {                 \
+            return zsr::introspectable_cast<CompoundType>(i, t2c).   \
+                read(r);                                             \
+        };                                                           \
+                                                                     \
+        s.write = [&](zsr::Introspectable& i,                        \
+                      ::zserio::BitStreamWriter& w) {                \
+            return zsr::introspectable_cast<CompoundType>(i, t2c).   \
+                write(w);                                            \
         };
 
 #define ZSERIO_REFLECT_STRUCTURE_END() \
@@ -216,14 +187,16 @@
                 decltype(&CompoundType::initialize)>>;
 
 #define GEN_INIT_PARAMETER_LIST_SET(IDX)                                \
-    [](zsr::ParameterList& l, zsr::Variant v) {                         \
+    [&](zsr::ParameterList& l, zsr::Variant v) {                        \
         if (!l.list.has_value()) {                                      \
             l.list = ParameterTupleType{}; /* Empty init unset lists */ \
         }                                                               \
                                                                         \
         auto* tuple = std::any_cast<ParameterTupleType>(&l.list);       \
         if (tuple) {                                                    \
-            zsr::parameterlist::set_parameter<IDX>(*tuple, v);          \
+            zsr::parameterlist::set_parameter<IDX>(*tuple,              \
+                                                   v,                   \
+                                                   t2c);                \
         } else {                                                        \
             throw zsr::ParameterListTypeError{};                        \
         }                                                               \
@@ -258,7 +231,7 @@
         param.field = &f;                                                      \
         f.ident = FIELD_IDENT(#NAME);                                          \
                                                                                \
-        f.get = Helper::getFun<CompoundType>(fieldGetter, &f);                 \
+        f.get = Helper::getFun<CompoundType>(fieldGetter, &f, t2c);            \
         f.set = {}; /* Read-only */                                            \
                                                                                \
         CUR_TYPE(f);                                                           \
@@ -272,8 +245,8 @@
     }
 
 #define ZSERIO_REFLECT_STRUCTURE_INITIALIZE_END()                       \
-    s.initialize = [](zsr::Introspectable& i,                           \
-                      zsr::ParameterList l)                             \
+    s.initialize = [&](zsr::Introspectable& i,                          \
+                       zsr::ParameterList l)                            \
     {                                                                   \
         if (!std::any_cast<ParameterTupleType>(&l.list))                \
             throw zsr::ParameterListTypeError{};                        \
@@ -283,17 +256,19 @@
                                                                         \
         auto args = std::any_cast<ParameterTupleType>(&params);         \
         if (args) {                                                     \
-            std::apply([&i](auto&&... vals) {                           \
-                zsr::introspectable_cast<CompoundType>(i).initialize(   \
-                    zsr::parameterlist::deref_if_shared(vals)...);      \
+            std::apply([&i, t2c](auto&&... vals) {                      \
+                zsr::introspectable_cast<CompoundType>(i, t2c)          \
+                    .initialize(                                        \
+                        zsr::parameterlist::deref_if_shared(vals)...);  \
             }, *args);                                                  \
         }                                                               \
     };
 
 #define ZSERIO_REFLECT_STRUCTURE_CHILD_INITIALIZATION()                 \
-    s.initializeChildren = [](zsr::Introspectable& i)                   \
+    s.initializeChildren = [&](zsr::Introspectable& i)                  \
     {                                                                   \
-        zsr::introspectable_cast<CompoundType>(i).initializeChildren(); \
+        zsr::introspectable_cast<CompoundType>(i, t2c)                  \
+            .initializeChildren();                                      \
     };
 
 #define GEN_FIELD_ACCESSORS(GETTER, SETTER)                             \
@@ -315,18 +290,20 @@
         return obj.SETTER(val);                                         \
     };                                                                  \
                                                                         \
-    f.get = Helper::getFun<CompoundType>(getter, &f);                   \
-    f.set = Helper::setFun<CompoundType>(setter, &f);
+    f.get = Helper::getFun<CompoundType>(getter, &f, t2c);              \
+    f.set = Helper::setFun<CompoundType>(setter, &f, t2c);
 
-#define ZSERIO_REFLECT_STRUCTURE_FIELD_OPTIONAL(HASFUN, RESETFUN)   \
-    f.has = [](const zsr::Introspectable& i) -> bool                \
-    {                                                               \
-        return zsr::introspectable_cast<CompoundType>(i).HASFUN();  \
-    };                                                              \
-                                                                    \
-    f.reset = [](zsr::Introspectable& i) -> void                    \
-    {                                                               \
-        zsr::introspectable_cast<CompoundType>(i).RESETFUN();       \
+#define ZSERIO_REFLECT_STRUCTURE_FIELD_OPTIONAL(HASFUN, RESETFUN) \
+    f.has = [&](const zsr::Introspectable& i) -> bool             \
+    {                                                             \
+        return zsr::introspectable_cast<CompoundType>(i, t2c)     \
+            .HASFUN();                                            \
+    };                                                            \
+                                                                  \
+    f.reset = [&](zsr::Introspectable& i) -> void                 \
+    {                                                             \
+        zsr::introspectable_cast<CompoundType>(i, t2c)            \
+            .RESETFUN();                                          \
     };
 
 #define ZSERIO_REFLECT_STRUCTURE_FIELD_BEGIN(NAME, GETTER, SETTER)    \
@@ -347,24 +324,24 @@
 #define ZSERIO_REFLECT_STRUCTURE_FIELD_END() \
     }
 
-#define ZSERIO_REFLECT_STRUCTURE_FUNCTION_BEGIN(NAME, FUNNAME)    \
-    {                                                             \
-        using ReturnType =                                        \
-            std::decay_t<                                         \
-                std::remove_reference_t<                          \
-                    decltype(((CompoundType*)0)-> FUNNAME ())>>;  \
-                                                                  \
-        zsr::Function& f = s.functions.emplace_back();            \
-        f.ident = FUNCTION_IDENT(#NAME);                          \
-                                                                  \
-        f.call = [](const zsr::Introspectable& i) -> zsr::Variant {\
-            return {                                              \
-                zsr::introspectable_cast<CompoundType>(i)         \
-                    . FUNNAME ()                                  \
-            };                                                    \
-        };                                                        \
-                                                                  \
-        CUR_TYPE(f);                                              \
+#define ZSERIO_REFLECT_STRUCTURE_FUNCTION_BEGIN(NAME, FUNNAME)           \
+    {                                                                    \
+        using ReturnType =                                               \
+            std::decay_t<                                                \
+                std::remove_reference_t<                                 \
+                    decltype(((CompoundType*)0)-> FUNNAME ())>>;         \
+                                                                         \
+        zsr::Function& f = s.functions.emplace_back();                   \
+        f.ident = FUNCTION_IDENT(#NAME);                                 \
+                                                                         \
+        f.call = [&](const zsr::Introspectable& i) -> zsr::Variant {     \
+            return {                                                     \
+                zsr::introspectable_cast<CompoundType>(i, t2c)           \
+                    . FUNNAME ()                                         \
+            };                                                           \
+        };                                                               \
+                                                                         \
+        CUR_TYPE(f);                                                     \
         zsr::CTypeTraits<ReturnType>::set(tr.ctype);
 
 #define ZSERIO_REFLECT_STRUCTURE_FUNCTION_END() \

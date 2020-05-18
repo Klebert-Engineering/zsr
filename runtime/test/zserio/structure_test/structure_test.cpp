@@ -73,16 +73,17 @@ TEST(StructureTest, c_alloc_init_parameterized_instance)
 
     /* Read out (read-only) field */
 
-    auto* m_parameter = zsr::find<zsr::Field>(*s_parent, "a");
+    auto* m_parameter = zsr::find<zsr::Parameter>(*s_parent, "a");
 
     ASSERT_TRUE(m_parameter);
-    ASSERT_TRUE(m_parameter->get);
+    ASSERT_TRUE(m_parameter->field);
 
-    auto value = m_parameter->get(i_parent);
+    auto value = m_parameter->field->get(i_parent);
     auto instance = value.get<zsr::Introspectable>();
 
     ASSERT_TRUE(instance);
     ASSERT_TRUE(instance->meta());
+    ASSERT_EQ("c_parameter_struct", instance->meta()->ident);
 
     auto* m_ca_a = zsr::find<zsr::Field>(*s_parameter, "a");
     ASSERT_VARIANT_EQ(m_ca_a->get(*instance), std::string{"Hola"});

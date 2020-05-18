@@ -2,6 +2,7 @@
 
 #include "export.hpp"
 #include <exception>
+#include <string>
 
 #ifdef _MSC_VER
 /* Disable warning about inheriting from unexported class */
@@ -10,6 +11,8 @@
 #endif
 
 namespace zsr {
+
+struct Compound;
 
 /**
  * Exception base class.
@@ -24,7 +27,13 @@ struct ZSR_EXPORT ParameterListTypeError : Error
 
 struct ZSR_EXPORT IntrospectableCastError : Error
 {
+    IntrospectableCastError();
+    explicit IntrospectableCastError(const Compound* isa,
+                                     const Compound* target);
+
     const char* what() const noexcept override;
+
+    std::string msg;
 };
 
 struct ZSR_EXPORT VariantCastError : Error
