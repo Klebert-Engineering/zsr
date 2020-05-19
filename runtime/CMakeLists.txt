@@ -138,7 +138,6 @@ function(add_zserio_module ZSR_MODULE_NAME)
 
   target_compile_definitions(${ZSR_MODULE_NAME}-reflection
     PRIVATE
-      REFLECTION_DEFS_INCLUDE="${GEN_REFLECT_SRC_ROOT}/reflection-main.cpp"
       ZSR_BUILD=1)
 
   target_compile_options(${ZSR_MODULE_NAME}-reflection

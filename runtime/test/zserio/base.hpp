@@ -5,8 +5,7 @@
 #include "zsr/variant.hpp"
 #include "zsr/types.hpp"
 #include "zsr/find.hpp"
-
-#include "reflection-main.hpp"
+#include "zsr/reflection-main.hpp"
 
 #define PKG                                     \
     static const auto& pkg = zsr::packages().front();
