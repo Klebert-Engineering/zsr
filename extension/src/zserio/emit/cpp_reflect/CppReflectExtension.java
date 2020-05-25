@@ -7,6 +7,8 @@ import zserio.emit.common.ZserioEmitException;
 import zserio.tools.Extension;
 import zserio.tools.Parameters;
 import java.io.BufferedWriter;
+import java.nio.file.Path;
+import java.nio.file.FileSystems;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -48,31 +50,16 @@ public class CppReflectExtension implements Extension
     @Override
     public void generate(Parameters parameters, Root rootNode) throws ZserioEmitException
     {
-        final String outputDir = parameters.getCommandLineArg(OptionCpp);
-        final String outputFile = outputDir + "/" + "reflection-defs.cpp";
+        final Path outputDir = FileSystems.getDefault()
+            .getPath(parameters.getCommandLineArg(OptionCpp));
 
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+        TraitsEmitter traitsEmitter = new TraitsEmitter(outputDir, parameters);
+        rootNode.emit(traitsEmitter);
+        traitsEmitter.process();
 
-            try {
-                final int VERSION = 2;
-
-                writer.write("#if defined(ZSR_VERSION) && ZSR_VERSION != " + Integer.toString(VERSION) + "\n" +
-                             "    #error \"zsr version does not match version of the generate code.\"\n" +
-                             "#endif\n\n");
-            } catch (IOException e) {
-                System.out.println("Error: " + e.toString());
-            }
-
-            rootNode.emit(new IncludeEmitter(writer, parameters));
-            rootNode.emit(new TraitsEmitter(writer, parameters));
-            rootNode.emit(new ReflectionEmitter(writer, parameters));
-
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            System.out.println("Error opening file for writing.");
-        }
+        ReflectionEmitter emitter = new ReflectionEmitter(outputDir, parameters);
+        rootNode.emit(emitter);
+        emitter.process();
     }
 
     private final static String OptionCpp = "cpp_reflect";

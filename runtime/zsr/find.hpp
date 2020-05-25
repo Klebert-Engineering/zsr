@@ -9,14 +9,14 @@ template <class>
 struct ZSR_EXPORT child_iter
 {};
 
-#define DECL_ITER(TYPE, PARENT_TYPE, LIST)                                     \
-    template <>                                                                \
-    struct ZSR_EXPORT child_iter<TYPE>                                         \
-    {                                                                          \
-        static auto get(const PARENT_TYPE* r)                                  \
-        {                                                                      \
-            return std::make_pair(r->LIST.cbegin(), r->LIST.cend());           \
-        }                                                                      \
+#define DECL_ITER(TYPE, PARENT_TYPE, LIST)                                   \
+    template <>                                                              \
+    struct ZSR_EXPORT child_iter<TYPE>                                       \
+    {                                                                        \
+        static auto get(const PARENT_TYPE& r)                                \
+        {                                                                    \
+            return std::make_pair(r.LIST.cbegin(), r.LIST.cend());           \
+        }                                                                    \
     };
 
 /* clang-format off */
@@ -46,14 +46,14 @@ DECL_ITER(Function,        Compound,    functions)
  *   auto field = zsr::find<zsr::Field>(compound, "name")
  */
 template <class _Type, class _Root>
-const _Type* find(const _Root* r, const std::string& ident)
+const _Type* find(const _Root& r, const std::string& ident)
 {
     auto [begin, end] = impl::child_iter<_Type>::get(r);
-    auto iter = std::find_if(begin, end, [&](const auto* c) {
-        return c->ident == ident;
+    auto iter = std::find_if(begin, end, [&](const auto& c) {
+        return c.ident == ident;
     });
     if (iter != end)
-        return *iter;
+        return &(*iter);
     return nullptr;
 }
 

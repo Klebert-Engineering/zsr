@@ -47,13 +47,6 @@ set_target_properties(zsr
   PROPERTIES
     src_dir "${CMAKE_CURRENT_SOURCE_DIR}")
 
-add_custom_target(zsr-amalgamate
-  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
-
-set_target_properties(zsr-amalgamate
-  PROPERTIES
-    src "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
-
 target_compile_definitions(zsr
   PRIVATE
     ZSR_BUILD=1)
@@ -61,7 +54,14 @@ target_compile_definitions(zsr
 target_compile_options(zsr
   PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror -fvisibility=hidden>)
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -fvisibility=hidden>)
+
+add_custom_target(zsr-amalgamate
+  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
+
+set_target_properties(zsr-amalgamate
+  PROPERTIES
+    src "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
 
 function(add_zserio_module ZSR_MODULE_NAME)
   cmake_parse_arguments(PARSE_ARGV 0
@@ -75,6 +75,9 @@ function(add_zserio_module ZSR_MODULE_NAME)
 
   set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${ZSR_MODULE_NAME}.zserio-gen/")
   file(MAKE_DIRECTORY "${GEN_SRC_ROOT}")
+
+  set(GEN_REFLECT_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${ZSR_MODULE_NAME}.zserio-gen/reflection/")
+  file(MAKE_DIRECTORY "${GEN_REFLECT_SRC_ROOT}")
 
   find_program(JAVA java)
   if (NOT JAVA)
@@ -96,21 +99,18 @@ function(add_zserio_module ZSR_MODULE_NAME)
     set(zserio_top_level_arg "-setTopLevelPackage")
   endif()
 
-  add_custom_command(
-    DEPENDS zserio
-    OUTPUT "${GEN_SRC_ROOT}/reflection-defs.cpp"
+  execute_process(
     COMMAND ${ZSERIO} ${zserio_top_level_arg} ${ZSR_MODULE_TOP_LEVEL_PKG}
-                      -cpp ${GEN_SRC_ROOT}
-                      -cpp_reflect ${GEN_SRC_ROOT}
-                      -src ${ZSR_MODULE_ROOT}
-                      ${ZSR_MODULE_ENTRY})
+            -cpp ${GEN_SRC_ROOT}
+            -cpp_reflect ${GEN_REFLECT_SRC_ROOT}
+            -src ${ZSR_MODULE_ROOT}
+            ${ZSR_MODULE_ENTRY}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
   # Generated source amalgamation
   get_target_property(AMALGAMATE zsr-amalgamate src)
 
-  add_custom_command(
-    DEPENDS "${GEN_SRC_ROOT}/reflection-defs.cpp"
-    OUTPUT "${GEN_SRC_ROOT}/amalgamation.cpp"
+  execute_process(
     COMMAND ${CMAKE_COMMAND} -P "${AMALGAMATE}"
                                 "${GEN_SRC_ROOT}/${ZSR_MODULE_TOP_LEVEL_PKG}"
                                 "${GEN_SRC_ROOT}/amalgamation.cpp")
@@ -130,19 +130,20 @@ function(add_zserio_module ZSR_MODULE_NAME)
   # Reflection runtime lib
   get_target_property(ZSR_SRC zsr src_dir)
 
+  file(GLOB_RECURSE package_sources "${GEN_REFLECT_SRC_ROOT}/*.cpp")
+
   add_library(${ZSR_MODULE_NAME}-reflection SHARED
-    "${ZSR_SRC}/zsr/stub.hpp"
-    "${ZSR_SRC}/src/lib-prefix.cpp")
+    "${package_sources}"
+    "${GEN_REFLECT_SRC_ROOT}/reflection-main.cpp")
 
   target_compile_definitions(${ZSR_MODULE_NAME}-reflection
     PRIVATE
-      REFLECTION_DEFS_INCLUDE="${GEN_SRC_ROOT}/reflection-defs.cpp"
       ZSR_BUILD=1)
 
   target_compile_options(${ZSR_MODULE_NAME}-reflection
     PRIVATE
       $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror -fvisibility=hidden>)
+      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -fvisibility=hidden>)
 
   target_include_directories(${ZSR_MODULE_NAME}-reflection
     PRIVATE
@@ -169,7 +170,7 @@ function(add_zsr_test TARGET FILE)
   target_compile_options(${TARGET}
     PRIVATE
       $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>)
+      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall>)
 
   target_compile_features(${TARGET}
     PUBLIC cxx_std_17)

@@ -7,6 +7,7 @@ import zserio.emit.common.DefaultEmitter;
 import zserio.tools.Parameters;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.List;
@@ -27,17 +28,21 @@ public class ReflectionEmitter extends EmitterBase
     final String COMPOUND_TYPE_CHOICE    = "Choice";
     final String COMPOUND_TYPE_UNION     = "Union";
 
-    public ReflectionEmitter(BufferedWriter writer, Parameters extensionParameters)
+    public ReflectionEmitter(Path outputDir, Parameters extensionParameters)
     {
-        super(writer, extensionParameters);
+        super(outputDir, extensionParameters);
     }
    
     @Override
     public void beginPackage(Package pkg) throws ZserioEmitException
     {
+        super.beginPackage(pkg);
+
+        packageData.namespaces.add(packageNameToNamespace(pkg.getPackageName()));
+
         List<String> args = Arrays.asList(new String[] {
             pkg.getPackageName().toString(),
-            pkg.getPackageName().toString().replaceAll("\\.", "_S_").toString(),
+            packageData.packageInitializer,
             packageNameToNamespace(pkg.getPackageName())
         });
 
@@ -48,11 +53,15 @@ public class ReflectionEmitter extends EmitterBase
     public void endPackage(Package pkg) throws ZserioEmitException
     {
         endReflect("PACKAGE");
+
+        super.endPackage(pkg);
     }
 
     @Override
     public void beginSubtype(Subtype subtype) throws ZserioEmitException
     {
+        writeInclude(subtype.getPackage(), subtype.getName());
+
         final PackageName pkgName = subtype.getTypeReference().getReferencedPackageName();
         final String typeName = subtype.getTypeReference().getReferencedTypeName();
 
@@ -70,6 +79,8 @@ public class ReflectionEmitter extends EmitterBase
     @Override
     public void beginConst(Constant constType) throws ZserioEmitException
     {
+        writeInclude(constType.getPackage(), constType.getName());
+
         List<String> args = Arrays.asList(new String[] {
             constType.getName()
         });
@@ -258,6 +269,8 @@ public class ReflectionEmitter extends EmitterBase
 
     private void reflectCompoundType(CompoundType type) throws ZserioEmitException
     {
+        writeInclude(type.getPackage(), type.getName());
+
         /* Only structures with one or more parameters have
          * an `initialze` function. */
         if (!type.getTypeParameters().isEmpty()) {
@@ -335,6 +348,8 @@ public class ReflectionEmitter extends EmitterBase
     @Override
     public void beginEnumeration(EnumType enumType) throws ZserioEmitException
     {
+        writeInclude(enumType.getPackage(), enumType.getName());
+
         List<String> args = Arrays.asList(new String[] {
             enumType.getName(),
         });
@@ -360,6 +375,8 @@ public class ReflectionEmitter extends EmitterBase
     @Override
     public void beginBitmask(BitmaskType bitmaskType) throws ZserioEmitException
     {
+        writeInclude(bitmaskType.getPackage(), bitmaskType.getName());
+
         List<String> args = Arrays.asList(new String[] {
             bitmaskType.getName(),
         });

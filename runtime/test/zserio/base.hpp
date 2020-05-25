@@ -5,10 +5,10 @@
 #include "zsr/variant.hpp"
 #include "zsr/types.hpp"
 #include "zsr/find.hpp"
-#include "zsr/stub.hpp"
+#include "zsr/reflection-main.hpp"
 
 #define PKG                                     \
-    static auto* pkg = zsr::packages().front();
+    static const auto& pkg = zsr::packages().front();
 
 template <class _Type>
 ::testing::AssertionResult AssertVariantEq(const char* expr1,

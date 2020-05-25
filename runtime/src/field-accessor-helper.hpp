@@ -17,19 +17,23 @@ struct GenFieldAccessorHelper<_Type, false, _IsVector>
     using Type = std::decay_t<_Type>;
 
     template <class _Structure, class _GetFun, class _MetaType>
-    static auto getFun(_GetFun fun, _MetaType*)
+    static auto getFun(_GetFun fun,
+                       _MetaType*,
+                       const Type2Compound& t2c)
     {
-        return [fun](const zsr::Introspectable& i) -> zsr::Variant {
-            const auto& obj = introspectable_cast<_Structure>(i);
+        return [fun, t2c](const zsr::Introspectable& i) -> zsr::Variant {
+            const auto& obj = introspectable_cast<_Structure>(i, t2c);
             return zsr::Variant(fun(obj));
         };
     }
 
     template <class _Structure, class _SetFun, class _MetaType>
-    static auto setFun(_SetFun fun, _MetaType*)
+    static auto setFun(_SetFun fun,
+                       _MetaType*,
+                       const Type2Compound& t2c)
     {
-        return [fun](zsr::Introspectable& i, zsr::Variant v) {
-            auto& obj = introspectable_cast<_Structure>(i);
+        return [fun, t2c](zsr::Introspectable& i, zsr::Variant v) {
+            auto& obj = introspectable_cast<_Structure>(i, t2c);
             if (auto vv = v.get<Type>())
                 fun(obj, std::move(*vv));
             else
@@ -44,10 +48,12 @@ struct GenFieldAccessorHelper<_Type, true /* IsCompound */, true /* IsVector */>
     using Type = std::decay_t<_Type>;
 
     template <class _Structure, class _GetFun, class _MetaType>
-    static auto getFun(_GetFun fun, _MetaType* meta)
+    static auto getFun(_GetFun fun,
+                       _MetaType* meta,
+                       const Type2Compound& t2c)
     {
-        return [fun, meta](const zsr::Introspectable& i) -> zsr::Variant {
-            const auto& obj = introspectable_cast<_Structure>(i);
+        return [fun, meta, t2c](const zsr::Introspectable& i) -> zsr::Variant {
+            const auto& obj = introspectable_cast<_Structure>(i, t2c);
             const auto* vector = &fun(obj);
 
             std::vector<Introspectable> ret;
@@ -58,8 +64,15 @@ struct GenFieldAccessorHelper<_Type, true /* IsCompound */, true /* IsVector */>
                 vector->end(),
                 std::back_inserter(ret),
                 [&](const auto& item) {
+                    auto iter = t2c.find(
+                        std::type_index(
+                            typeid(remove_vector_t<Type>)));
+                    assert(iter != t2c.end() && "No compound for type.");
+
                     return zsr::Introspectable(
-                        meta_for_compound<remove_vector_t<Type>>::ptr,
+                        iter != t2c.end()
+                            ? iter->second
+                            : (const zsr::Compound*)nullptr,
                         zsr::impl::makeWeakInstance(i.obj, meta, &item));
                 });
 
@@ -68,10 +81,12 @@ struct GenFieldAccessorHelper<_Type, true /* IsCompound */, true /* IsVector */>
     }
 
     template <class _Structure, class _SetFun, class _MetaType>
-    static auto setFun(_SetFun fun, _MetaType* meta)
+    static auto setFun(_SetFun fun,
+                       _MetaType* meta,
+                       const Type2Compound& t2c)
     {
-        return [fun, meta](zsr::Introspectable& i, zsr::Variant v) {
-            auto& obj = introspectable_cast<_Structure>(i);
+        return [fun, meta, t2c](zsr::Introspectable& i, zsr::Variant v) {
+            auto& obj = introspectable_cast<_Structure>(i, t2c);
 
             if (auto vector = v.get<std::vector<Introspectable>>()) {
                 i.obj->makeChildrenOwning(meta);
@@ -104,23 +119,30 @@ struct GenFieldAccessorHelper<_Type,
     using Type = std::decay_t<_Type>;
 
     template <class _Structure, class _GetFun, class _MetaType>
-    static auto getFun(_GetFun fun, _MetaType* meta)
+    static auto getFun(_GetFun fun,
+                       _MetaType* meta,
+                       const Type2Compound& t2c)
     {
-        return [fun, meta](const zsr::Introspectable& i) -> zsr::Variant {
-            const auto& obj = introspectable_cast<_Structure>(i);
-
+        return [fun, meta, t2c](const zsr::Introspectable& i) -> zsr::Variant {
+            const auto& obj = introspectable_cast<_Structure>(i, t2c);
             const auto* value = &fun(obj);
+
+            auto iter = t2c.find(std::type_index(typeid(remove_vector_t<Type>)));
+            assert(iter != t2c.end());
+
             return zsr::Variant(zsr::Introspectable(
-                meta_for_compound<remove_vector_t<Type>>::ptr,
+                iter != t2c.end() ? iter->second : (const zsr::Compound*)nullptr,
                 zsr::impl::makeWeakInstance(i.obj, meta, value)));
         };
     }
 
     template <class _Structure, class _SetFun, class _MetaType>
-    static auto setFun(_SetFun fun, _MetaType* meta)
+    static auto setFun(_SetFun fun,
+                       _MetaType* meta,
+                       const Type2Compound& t2c)
     {
-        return [fun, meta](zsr::Introspectable& i, zsr::Variant v) {
-            auto& obj = introspectable_cast<_Structure>(i);
+        return [fun, meta, t2c](zsr::Introspectable& i, zsr::Variant v) {
+            auto& obj = introspectable_cast<_Structure>(i, t2c);
             if (auto vv = v.get<zsr::Introspectable>()) {
                 i.obj->makeChildrenOwning(meta);
 

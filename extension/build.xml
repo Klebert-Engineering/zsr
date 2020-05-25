@@ -128,6 +128,8 @@ spotbugs.home_dir               - Location of the spotbugs tool. If not set, spo
                 <attribute name="Implementation-Version" value="${zserio_cpp_reflect.version}"/>
             </manifest>
             <metainf dir="${zserio_cpp_reflect.build_dir}/metainf" includes="**/*"/>
+            <zipfileset dir="${zserio_cpp_reflect.base_dir}/freemarker" includes="*.ftl"
+                prefix="freemarker/"/>
         </jar>
     </target>
 

@@ -111,7 +111,8 @@ using remove_shared_ptr_t = typename remove_shared_ptr<_Type>::type;
 template <class _Type, bool _IsCompound = is_compound<_Type>::value>
 struct unpack_variant
 {
-    static _Type unpack(const Variant& v)
+    static _Type unpack(const Variant& v,
+                        const Type2Compound&)
     {
         if (auto unpacked = v.get<_Type>())
             return *unpacked;
@@ -123,10 +124,12 @@ struct unpack_variant
 template <class _Type>
 struct unpack_variant<_Type, true>
 {
-    static std::shared_ptr<_Type> unpack(const Variant& v)
+    static std::shared_ptr<_Type> unpack(const Variant& v,
+                                         const Type2Compound& t2c)
     {
         if (auto unpacked = v.get<Introspectable>()) {
-            return shared_introspectable_cast<_Type>(*unpacked);
+            return shared_introspectable_cast<_Type>(*unpacked,
+                                                     t2c);
         }
 
         throw VariantCastError{};
@@ -136,7 +139,8 @@ struct unpack_variant<_Type, true>
 template <class _Type>
 struct unpack_variant<std::vector<_Type>, true>
 {
-    static _Type unpack(const Variant& v)
+    static _Type unpack(const Variant& v,
+                        const Type2Compound& t2c)
     {
         if (auto unpacked = v.get<std::vector<Introspectable>>()) {
             std::vector<_Type> casted;
@@ -145,8 +149,8 @@ struct unpack_variant<std::vector<_Type>, true>
             std::transform(unpacked->begin(),
                            unpacked->end(),
                            std::back_inserter(casted),
-                           [](const auto& i) {
-                               introspectable_cast<_Type>(i);
+                           [t2c](const auto& i) {
+                               introspectable_cast<_Type>(i, t2c);
                            });
             return casted;
         }
@@ -160,12 +164,15 @@ struct unpack_variant<std::vector<_Type>, true>
  * parameterlist tuple.
  */
 template <size_t _Idx, class _Tuple>
-auto set_parameter(_Tuple& list, const Variant& value)
+auto set_parameter(_Tuple& list,
+                   const Variant& value,
+                   const Type2Compound& t2c)
 {
     using element_type = std::tuple_element_t<_Idx, _Tuple>;
 
     std::get<_Idx>(list) =
-        unpack_variant<remove_shared_ptr_t<element_type>>::unpack(value);
+        unpack_variant<remove_shared_ptr_t<element_type>>::unpack(value,
+                                                                  t2c);
 }
 
 
