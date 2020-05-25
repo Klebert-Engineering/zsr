@@ -93,3 +93,13 @@ struct k_struct_a {
 struct k_struct_b {
     k_struct_a a[];
 };
+
+/** L - Lookup member type declared after parent type */
+
+struct l_parent {
+    l_member a;
+};
+
+struct l_member {
+    int32 a;
+};

@@ -21,7 +21,7 @@ struct GenFieldAccessorHelper<_Type, false, _IsVector>
                        _MetaType*,
                        const Type2Compound& t2c)
     {
-        return [fun, t2c](const zsr::Introspectable& i) -> zsr::Variant {
+        return [fun, &t2c](const zsr::Introspectable& i) -> zsr::Variant {
             const auto& obj = introspectable_cast<_Structure>(i, t2c);
             return zsr::Variant(fun(obj));
         };
@@ -32,7 +32,7 @@ struct GenFieldAccessorHelper<_Type, false, _IsVector>
                        _MetaType*,
                        const Type2Compound& t2c)
     {
-        return [fun, t2c](zsr::Introspectable& i, zsr::Variant v) {
+        return [fun, &t2c](zsr::Introspectable& i, zsr::Variant v) {
             auto& obj = introspectable_cast<_Structure>(i, t2c);
             if (auto vv = v.get<Type>())
                 fun(obj, std::move(*vv));
@@ -52,7 +52,7 @@ struct GenFieldAccessorHelper<_Type, true /* IsCompound */, true /* IsVector */>
                        _MetaType* meta,
                        const Type2Compound& t2c)
     {
-        return [fun, meta, t2c](const zsr::Introspectable& i) -> zsr::Variant {
+        return [fun, meta, &t2c](const zsr::Introspectable& i) -> zsr::Variant {
             const auto& obj = introspectable_cast<_Structure>(i, t2c);
             const auto* vector = &fun(obj);
 
@@ -67,7 +67,8 @@ struct GenFieldAccessorHelper<_Type, true /* IsCompound */, true /* IsVector */>
                     auto iter = t2c.find(
                         std::type_index(
                             typeid(remove_vector_t<Type>)));
-                    assert(iter != t2c.end() && "No compound for type.");
+                    assert(iter != t2c.end() &&
+                           "No compound for type (vector: true)");
 
                     return zsr::Introspectable(
                         iter != t2c.end()
@@ -85,7 +86,7 @@ struct GenFieldAccessorHelper<_Type, true /* IsCompound */, true /* IsVector */>
                        _MetaType* meta,
                        const Type2Compound& t2c)
     {
-        return [fun, meta, t2c](zsr::Introspectable& i, zsr::Variant v) {
+        return [fun, meta, &t2c](zsr::Introspectable& i, zsr::Variant v) {
             auto& obj = introspectable_cast<_Structure>(i, t2c);
 
             if (auto vector = v.get<std::vector<Introspectable>>()) {
@@ -123,15 +124,18 @@ struct GenFieldAccessorHelper<_Type,
                        _MetaType* meta,
                        const Type2Compound& t2c)
     {
-        return [fun, meta, t2c](const zsr::Introspectable& i) -> zsr::Variant {
+        return [fun, meta, &t2c](const zsr::Introspectable& i) -> zsr::Variant {
             const auto& obj = introspectable_cast<_Structure>(i, t2c);
             const auto* value = &fun(obj);
 
-            auto iter = t2c.find(std::type_index(typeid(remove_vector_t<Type>)));
-            assert(iter != t2c.end());
+            auto iter = t2c.find(std::type_index(typeid(Type)));
+            assert(iter != t2c.end() && "No compound for type (vector: false)");
+
+            if (iter == t2c.end())
+                return zsr::Variant{};
 
             return zsr::Variant(zsr::Introspectable(
-                iter != t2c.end() ? iter->second : (const zsr::Compound*)nullptr,
+                iter->second,
                 zsr::impl::makeWeakInstance(i.obj, meta, value)));
         };
     }
@@ -141,7 +145,7 @@ struct GenFieldAccessorHelper<_Type,
                        _MetaType* meta,
                        const Type2Compound& t2c)
     {
-        return [fun, meta, t2c](zsr::Introspectable& i, zsr::Variant v) {
+        return [fun, meta, &t2c](zsr::Introspectable& i, zsr::Variant v) {
             auto& obj = introspectable_cast<_Structure>(i, t2c);
             if (auto vv = v.get<zsr::Introspectable>()) {
                 i.obj->makeChildrenOwning(meta);

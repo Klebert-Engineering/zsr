@@ -256,7 +256,7 @@
                                                                         \
         auto args = std::any_cast<ParameterTupleType>(&params);         \
         if (args) {                                                     \
-            std::apply([&i, t2c](auto&&... vals) {                      \
+            std::apply([&i, &t2c](auto&&... vals) {                     \
                 zsr::introspectable_cast<CompoundType>(i, t2c)          \
                     .initialize(                                        \
                         zsr::parameterlist::deref_if_shared(vals)...);  \
