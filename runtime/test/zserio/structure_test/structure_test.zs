@@ -103,3 +103,18 @@ struct l_parent {
 struct l_member {
     int32 a;
 };
+
+
+/** M - Check field type information */
+
+struct m_child {
+    int32 a;
+};
+
+struct m_parent {
+    int32 a;
+    uint16 b;
+    float32 c;
+    string d;
+    m_child e;
+};

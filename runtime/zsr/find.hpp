@@ -9,6 +9,15 @@ template <class>
 struct ZSR_EXPORT child_iter
 {};
 
+template <>
+struct ZSR_EXPORT child_iter<zsr::Package>
+{
+    static auto get(const std::deque<zsr::Package>& r)
+    {
+        return std::make_pair(r.cbegin(), r.cend());
+    }
+};
+
 #define DECL_ITER(TYPE, PARENT_TYPE, LIST)                                   \
     template <>                                                              \
     struct ZSR_EXPORT child_iter<TYPE>                                       \
