@@ -273,4 +273,34 @@ TEST(StructureTest, l_later_registered_member_type)
     ASSERT_TRUE(member->meta());
 }
 
+TEST(StructureTest, m_field_type_info)
+{
+    auto* meta_parent = zsr::find<zsr::Compound>(pkg, "m_parent");
+    auto* meta_field_a = zsr::find<zsr::Field>(*meta_parent, "a");
+    auto* meta_field_b = zsr::find<zsr::Field>(*meta_parent, "b");
+    auto* meta_field_c = zsr::find<zsr::Field>(*meta_parent, "c");
+    auto* meta_field_d = zsr::find<zsr::Field>(*meta_parent, "d");
+    auto* meta_field_e = zsr::find<zsr::Field>(*meta_parent, "e");
+
+    ASSERT_TRUE(meta_field_a);
+    ASSERT_EQ(zsr::ZType::Int, meta_field_a->type->ztype.type);
+    ASSERT_EQ(32, meta_field_a->type->ztype.size);
+
+    ASSERT_TRUE(meta_field_b);
+    ASSERT_EQ(zsr::ZType::UInt, meta_field_b->type->ztype.type);
+    ASSERT_EQ(16, meta_field_b->type->ztype.size);
+
+    ASSERT_TRUE(meta_field_c);
+    ASSERT_EQ(zsr::ZType::Float, meta_field_c->type->ztype.type);
+    ASSERT_EQ(32, meta_field_c->type->ztype.size);
+
+    ASSERT_TRUE(meta_field_d);
+    ASSERT_EQ(zsr::ZType::String, meta_field_d->type->ztype.type);
+    ASSERT_EQ(0, meta_field_d->type->ztype.size);
+
+    ASSERT_TRUE(meta_field_e);
+    ASSERT_EQ(zsr::ZType::Structure, meta_field_e->type->ztype.type);
+    ASSERT_EQ("m_child", meta_field_e->type->ident);
+}
+
 } // namespace
