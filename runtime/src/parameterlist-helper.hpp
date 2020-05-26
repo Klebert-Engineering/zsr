@@ -149,7 +149,7 @@ struct unpack_variant<std::vector<_Type>, true>
             std::transform(unpacked->begin(),
                            unpacked->end(),
                            std::back_inserter(casted),
-                           [t2c](const auto& i) {
+                           [&t2c](const auto& i) {
                                introspectable_cast<_Type>(i, t2c);
                            });
             return casted;

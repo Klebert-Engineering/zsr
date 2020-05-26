@@ -257,4 +257,20 @@ TEST(StructureTest, k_nested_compounds)
     }
 }
 
+TEST(StructureTest, l_later_registered_member_type)
+{
+    auto* meta_parent = zsr::find<zsr::Compound>(pkg, "l_parent");
+    auto* meta_field = zsr::find<zsr::Field>(*meta_parent, "a");
+
+    /* Alloc parent */
+    auto instance = meta_parent->alloc();
+
+    /* Access child instance */
+    auto member = meta_field->get(instance).get<zsr::Introspectable>();
+
+    ASSERT_TRUE(member);
+    ASSERT_TRUE(member->obj);
+    ASSERT_TRUE(member->meta());
+}
+
 } // namespace
