@@ -153,7 +153,17 @@ auto makeWeakInstance(const std::shared_ptr<InstanceBase>& master,
 template <class _T>
 auto makeUniqueInstance()
 {
-    return std::make_shared<Instance<_T>>(std::make_shared<_T>(), true);
+    return std::make_shared<Instance<_T>>(
+        std::make_shared<_T>(), true);
+}
+
+template <class _T>
+auto makeUniqueInstance(_T&& v)
+{
+    using Type = std::decay_t<_T>;
+
+    return std::make_shared<Instance<Type>>(
+        std::make_shared<Type>(std::forward<_T>(v)), true);
 }
 
 } // namespace impl

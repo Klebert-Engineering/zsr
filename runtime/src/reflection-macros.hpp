@@ -324,24 +324,25 @@
 #define ZSERIO_REFLECT_STRUCTURE_FIELD_END() \
     }
 
-#define ZSERIO_REFLECT_STRUCTURE_FUNCTION_BEGIN(NAME, FUNNAME)           \
-    {                                                                    \
-        using ReturnType =                                               \
-            std::decay_t<                                                \
-                std::remove_reference_t<                                 \
-                    decltype(((CompoundType*)0)-> FUNNAME ())>>;         \
-                                                                         \
-        zsr::Function& f = s.functions.emplace_back();                   \
-        f.ident = FUNCTION_IDENT(#NAME);                                 \
-                                                                         \
-        f.call = [&](const zsr::Introspectable& i) -> zsr::Variant {     \
-            return {                                                     \
-                zsr::introspectable_cast<CompoundType>(i, t2c)           \
-                    . FUNNAME ()                                         \
-            };                                                           \
-        };                                                               \
-                                                                         \
-        CUR_TYPE(f);                                                     \
+#define ZSERIO_REFLECT_STRUCTURE_FUNCTION_BEGIN(NAME, FUNNAME)          \
+    {                                                                   \
+        using ReturnType =                                              \
+            std::decay_t<                                               \
+                std::remove_reference_t<                                \
+                    decltype(((CompoundType*)0)-> FUNNAME ())>>;        \
+                                                                        \
+        zsr::Function& f = s.functions.emplace_back();                  \
+        f.ident = FUNCTION_IDENT(#NAME);                                \
+                                                                        \
+        f.call = [&](const zsr::Introspectable& i) -> zsr::Variant {    \
+            return zsr::variant_helper<ReturnType>::pack(               \
+                zsr::introspectable_cast<CompoundType>(i, t2c)          \
+                    . FUNNAME (),                                       \
+                t2c                                                     \
+            );                                                          \
+        };                                                              \
+                                                                        \
+        CUR_TYPE(f);                                                    \
         zsr::CTypeTraits<ReturnType>::set(tr.ctype);
 
 #define ZSERIO_REFLECT_STRUCTURE_FUNCTION_END() \

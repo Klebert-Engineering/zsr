@@ -24,6 +24,15 @@ struct Compound;
 class ZSR_EXPORT Introspectable
 {
 public:
+    struct FromObjectTag {};
+
+    template <class _Type>
+    Introspectable(FromObjectTag, const Compound* meta, _Type&& value)
+        : obj(impl::makeUniqueInstance(std::forward<_Type>(value)))
+    {
+        obj->meta = meta;
+    }
+
     Introspectable(const Compound*, std::shared_ptr<impl::InstanceBase>);
 
     Introspectable(const Introspectable&);
