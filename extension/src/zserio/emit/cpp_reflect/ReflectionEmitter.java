@@ -300,7 +300,30 @@ public class ReflectionEmitter extends EmitterBase
     @Override
     public void beginService(ServiceType service) throws ZserioEmitException
     {
-        /* TODO */
+        writeInclude(service.getPackage(), service.getName());
+
+        beginReflect("SERVICE", Arrays.asList(new String[] {
+            service.getName()
+        }));
+
+        for (ServiceMethod method : service.getMethodList()) {
+            beginReflect("SERVICE_METHOD", Arrays.asList(new String[] {
+                method.getName(),
+                method.getName() + "Method",
+            }));
+
+            beginReflect("SERVICE_METHOD_REQUEST", null);
+            method.getRequestType().accept(new TypeRefVisitor(this));
+            endReflect("SERVICE_METHOD_REQUEST");
+
+            beginReflect("SERVICE_METHOD_RESPONSE", null);
+            method.getResponseType().accept(new TypeRefVisitor(this));
+            endReflect("SERVICE_METHOD_RESPONSE");
+
+            endReflect("SERVICE_METHOD");
+        }
+
+        endReflect("SERVICE");
     }
 
     /* TODO

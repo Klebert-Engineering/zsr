@@ -42,6 +42,9 @@ DECL_ITER(Compound,        Package,     compounds)
 DECL_ITER(Field,           Compound,    fields)
 DECL_ITER(Parameter,       Compound,    parameters)
 DECL_ITER(Function,        Compound,    functions)
+
+DECL_ITER(Service,         Package,     services)
+DECL_ITER(ServiceMethod,   Service,     methods)
 /* clang-format on */
 
 #undef DECL_ITER

@@ -3,6 +3,7 @@
 #include <zserio/BitStreamReader.h>
 #include <zserio/BitStreamWriter.h>
 #include <zserio/PreWriteAction.h>
+#include <zserio/IService.h>
 
 #include "zsr/variant.hpp"
 
@@ -298,6 +299,32 @@ struct ZSR_EXPORT Compound
 };
 
 /**
+ * Service method
+ */
+struct ZSR_EXPORT ServiceMethod
+{
+    NOCOPY(ServiceMethod)
+
+    std::string ident;
+
+    TypeRef requestType;
+    TypeRef responseType;
+
+    std::function<Variant(::zserio::IService&, Variant)> call;
+};
+
+/**
+ * Service
+ */
+struct ZSR_EXPORT Service
+{
+    NOCOPY(Service)
+
+    std::string ident;
+    std::deque<ServiceMethod> methods;
+};
+
+/**
  * Package
  */
 struct ZSR_EXPORT Package
@@ -311,6 +338,7 @@ struct ZSR_EXPORT Package
     std::deque<Enumeration> enumerations;
     std::deque<Bitmask> bitmasks;
     std::deque<Compound> compounds;
+    std::deque<Service> services;
 };
 
 } // namespace zsr
