@@ -92,14 +92,42 @@ TEST(StructureTest, c_alloc_init_parameterized_instance)
 TEST(StructureTest, d_call_function)
 {
     auto* s_struct = zsr::find<zsr::Compound>(pkg, "d_struct");
-    auto* f_fun = zsr::find<zsr::Function>(*s_struct, "fun");
+    ASSERT_TRUE(s_struct);
+   
+    auto* f_struct_a = zsr::find<zsr::Field>(*s_struct, "a");
+    auto* f_fun_1 = zsr::find<zsr::Function>(*s_struct, "fun");
+    auto* f_fun_2 = zsr::find<zsr::Function>(*s_struct, "fun2");
+
+    auto* s_res = zsr::find<zsr::Compound>(pkg, "d_res");
+    ASSERT_TRUE(s_res);
+
+    auto* f_res_a = zsr::find<zsr::Field>(*s_res, "a");
 
     /* Alloc instance */
     auto instance = s_struct->alloc();
 
-    /* Call function */
-    auto value = f_fun->call(instance);
-    ASSERT_VARIANT_EQ(value, uint8_t{10});
+    /* Call function 1 (Integer) */ {
+        ASSERT_TRUE(f_fun_1);
+
+        auto value = f_fun_1->call(instance);
+        ASSERT_VARIANT_EQ(value, uint8_t{10});
+    }
+
+    /* Call function 2 (Compound) */ {
+        ASSERT_TRUE(f_fun_2);
+
+        /* Set-up child struct */ {
+            auto res_instance = s_res->alloc();
+            f_res_a->set(res_instance, int32_t{123});
+            f_struct_a->set(instance, std::move(res_instance));
+        }
+
+        auto value = f_fun_2->call(instance);
+        auto introspectable = value.get<zsr::Introspectable>();
+
+        ASSERT_TRUE(introspectable);
+        ASSERT_VARIANT_EQ(f_res_a->get(*introspectable), int32_t(123));
+    }
 }
 
 TEST(StructureTest, e_set_get_builtin_field)

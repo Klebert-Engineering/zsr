@@ -21,11 +21,21 @@ struct c_parameter_struct {
 struct c_struct(c_parameter_struct a) {};
 
 /**
- * D
+ * D - Reflect functions with various return types
  */
+struct d_res {
+    int32 a;
+};
+
 struct d_struct {
+    d_res a;
+
     function uint32 fun() {
         return 10;
+    }
+
+    function d_res fun2() {
+        return a;
     }
 };
 
