@@ -402,4 +402,74 @@
         bv.value.set(BitmaskType::Values:: NAME);        \
     }
 
+/**
+ * Service
+ *
+ * Structure:
+ *   SERVICE_BEGIN
+ *     SERVICE_METHOD_BEGIN*
+ *       SERVICE_METHOD_REQUEST_BEGIN
+ *       SERVICE_METHOD_REQUEST_END
+ *       SERVICE_METHOD_RESPONSE_BEGIN
+ *       SERVICE_METHOD_RESPONSE_END
+ *     SERVICE_METHOD_END
+ *   SERVICE_END
+ */
+
+#define ZSERIO_REFLECT_SERVICE_BEGIN(NAME)                  \
+    {                                                       \
+        namespace ServiceNamespace = PkgNamespace :: NAME ; \
+                                                            \
+        auto& s = p.services.emplace_back();                \
+        s.ident = #NAME;
+
+#define ZSERIO_REFLECT_SERVICE_END()            \
+    }
+
+#define ZSERIO_REFLECT_SERVICE_METHOD_BEGIN(NAME, IDENT)                \
+    {                                                                   \
+        auto& sm = s.methods.emplace_back();                            \
+        sm.ident = FUNCTION_IDENT(#NAME);                               \
+                                                                        \
+        using ArgTupleType = zsr::argument_tuple_t<                     \
+            decltype(&ServiceNamespace::Client:: IDENT)>;               \
+        using RequestType = std::tuple_element_t<                       \
+            0u, ArgTupleType>;                                          \
+        using ResponseType = std::tuple_element_t<                      \
+            1u, ArgTupleType>;                                          \
+                                                                        \
+        sm.call = [&t2c](::zserio::IService& service,                   \
+                         zsr::Variant request)                          \
+            -> zsr::Variant                                             \
+        {                                                               \
+            ServiceNamespace::Client client(service);                   \
+            ResponseType response;                                      \
+            client. IDENT (zsr::variant_helper<RequestType>::unpack(    \
+                               request, t2c),                           \
+                           response,                                    \
+                           nullptr);                                    \
+                                                                        \
+            return zsr::variant_helper<ResponseType>::pack(             \
+                std::move(response), t2c);                              \
+        };
+
+#define ZSERIO_REFLECT_SERVICE_METHOD_END()            \
+    }
+
+#define ZSERIO_REFLECT_SERVICE_METHOD_REQUEST_BEGIN()   \
+    {                                                   \
+        auto& tr = sm.requestType;                      \
+        zsr::CTypeTraits<RequestType>::set(tr.ctype);
+
+#define ZSERIO_REFLECT_SERVICE_METHOD_REQUEST_END()    \
+    }
+
+#define ZSERIO_REFLECT_SERVICE_METHOD_RESPONSE_BEGIN() \
+    {                                                  \
+        auto& tr = sm.responseType;                    \
+        zsr::CTypeTraits<ResponseType>::set(tr.ctype);
+
+#define ZSERIO_REFLECT_SERVICE_METHOD_RESPONSE_END()   \
+    }
+
 /* clang-format on */
