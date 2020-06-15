@@ -438,16 +438,19 @@
         using ResponseType = std::tuple_element_t<                      \
             1u, ArgTupleType>;                                          \
                                                                         \
-        sm.call = [&t2c](::zserio::IService& service,                   \
-                         zsr::Variant request)                          \
+        sm.call = [&t2c, &s, &sm](::zserio::IService& service,          \
+                                  zsr::Variant request)                 \
             -> zsr::Variant                                             \
         {                                                               \
             ServiceNamespace::Client client(service);                   \
             ResponseType response;                                      \
+                                                                        \
+            zsr::ServiceMethod::Context ctx{s, sm, request};            \
+                                                                        \
             client. IDENT (zsr::variant_helper<RequestType>::unpack(    \
                                request, t2c),                           \
                            response,                                    \
-                           nullptr);                                    \
+                           &ctx);                                       \
                                                                         \
             return zsr::variant_helper<ResponseType>::pack(             \
                 std::move(response), t2c);                              \

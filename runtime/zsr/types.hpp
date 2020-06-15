@@ -311,6 +311,14 @@ struct ZSR_EXPORT ServiceMethod
     TypeRef responseType;
 
     std::function<Variant(::zserio::IService&, Variant)> call;
+
+    struct Context
+    {
+        const struct Service& service;
+        const struct ServiceMethod& method;
+
+        const zsr::Variant& request;
+    };
 };
 
 /**
