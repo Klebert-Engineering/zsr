@@ -254,8 +254,7 @@ struct ZSR_EXPORT Compound
 
     /**
      * Optional initialization function.
-     *
-     * Valid for compounds that have parameters.
+     * Set for compounds that have parameters.
      *
      * @param Instance of the introspectable to initialize.
      * @param Parameter list, see `Parameter::set`.
@@ -264,35 +263,47 @@ struct ZSR_EXPORT Compound
 
     /**
      * Optional child initializator.
+     *
+     * Maps to zserio generated `initializeChildren` function.
      */
     std::function<void(Introspectable&)> initializeChildren = nullptr;
 
     /**
      * Comparison function.
+     *
+     * Maps to zserio generated `operator==` function.
      */
     std::function<bool(const Introspectable&, const Introspectable&)> compare =
         nullptr;
 
     /**
      * Hash function.
+     *
+     * Maps to zserio generated `hashCode` function.
      */
     std::function<int(const Introspectable&)> hash =
         nullptr;
 
     /**
      * Bitsize function.
+     *
+     * Maps to zserio generated `bitSizeOf` function.
      */
     std::function<size_t(const Introspectable&)> bitSize =
         nullptr;
 
     /**
      * Deserialization function.
+     *
+     * Maps to zserio generated `read` function.
      */
     std::function<void(Introspectable&, ::zserio::BitStreamReader&)> read =
         nullptr;
 
     /**
      * Serialization function.
+     *
+     * Maps to zserio generated `write` function.
      */
     std::function<void(Introspectable&, ::zserio::BitStreamWriter&)> write =
         nullptr;
@@ -311,6 +322,21 @@ struct ZSR_EXPORT ServiceMethod
     TypeRef responseType;
 
     std::function<Variant(::zserio::IService&, Variant)> call;
+
+    /**
+     * Object passed as user-data to zserio generated
+     * service functions.
+     *
+     * Contains the original, non-serialized, request data plus
+     * meta information about the service method being called.
+     */
+    struct Context
+    {
+        const struct Service& service;
+        const struct ServiceMethod& method;
+
+        const zsr::Variant& request;
+    };
 };
 
 /**
