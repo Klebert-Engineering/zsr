@@ -6,7 +6,7 @@ PKG;
 
 TEST(StructureTest, a_alloc_empty)
 {
-    auto* meta_struct = zsr::find<zsr::Compound>(pkg, "a_struct");
+    auto* meta_struct = zsr::find<zsr::Compound>(pkg, "A_struct");
 
     ASSERT_TRUE(meta_struct);
     ASSERT_TRUE(meta_struct->alloc);
@@ -19,7 +19,7 @@ TEST(StructureTest, a_alloc_empty)
 
 TEST(StructureTest, b_alloc_init_parameterized)
 {
-    auto* meta_struct = zsr::find<zsr::Compound>(pkg, "b_struct");
+    auto* meta_struct = zsr::find<zsr::Compound>(pkg, "B_struct");
 
     ASSERT_TRUE(meta_struct);
     ASSERT_TRUE(meta_struct->alloc);
@@ -49,8 +49,8 @@ TEST(StructureTest, b_alloc_init_parameterized)
 
 TEST(StructureTest, c_alloc_init_parameterized_instance)
 {
-    auto* s_parent = zsr::find<zsr::Compound>(pkg, "c_struct");
-    auto* s_parameter = zsr::find<zsr::Compound>(pkg, "c_parameter_struct");
+    auto* s_parent = zsr::find<zsr::Compound>(pkg, "C_struct");
+    auto* s_parameter = zsr::find<zsr::Compound>(pkg, "C_parameter_struct");
 
     ASSERT_TRUE(s_parent);
     ASSERT_TRUE(s_parameter);
@@ -83,7 +83,7 @@ TEST(StructureTest, c_alloc_init_parameterized_instance)
 
     ASSERT_TRUE(instance);
     ASSERT_TRUE(instance->meta());
-    ASSERT_EQ("c_parameter_struct", instance->meta()->ident);
+    ASSERT_EQ("C_parameter_struct", instance->meta()->ident);
 
     auto* m_ca_a = zsr::find<zsr::Field>(*s_parameter, "a");
     ASSERT_VARIANT_EQ(m_ca_a->get(*instance), std::string{"Hola"});
@@ -91,14 +91,14 @@ TEST(StructureTest, c_alloc_init_parameterized_instance)
 
 TEST(StructureTest, d_call_function)
 {
-    auto* s_struct = zsr::find<zsr::Compound>(pkg, "d_struct");
+    auto* s_struct = zsr::find<zsr::Compound>(pkg, "D_struct");
     ASSERT_TRUE(s_struct);
    
     auto* f_struct_a = zsr::find<zsr::Field>(*s_struct, "a");
     auto* f_fun_1 = zsr::find<zsr::Function>(*s_struct, "fun");
     auto* f_fun_2 = zsr::find<zsr::Function>(*s_struct, "fun2");
 
-    auto* s_res = zsr::find<zsr::Compound>(pkg, "d_res");
+    auto* s_res = zsr::find<zsr::Compound>(pkg, "D_res");
     ASSERT_TRUE(s_res);
 
     auto* f_res_a = zsr::find<zsr::Field>(*s_res, "a");
@@ -132,7 +132,7 @@ TEST(StructureTest, d_call_function)
 
 TEST(StructureTest, e_set_get_builtin_field)
 {
-    auto* s_struct = zsr::find<zsr::Compound>(pkg, "e_struct");
+    auto* s_struct = zsr::find<zsr::Compound>(pkg, "E_struct");
     auto* m_value = zsr::find<zsr::Field>(*s_struct, "a");
 
     /* Alloc instance */
@@ -149,11 +149,11 @@ TEST(StructureTest, e_set_get_builtin_field)
 
 TEST(StructureTest, f_set_get_compound_field)
 {
-    auto* s_parent = zsr::find<zsr::Compound>(pkg, "f_parent");
+    auto* s_parent = zsr::find<zsr::Compound>(pkg, "F_parent");
     auto* m_parent = zsr::find<zsr::Field>(*s_parent, "a");
     auto* f_parent = zsr::find<zsr::Function>(*s_parent, "child_value");
 
-    auto* s_child = zsr::find<zsr::Compound>(pkg, "f_child");
+    auto* s_child = zsr::find<zsr::Compound>(pkg, "F_child");
     auto* m_child = zsr::find<zsr::Field>(*s_child, "a");
 
     /* Alloc parameter */
@@ -175,7 +175,7 @@ TEST(StructureTest, f_set_get_compound_field)
 
 TEST(StructureTest, g_set_get_builtin_array_field)
 {
-    auto* s_struct = zsr::find<zsr::Compound>(pkg, "g_struct");
+    auto* s_struct = zsr::find<zsr::Compound>(pkg, "G_struct");
     auto* m_value = zsr::find<zsr::Field>(*s_struct, "a");
 
     /* Alloc instance */
@@ -196,8 +196,8 @@ TEST(StructureTest, g_set_get_builtin_array_field)
 
 TEST(StructureTest, h_invalid_field_access)
 {
-    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "h_struct_a");
-    auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "h_struct_b");
+    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "H_struct_a");
+    auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "H_struct_b");
     auto* meta_value = zsr::find<zsr::Field>(*meta_struct_a, "a");
 
     /* Alloc instance b */
@@ -210,16 +210,16 @@ TEST(StructureTest, h_invalid_field_access)
 
 TEST(StructureTest, i_check_has_initialize_children)
 {
-    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "i_struct_a");
+    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "I_struct_a");
     ASSERT_FALSE(meta_struct_a->initializeChildren);
 
-    auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "i_struct_b");
+    auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "I_struct_b");
     ASSERT_TRUE(meta_struct_b->initializeChildren);
 }
 
 TEST(StructureTest, j_conditional_field)
 {
-    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "j_struct");
+    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "J_struct");
     auto* meta_field_a = zsr::find<zsr::Field>(*meta_struct_a, "a");
 
     ASSERT_FALSE(meta_field_a->has);
@@ -233,10 +233,10 @@ TEST(StructureTest, j_conditional_field)
 
 TEST(StructureTest, k_nested_compounds)
 {
-    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "k_struct_a");
+    auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "K_struct_a");
     auto* meta_field_a_a = zsr::find<zsr::Field>(*meta_struct_a, "a");
 
-    auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "k_struct_b");
+    auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "K_struct_b");
     auto* meta_field_b_a = zsr::find<zsr::Field>(*meta_struct_b, "a");
 
     /* Alloc root object b */
@@ -287,7 +287,7 @@ TEST(StructureTest, k_nested_compounds)
 
 TEST(StructureTest, l_later_registered_member_type)
 {
-    auto* meta_parent = zsr::find<zsr::Compound>(pkg, "l_parent");
+    auto* meta_parent = zsr::find<zsr::Compound>(pkg, "L_parent");
     auto* meta_field = zsr::find<zsr::Field>(*meta_parent, "a");
 
     /* Alloc parent */
@@ -303,7 +303,7 @@ TEST(StructureTest, l_later_registered_member_type)
 
 TEST(StructureTest, m_field_type_info)
 {
-    auto* meta_parent = zsr::find<zsr::Compound>(pkg, "m_parent");
+    auto* meta_parent = zsr::find<zsr::Compound>(pkg, "M_parent");
     auto* meta_field_a = zsr::find<zsr::Field>(*meta_parent, "a");
     auto* meta_field_b = zsr::find<zsr::Field>(*meta_parent, "b");
     auto* meta_field_c = zsr::find<zsr::Field>(*meta_parent, "c");
@@ -328,7 +328,7 @@ TEST(StructureTest, m_field_type_info)
 
     ASSERT_TRUE(meta_field_e);
     ASSERT_EQ(zsr::ZType::Structure, meta_field_e->type->ztype.type);
-    ASSERT_EQ("m_child", meta_field_e->type->ident);
+    ASSERT_EQ("M_child", meta_field_e->type->ident);
 }
 
 } // namespace

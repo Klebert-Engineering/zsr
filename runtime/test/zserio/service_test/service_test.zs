@@ -1,8 +1,8 @@
 package service_test;
 
-struct request {};
-struct response {};
+struct Request {};
+struct Response {};
 
-service a_service {
-    response method_a(request);
+service A_service {
+    Response method_a(Request);
 };

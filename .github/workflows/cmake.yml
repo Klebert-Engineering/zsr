@@ -23,7 +23,7 @@ jobs:
         mkdir build
     - name: Clone zserio
       run: |
-        git clone -b v2.0.0-pre3 https://github.com/ndsev/zserio.git zserio
+        git clone -b v2.0.0 https://github.com/ndsev/zserio.git zserio
     - name: Configure
       working-directory: build
       run: >
@@ -56,7 +56,7 @@ jobs:
         mkdir build
     - name: Clone zserio
       run: |
-        git clone -b v2.0.0-pre3 https://github.com/ndsev/zserio.git zserio
+        git clone -b v2.0.0 https://github.com/ndsev/zserio.git zserio
     - name: Configure
       working-directory: build
       run: >
@@ -93,7 +93,7 @@ jobs:
         brew install ant
     - name: Clone zserio
       run: |
-        git clone -b v2.0.0-pre3 https://github.com/ndsev/zserio.git zserio
+        git clone -b v2.0.0 https://github.com/ndsev/zserio.git zserio
     - name: Configure
       working-directory: build
       run: >

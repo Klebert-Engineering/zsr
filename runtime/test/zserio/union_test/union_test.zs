@@ -1,6 +1,6 @@
 package union_test;
 
-union union_a {
+union Union_a {
     int16 a;
     int32 b;
 };
