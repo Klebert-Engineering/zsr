@@ -154,13 +154,13 @@ function(add_zserio_module ZSR_MODULE_NAME)
     ${ZSR_MODULE_NAME})
 
   if (MSVC)
-    target_compile_options(${ZSR_MODULE_NAME}-reflection
+    target_compile_options(${ZSR_MODULE_NAME}
       PUBLIC
         /bigobj
         /EHsc
         /wd4100)
   else()
-    target_compile_options(${ZSR_MODULE_NAME}-reflection
+    target_compile_options(${ZSR_MODULE_NAME}
       PUBLIC
         -fPIC)
   endif()
