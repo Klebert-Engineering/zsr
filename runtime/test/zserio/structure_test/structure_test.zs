@@ -3,38 +3,38 @@ package structure_test;
 /**
  * A
  */
-struct a_struct {};
+struct A_struct {};
 
 /**
  * B
  */
-struct b_struct(uint32 a) {
+struct B_struct(uint32 a) {
 };
 
 /**
  * C
  */
-struct c_parameter_struct {
+struct C_parameter_struct {
     string a;
 };
 
-struct c_struct(c_parameter_struct a) {};
+struct C_struct(C_parameter_struct a) {};
 
 /**
  * D - Reflect functions with various return types
  */
-struct d_res {
+struct D_res {
     int32 a;
 };
 
-struct d_struct {
-    d_res a;
+struct D_struct {
+    D_res a;
 
     function uint32 fun() {
         return 10;
     }
 
-    function d_res fun2() {
+    function D_res fun2() {
         return a;
     }
 };
@@ -42,19 +42,19 @@ struct d_struct {
 /**
  * E
  */
-struct e_struct {
+struct E_struct {
     string a;
 };
 
 /**
  * F
  */
-struct f_child {
+struct F_child {
     int32 a;
 };
 
-struct f_parent {
-    f_child a;
+struct F_parent {
+    F_child a;
 
     function int32 child_value() {
         return a.a;
@@ -64,67 +64,67 @@ struct f_parent {
 /**
  * G
  */
-struct g_struct {
+struct G_struct {
     string a[];
 };
 
 /** H **/
 
-struct h_struct_a {
+struct H_struct_a {
     string a;
 };
 
-struct h_struct_b {
+struct H_struct_b {
     string a;
 };
 
 /** I **/
 
-struct i_struct_a(int32 a) {};
+struct I_struct_a(int32 a) {};
 
-struct i_struct_b {
+struct I_struct_b {
     int32 a;
-    i_struct_a(a) b;
+    I_struct_a(a) b;
 };
 
 /** J **/
 
-struct j_struct {
+struct J_struct {
     int32 a;
     int32 b if a > 0;
 };
 
 /** K **/
 
-struct k_struct_a {
+struct K_struct_a {
     int32 a;
 };
 
-struct k_struct_b {
-    k_struct_a a[];
+struct K_struct_b {
+    K_struct_a a[];
 };
 
 /** L - Lookup member type declared after parent type */
 
-struct l_parent {
-    l_member a;
+struct L_parent {
+    L_member a;
 };
 
-struct l_member {
+struct L_member {
     int32 a;
 };
 
 
 /** M - Check field type information */
 
-struct m_child {
+struct M_child {
     int32 a;
 };
 
-struct m_parent {
+struct M_parent {
     int32 a;
     uint16 b;
     float32 c;
     string d;
-    m_child e;
+    M_child e;
 };

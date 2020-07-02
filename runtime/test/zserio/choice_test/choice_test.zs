@@ -1,6 +1,6 @@
 package choice_test;
 
-choice choice_a(int32 s) on s {
+choice Choice_a(int32 s) on s {
 case 0:
     int32 a;
 case 1:
