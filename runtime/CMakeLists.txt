@@ -152,6 +152,18 @@ function(add_zserio_module ZSR_MODULE_NAME)
   target_link_libraries(${ZSR_MODULE_NAME}-reflection
     zsr
     ${ZSR_MODULE_NAME})
+
+  if (MSVC)
+    target_compile_options(${ZSR_MODULE_NAME}-reflection
+      PUBLIC
+        /bigobj
+        /EHsc
+        /wd4100)
+  else()
+    target_compile_options(${ZSR_MODULE_NAME}-reflection
+      PUBLIC
+        -fPIC)
+  endif()
 endfunction()
 
 ## Test
