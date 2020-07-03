@@ -10,10 +10,10 @@ void check_isa(const zsr::Introspectable& i,
 {
     auto iter = t2c.find(std::type_index(typeid(_Type)));
     if (iter == t2c.end())
-        throw zsr::IntrospectableCastError{nullptr, i.meta()};
+        throw zsr::IntrospectableCastError{i.meta(), nullptr};
 
     if (iter->second != i.meta() && i.meta())
-        throw zsr::IntrospectableCastError{iter->second, i.meta()};
+        throw zsr::IntrospectableCastError{i.meta(), iter->second};
 }
 
 template <class _Compound>

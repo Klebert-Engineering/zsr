@@ -331,4 +331,22 @@ TEST(StructureTest, m_field_type_info)
     ASSERT_EQ("M_child", meta_field_e->type->ident);
 }
 
+TEST(StructureTest, n_set_incompatible_type)
+{
+    auto* meta_parent = zsr::find<zsr::Compound>(pkg, "N_parent");
+    auto* meta_field = zsr::find<zsr::Field>(*meta_parent, "a");
+    auto* meta_wrong = zsr::find<zsr::Compound>(pkg, "N_wrong");
+
+    /* Alloc parent */
+    auto instance = meta_parent->alloc();
+
+    /* Alloc wrong member type */
+    auto wrong_instance = meta_wrong->alloc();
+
+    /* Set incompatible type. Expected N_expected, got N_wrong */
+    EXPECT_THROW(meta_field->set(instance, wrong_instance),
+                 zsr::IntrospectableCastError);
+}
+
+
 } // namespace

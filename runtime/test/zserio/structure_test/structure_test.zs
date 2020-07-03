@@ -128,3 +128,16 @@ struct M_parent {
     string d;
     M_child e;
 };
+
+/** N - Set incompatible instance to field */
+struct N_expected {
+    int32 a;
+};
+
+struct N_wrong {
+    int32 a;
+};
+
+struct N_parent {
+    N_expected a;
+};

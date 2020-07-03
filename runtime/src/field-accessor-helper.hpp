@@ -7,8 +7,8 @@ namespace zsr {
  * for fundamental and zserio generated types.
  */
 template <class _Type,
-          bool _IsCompound = is_compound<remove_vector_t<_Type>>::value,
-          bool _IsVector = is_vector<_Type>::value>
+          bool _IsCompound = is_compound<remove_vector_t<_Type>>::value, /* False */
+          bool _IsVector = is_vector<_Type>::value> /* False|True */
 struct GenFieldAccessorHelper;
 
 template <class _Type, bool _IsVector>
@@ -100,8 +100,7 @@ struct GenFieldAccessorHelper<_Type, true /* IsCompound */, true /* IsVector */>
                     vector->end(),
                     std::back_inserter(zserioVector),
                     [&](const auto& item) {
-                        return *item.obj->template as<remove_vector_t<Type>>()
-                                    .obj;
+                        return introspectable_cast<remove_vector_t<Type>>(item, t2c);
                     });
 
                 fun(obj, std::move(zserioVector));
@@ -148,9 +147,11 @@ struct GenFieldAccessorHelper<_Type,
         return [fun, meta, &t2c](zsr::Introspectable& i, zsr::Variant v) {
             auto& obj = introspectable_cast<_Structure>(i, t2c);
             if (auto vv = v.get<zsr::Introspectable>()) {
+                const auto& value = introspectable_cast<Type>(*vv, t2c);
+
                 i.obj->makeChildrenOwning(meta);
 
-                fun(obj, *vv->obj->as<Type>().obj);
+                fun(obj, value);
             } else
                 throw zsr::VariantCastError{};
         };
