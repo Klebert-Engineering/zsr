@@ -105,7 +105,11 @@ function(add_zserio_module ZSR_MODULE_NAME)
             -cpp_reflect ${GEN_REFLECT_SRC_ROOT}
             -src ${ZSR_MODULE_ROOT}
             ${ZSR_MODULE_ENTRY}
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    RESULT_VARIABLE ZSERIO_RESULT)
+  if (NOT ZSERIO_RESULT EQUAL "0")
+      message(FATAL_ERROR "/////////// zserio FAILED to generate ${ZSR_MODULE_NAME} module! ///////////")
+  endif()
 
   # Generated source amalgamation
   get_target_property(AMALGAMATE zsr-amalgamate src)
