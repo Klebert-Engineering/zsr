@@ -4,12 +4,6 @@ project(zserio-cpp-introspection-runtime)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
 
-if (MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /EHsc")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-endif()
-
 set(SRC  "${CMAKE_CURRENT_SOURCE_DIR}")
 set(TEST "${SRC}/test")
 
@@ -130,15 +124,6 @@ function(add_zserio_module ZSR_MODULE_NAME)
   target_link_libraries(${ZSR_MODULE_NAME}
     PUBLIC ZserioCppRuntime)
 
-  target_compile_options(${ZSR_MODULE_NAME}
-    PUBLIC
-      "$<$<CXX_COMPILER_ID:MSVC>:/bigobj;/EHsc;/wd4100>"
-      "$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fPIC>")
-
-  #set_target_properties(${ZSR_MODULE_NAME}
-    #PROPERTIES
-      #WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
   # Reflection runtime lib
   get_target_property(ZSR_SRC zsr src_dir)
 
@@ -153,9 +138,6 @@ function(add_zserio_module ZSR_MODULE_NAME)
       ZSR_BUILD=1)
 
   target_compile_options(${ZSR_MODULE_NAME}-reflection
-    PUBLIC
-      "$<$<CXX_COMPILER_ID:MSVC>:/W4;/WX;/bigobj;/EHsc>"
-      "$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fPIC>"
     PRIVATE
       "$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall;-fvisibility=hidden>")
 
