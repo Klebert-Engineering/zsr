@@ -7,6 +7,11 @@ set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
 set(SRC  "${CMAKE_CURRENT_SOURCE_DIR}")
 set(TEST "${SRC}/test")
 
+define_property(GLOBAL PROPERTY ZSERIO_DEPENDS_PY
+    BRIEF_DOCS "Zserio dependency grepper."
+    FULL_DOCS "Greps all external dependencies of a zserio top-level sub-package.")
+set_property(GLOBAL PROPERTY ZSERIO_DEPENDS_PY "${CMAKE_CURRENT_SOURCE_DIR}/submodule-depends.py")
+
 if (NOT MSVC)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON) # This does not set -fPIC :(
   set(CMAKE_CXX_FLAGS -fPIC)
@@ -56,34 +61,42 @@ target_compile_options(zsr
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -fvisibility=hidden>)
 
-function (add_submodule_lib TARGET ROOT_DIR SUBMODULE_DIR RECURSIVE)
-  if (RECURSIVE)
-    file(GLOB_RECURSE subdir_sources "${SUBMODULE_DIR}/*.cpp")
-  else()
-    file(GLOB subdir_sources "${SUBMODULE_DIR}/*.cpp")
+function (submodule_dependencies ZS_ROOT SUBMODULE_NAME TARGET RESULT)
+  get_property(depends_py GLOBAL PROPERTY ZSERIO_DEPENDS_PY)
+  find_package(Python3 COMPONENTS Interpreter)
+
+  if (NOT Python3_FOUND)
+    message(FATAL_ERROR "Could not find python3 interpreter!")
   endif()
 
+  execute_process(
+    COMMAND
+      "${Python3_EXECUTABLE}" "${depends_py}" "${ZS_ROOT}" "${SUBMODULE_NAME}" "${TARGET}"
+    OUTPUT_VARIABLE DEPS_OUTPUT
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  set(${RESULT} "${DEPS_OUTPUT}" PARENT_SCOPE)
+endfunction()
+
+function (add_submodule_lib TARGET ZS_ROOT GEN_SRC_ROOT SUBMODULE_DIR)
+  file(GLOB_RECURSE subdir_sources "${SUBMODULE_DIR}/*.cpp")
+
   if (subdir_sources)
-    if (RECURSIVE)
-      get_filename_component(dirname "${SUBMODULE_DIR}" NAME)
-      message(STATUS "Adding target for ${TARGET} submodule ${dirname}")
+    get_filename_component(dirname "${SUBMODULE_DIR}" NAME)
+    message(STATUS "Adding target for ${TARGET} submodule ${dirname}")
 
-      set(dirname "-${dirname}")
-    else()
-      message(STATUS "Adding target for ${TARGET} root")
+    submodule_dependencies(${ZS_ROOT} ${dirname} ${TARGET} dependencies)
+    message("Deps for ${dirname}:: ${dependencies}")
 
-      set(dirname "root")
-    endif()
-
-    set(subtarget ${TARGET}-${dirname})
+    set(subtarget ${TARGET}--${dirname})
     add_library(${subtarget} SHARED
       ${subdir_sources})
 
     target_include_directories(${subtarget}
-      PUBLIC "${ROOT_DIR}")
+      PUBLIC "${GEN_SRC_ROOT}")
 
     target_link_libraries(${subtarget}
-      PUBLIC ZserioCppRuntime)
+      PUBLIC ZserioCppRuntime ${dependencies})
 
     target_link_libraries(${TARGET}
       INTERFACE ${subtarget})
@@ -163,14 +176,11 @@ function (add_zserio_module ZSR_MODULE_NAME)
   # Create single cmake interface library to link all sub-libs
   add_library(${ZSR_MODULE_NAME} INTERFACE)
 
-  # Create root source library
-  add_submodule_lib(${ZSR_MODULE_NAME} ${GEN_SRC_ROOT} ${GEN_SRC_ROOT} FALSE)
-
   # Create sub-libs per directory
   file(GLOB zserio_gen_dirs LIST_DIRECTORIES TRUE "${zserio_gen_root}/*")
   foreach (zserio_gen_subdir IN LISTS zserio_gen_dirs)
     if (IS_DIRECTORY "${zserio_gen_subdir}")
-      add_submodule_lib(${ZSR_MODULE_NAME} ${GEN_SRC_ROOT} ${zserio_gen_subdir} TRUE)
+      add_submodule_lib(${ZSR_MODULE_NAME} ${ZSR_MODULE_ROOT} ${GEN_SRC_ROOT} ${zserio_gen_subdir})
     endif()
   endforeach()
 
