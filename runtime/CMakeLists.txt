@@ -7,6 +7,11 @@ set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
 set(SRC  "${CMAKE_CURRENT_SOURCE_DIR}")
 set(TEST "${SRC}/test")
 
+define_property(GLOBAL PROPERTY ZSERIO_DEPENDS_PY
+    BRIEF_DOCS "Zserio dependency grepper."
+    FULL_DOCS "Greps all external dependencies of a zserio top-level sub-package.")
+set_property(GLOBAL PROPERTY ZSERIO_DEPENDS_PY "${CMAKE_CURRENT_SOURCE_DIR}/submodule-depends.py")
+
 if (NOT MSVC)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON) # This does not set -fPIC :(
   set(CMAKE_CXX_FLAGS -fPIC)
@@ -56,16 +61,67 @@ target_compile_options(zsr
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -fvisibility=hidden>)
 
-add_custom_target(zsr-amalgamate
-  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
+function (submodule_dependencies ZS_ROOT SUBMODULE_NAME TARGET RESULT)
+  get_property(depends_py GLOBAL PROPERTY ZSERIO_DEPENDS_PY)
+  find_package(Python3 COMPONENTS Interpreter)
 
-set_target_properties(zsr-amalgamate
-  PROPERTIES
-    src "${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.cmake")
+  if (NOT Python3_FOUND)
+    message(FATAL_ERROR "Could not find python3 interpreter!")
+  endif()
 
-function(add_zserio_module ZSR_MODULE_NAME)
+  execute_process(
+    COMMAND
+      "${Python3_EXECUTABLE}" "${depends_py}" "${ZS_ROOT}" "${SUBMODULE_NAME}" "${TARGET}"
+    OUTPUT_VARIABLE DEPS_OUTPUT
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  set(${RESULT} "${DEPS_OUTPUT}" PARENT_SCOPE)
+endfunction()
+
+function (add_submodule_lib TARGET ZS_ROOT GEN_SRC_ROOT SUBMODULE_DIR)
+  file(GLOB_RECURSE subdir_sources "${SUBMODULE_DIR}/*.cpp")
+
+  if (subdir_sources)
+    get_filename_component(dirname "${SUBMODULE_DIR}" NAME)
+    message(STATUS "Adding target for ${TARGET} submodule ${dirname}")
+
+    submodule_dependencies(${ZS_ROOT} ${dirname} ${TARGET} dependencies)
+    message("Deps for ${dirname}:: ${dependencies}")
+
+    set(subtarget ${TARGET}--${dirname})
+    add_library(${subtarget} SHARED
+      ${subdir_sources})
+
+    target_include_directories(${subtarget}
+      PUBLIC "${GEN_SRC_ROOT}")
+
+    target_link_libraries(${subtarget}
+      PUBLIC ZserioCppRuntime ${dependencies})
+
+    target_link_libraries(${TARGET}
+      INTERFACE ${subtarget})
+
+    set_target_properties(${subtarget}
+      PROPERTIES
+        WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+    if (MSVC)
+      target_compile_options(${subtarget}
+        PUBLIC
+          /bigobj
+          /EHsc
+          /wd4100)
+    else()
+      target_compile_options(${subtarget}
+        PUBLIC
+          -fPIC)
+    endif()
+  endif()
+endfunction()
+
+function (add_zserio_module ZSR_MODULE_NAME)
   cmake_parse_arguments(PARSE_ARGV 0
-    ZSR_MODULE "" "ROOT;ENTRY;TOP_LEVEL_PKG" "")
+    ZSR_MODULE "EXCLUDE_FROM_ALL" "ROOT;ENTRY;TOP_LEVEL_PKG" "")
 
   if (NOT ZSR_MODULE_ROOT)
     message(FATAL_ERROR "Missing zserio-module argument ROOT!")
@@ -74,6 +130,7 @@ function(add_zserio_module ZSR_MODULE_NAME)
   endif()
 
   set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${ZSR_MODULE_NAME}.zserio-gen/")
+  file(REMOVE_RECURSE "${GEN_SRC_ROOT}")
   file(MAKE_DIRECTORY "${GEN_SRC_ROOT}")
 
   set(GEN_REFLECT_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${ZSR_MODULE_NAME}.zserio-gen/reflection/")
@@ -111,25 +168,24 @@ function(add_zserio_module ZSR_MODULE_NAME)
       message(FATAL_ERROR "/////////// zserio FAILED to generate ${ZSR_MODULE_NAME} module! ///////////")
   endif()
 
-  # Generated source amalgamation
-  get_target_property(AMALGAMATE zsr-amalgamate src)
+  # Glob generated sources per sub-directory
+  #
+  # E.g. /<root>/<sub>/*
+  set(zserio_gen_root "${GEN_SRC_ROOT}/${ZSR_MODULE_TOP_LEVEL_PKG}/")
 
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -P "${AMALGAMATE}"
-                                "${GEN_SRC_ROOT}/${ZSR_MODULE_TOP_LEVEL_PKG}"
-                                "${GEN_SRC_ROOT}/amalgamation.cpp")
+  # Create single cmake interface library to link all sub-libs
+  add_library(${ZSR_MODULE_NAME} INTERFACE)
 
-  add_library(${ZSR_MODULE_NAME} SHARED
-    "${GEN_SRC_ROOT}/amalgamation.cpp")
+  # Create sub-libs per directory
+  file(GLOB zserio_gen_dirs LIST_DIRECTORIES TRUE "${zserio_gen_root}/*")
+  foreach (zserio_gen_subdir IN LISTS zserio_gen_dirs)
+    if (IS_DIRECTORY "${zserio_gen_subdir}")
+      add_submodule_lib(${ZSR_MODULE_NAME} ${ZSR_MODULE_ROOT} ${GEN_SRC_ROOT} ${zserio_gen_subdir})
+    endif()
+  endforeach()
 
   target_include_directories(${ZSR_MODULE_NAME}
-    PUBLIC "${GEN_SRC_ROOT}")
-
-  target_link_libraries(${ZSR_MODULE_NAME}
-    PUBLIC ZserioCppRuntime)
-
-  set_target_properties(${ZSR_MODULE_NAME} PROPERTIES
-    WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    INTERFACE "${GEN_SRC_ROOT}")
 
   # Reflection runtime lib
   get_target_property(ZSR_SRC zsr src_dir)
@@ -156,18 +212,6 @@ function(add_zserio_module ZSR_MODULE_NAME)
   target_link_libraries(${ZSR_MODULE_NAME}-reflection
     zsr
     ${ZSR_MODULE_NAME})
-
-  if (MSVC)
-    target_compile_options(${ZSR_MODULE_NAME}
-      PUBLIC
-        /bigobj
-        /EHsc
-        /wd4100)
-  else()
-    target_compile_options(${ZSR_MODULE_NAME}
-      PUBLIC
-        -fPIC)
-  endif()
 endfunction()
 
 ## Test
