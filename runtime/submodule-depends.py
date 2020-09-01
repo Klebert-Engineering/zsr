@@ -4,24 +4,25 @@ import glob
 import os
 import re
 
-zs_pkg_path = sys.argv[1]
-zs_target_subpkg = sys.argv[2]
-target_basename = sys.argv[3]
+root = sys.argv[1] # Root directory to scan for dependencies
+top_level_pkg = sys.argv[2] # ZSerio top-level-package name
+package_depth = int(sys.argv[3]) # Sub-Package split depth (see add_zserio_module SUBDIR_DEPTH)
 
-sub_pkg_path = os.path.join(zs_pkg_path, zs_target_subpkg)
+zs_files = glob.glob(os.path.join(root, "**/*.zs"), recursive="True")
 
-zs_files = glob.glob(os.path.join(sub_pkg_path, "**/*.zs"), recursive="True")
 zs_sub_pkg_src = ""
 for zs_file_path in zs_files:
     with open(zs_file_path) as zs_file:
         zs_sub_pkg_src += zs_file.read() + "\n"
 
-if os.path.isfile(sub_pkg_path+".zs"):
-    with open(sub_pkg_path+".zs") as zs_file:
+if os.path.isfile(root+".zs"):
+    with open(root+".zs") as zs_file:
         zs_sub_pkg_src += zs_file.read() + "\n"
 
-pattern = re.compile(r"\n\s*import ([^.]+)\..*")
+pattern = re.compile(r"\n\s*import ([^.]+)(\.[^.]+){"+str(package_depth-1)+"}\..*")
 # From the docs of findall: If one or more groups are present in the pattern, return a list of groups;
 # this will be a list of tuples if the pattern has more than one group.
-matches = set(match.strip() for match in pattern.findall(zs_sub_pkg_src))
-print(";".join(f"{target_basename}--{match}" for match in matches if match != zs_target_subpkg))
+matches = set("".join(match) for match in pattern.findall(zs_sub_pkg_src))
+matches = set(match.replace(".", "--") for match in matches)
+
+print(";".join(f"{top_level_pkg}--{match}" for match in matches))
