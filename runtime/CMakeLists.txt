@@ -113,6 +113,8 @@ function (_add_submodule_lib_recursive target top_level_pkg zs_root gen_src_root
 endfunction()
 
 function (add_submodule_lib target top_level_pkg zs_root gen_src_root subdir module_name max_depth)
+  set(module_name "zsr--${module_name}")
+
   file(GLOB_RECURSE subdir_sources "${subdir}/*.cpp")
   if (subdir_sources)
     message("Added target ${module_name}")
@@ -163,6 +165,9 @@ function (add_zserio_module ZSR_MODULE_NAME)
     message(FATAL_ERROR "Missing zserio-module argument ROOT!")
   elseif (NOT ZSR_MODULE_ENTRY)
     message(FATAL_ERROR "Missing zserio-module argument ENTRY!")
+  elseif (NOT ZSR_MODULE_SUBDIR_DEPTH)
+    message(WARNING "add_zserio_module: Parameter SUBDIR_DEPTH is not set. Defaulting to 0.")
+    set(ZSR_MODULE_SUBDIR_DEPTH 0)
   endif()
 
   set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${ZSR_MODULE_NAME}.zserio-gen/")
@@ -209,9 +214,6 @@ function (add_zserio_module ZSR_MODULE_NAME)
 
   # Create sub-libs recursive per directory
   message("Scanning zsr library subdirectories")
-  if (NOT ZSR_MODULE_SUBDIR_DEPTH)
-    set(ZSR_MODULE_SUBDIR_DEPTH 1)
-  endif()
   add_submodule_lib_recursive(
     ${ZSR_MODULE_NAME}
     ${ZSR_MODULE_TOP_LEVEL_PKG}
@@ -281,7 +283,10 @@ function(add_zsr_module_test NAME)
     ZSR_TEST "" "TOP_LEVEL_PKG" "")
 
   add_zserio_module(zs-${NAME}
-    ROOT "${TEST}/zserio/${NAME}" ENTRY "${NAME}.zs" TOP_LEVEL_PKG "${ZSR_TEST_TOP_LEVEL_PKG}")
+    ROOT "${TEST}/zserio/${NAME}"
+    ENTRY "${NAME}.zs"
+    TOP_LEVEL_PKG "${ZSR_TEST_TOP_LEVEL_PKG}"
+    SUBDIR_DEPTH 1)
   add_zsr_test(${NAME} "${TEST}/zserio/${NAME}/${NAME}.cpp")
 
   target_link_libraries(${NAME}

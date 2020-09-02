@@ -25,4 +25,4 @@ pattern = re.compile(r"\n\s*import ([^.]+)(\.[^.]+){"+str(package_depth-1)+"}\..
 matches = set("".join(match) for match in pattern.findall(zs_sub_pkg_src))
 matches = set(match.replace(".", "--") for match in matches)
 
-print(";".join(f"{top_level_pkg}--{match}" for match in matches))
+print(";".join(f"zsr--{top_level_pkg}--{match}" for match in matches))
