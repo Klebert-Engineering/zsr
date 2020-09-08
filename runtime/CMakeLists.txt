@@ -61,7 +61,7 @@ target_compile_options(zsr
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -fvisibility=hidden>)
 
-function (submodule_dependencies ZS_ROOT SUBMODULE_NAME TARGET RESULT)
+function (submodule_dependencies ROOT TOP_LEVEL_PKG MAX_DEPTH RESULT)
   get_property(depends_py GLOBAL PROPERTY ZSERIO_DEPENDS_PY)
   find_package(Python3 COMPONENTS Interpreter)
 
@@ -71,48 +71,86 @@ function (submodule_dependencies ZS_ROOT SUBMODULE_NAME TARGET RESULT)
 
   execute_process(
     COMMAND
-      "${Python3_EXECUTABLE}" "${depends_py}" "${ZS_ROOT}" "${SUBMODULE_NAME}" "${TARGET}"
+    "${Python3_EXECUTABLE}" "${depends_py}" "${ROOT}" "${TOP_LEVEL_PKG}" "${MAX_DEPTH}"
     OUTPUT_VARIABLE DEPS_OUTPUT
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   set(${RESULT} "${DEPS_OUTPUT}" PARENT_SCOPE)
 endfunction()
 
-function (add_submodule_lib TARGET ZS_ROOT GEN_SRC_ROOT SUBMODULE_DIR)
-  file(GLOB_RECURSE subdir_sources "${SUBMODULE_DIR}/*.cpp")
+function (add_submodule_lib_recursive target top_level_pkg zs_root gen_src_root parent_dir module_name max_depth)
+  _add_submodule_lib_recursive("${target}" "${top_level_pkg}" "${zs_root}" "${gen_src_root}" "${parent_dir}" "${module_name}" "${max_depth}" 0)
+endfunction()
 
+function (_add_submodule_lib_recursive target top_level_pkg zs_root gen_src_root parent_dir module_name max_depth depth)
+  # Append parent dir name to module name
+  get_filename_component(parent_dir_name "${parent_dir}" NAME)
+  if (parent_dir_name)
+    if (module_name)
+      set(module_name "${module_name}--${parent_dir_name}")
+    else()
+      set(module_name "${parent_dir_name}")
+    endif()
+  endif()
+
+  # Check recursion depth
+  math(EXPR depth "${depth} + 1")
+  if (depth GREATER max_depth)
+    add_submodule_lib("${target}" "${top_level_pkg}" "${zs_root}" "${gen_src_root}" "${parent_dir}" "${module_name}" "${max_depth}")
+    return()
+  endif()
+
+  # Glob subdirs recursive, create module lib if files exist
+  file(GLOB subdirs LIST_DIRECTORIES TRUE "${parent_dir}/*")
+  foreach (subdir IN LISTS subdirs)
+    if (IS_DIRECTORY "${subdir}")
+      file(RELATIVE_PATH rel_subdir "${gen_src_root}" "${subdir}")
+      message(STATUS "Scanning ${rel_subdir}")
+
+      _add_submodule_lib_recursive("${target}" "${top_level_pkg}" "${zs_root}" "${gen_src_root}" "${subdir}" "${module_name}" "${max_depth}" "${depth}")
+    endif()
+  endforeach()
+endfunction()
+
+function (add_submodule_lib target top_level_pkg zs_root gen_src_root subdir module_name max_depth)
+  set(module_name "zsr--${module_name}")
+
+  file(GLOB_RECURSE subdir_sources "${subdir}/*.cpp")
   if (subdir_sources)
-    get_filename_component(dirname "${SUBMODULE_DIR}" NAME)
-    message(STATUS "Adding target for ${TARGET} submodule ${dirname}")
+    message("Added target ${module_name}")
 
-    submodule_dependencies(${ZS_ROOT} ${dirname} ${TARGET} dependencies)
-    message("Deps for ${dirname}:: ${dependencies}")
+    file(RELATIVE_PATH rel_subdir "${gen_src_root}" "${subdir}")
+    submodule_dependencies("${zs_root}/../${rel_subdir}" "${top_level_pkg}" "${max_depth}" dependencies)
 
-    set(subtarget ${TARGET}--${dirname})
-    add_library(${subtarget} SHARED
+    list(SORT dependencies)
+    list(REMOVE_DUPLICATES dependencies)
+    list(REMOVE_ITEM dependencies "${module_name}")
+    message("Dependencies for ${module_name}: ${dependencies}")
+
+    add_library(${module_name} SHARED
       ${subdir_sources})
 
-    target_include_directories(${subtarget}
-      PUBLIC "${GEN_SRC_ROOT}")
+    target_include_directories(${module_name}
+      PUBLIC "${gen_src_root}")
 
-    target_link_libraries(${subtarget}
+    target_link_libraries(${module_name}
       PUBLIC ZserioCppRuntime ${dependencies})
 
-    target_link_libraries(${TARGET}
-      INTERFACE ${subtarget})
+    target_link_libraries(${target}
+      INTERFACE ${module_name})
 
-    set_target_properties(${subtarget}
+    set_target_properties(${module_name}
       PROPERTIES
         WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
     if (MSVC)
-      target_compile_options(${subtarget}
+      target_compile_options(${module_name}
         PUBLIC
           /bigobj
           /EHsc
           /wd4100)
     else()
-      target_compile_options(${subtarget}
+      target_compile_options(${module_name}
         PUBLIC
           -fPIC)
     endif()
@@ -121,12 +159,15 @@ endfunction()
 
 function (add_zserio_module ZSR_MODULE_NAME)
   cmake_parse_arguments(PARSE_ARGV 0
-    ZSR_MODULE "EXCLUDE_FROM_ALL" "ROOT;ENTRY;TOP_LEVEL_PKG" "")
+    ZSR_MODULE "EXCLUDE_FROM_ALL" "ROOT;ENTRY;TOP_LEVEL_PKG;SUBDIR_DEPTH" "")
 
   if (NOT ZSR_MODULE_ROOT)
     message(FATAL_ERROR "Missing zserio-module argument ROOT!")
   elseif (NOT ZSR_MODULE_ENTRY)
     message(FATAL_ERROR "Missing zserio-module argument ENTRY!")
+  elseif (NOT ZSR_MODULE_SUBDIR_DEPTH)
+    message(WARNING "add_zserio_module: Parameter SUBDIR_DEPTH is not set. Defaulting to 0.")
+    set(ZSR_MODULE_SUBDIR_DEPTH 0)
   endif()
 
   set(GEN_SRC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${ZSR_MODULE_NAME}.zserio-gen/")
@@ -168,21 +209,19 @@ function (add_zserio_module ZSR_MODULE_NAME)
       message(FATAL_ERROR "/////////// zserio FAILED to generate ${ZSR_MODULE_NAME} module! ///////////")
   endif()
 
-  # Glob generated sources per sub-directory
-  #
-  # E.g. /<root>/<sub>/*
-  set(zserio_gen_root "${GEN_SRC_ROOT}/${ZSR_MODULE_TOP_LEVEL_PKG}/")
-
   # Create single cmake interface library to link all sub-libs
   add_library(${ZSR_MODULE_NAME} INTERFACE)
 
-  # Create sub-libs per directory
-  file(GLOB zserio_gen_dirs LIST_DIRECTORIES TRUE "${zserio_gen_root}/*")
-  foreach (zserio_gen_subdir IN LISTS zserio_gen_dirs)
-    if (IS_DIRECTORY "${zserio_gen_subdir}")
-      add_submodule_lib(${ZSR_MODULE_NAME} ${ZSR_MODULE_ROOT} ${GEN_SRC_ROOT} ${zserio_gen_subdir})
-    endif()
-  endforeach()
+  # Create sub-libs recursive per directory
+  message("Scanning zsr library subdirectories")
+  add_submodule_lib_recursive(
+    ${ZSR_MODULE_NAME}
+    ${ZSR_MODULE_TOP_LEVEL_PKG}
+    ${ZSR_MODULE_ROOT}
+    ${GEN_SRC_ROOT}
+    "${GEN_SRC_ROOT}/${ZSR_MODULE_TOP_LEVEL_PKG}"
+    FALSE
+    ${ZSR_MODULE_SUBDIR_DEPTH})
 
   target_include_directories(${ZSR_MODULE_NAME}
     INTERFACE "${GEN_SRC_ROOT}")
@@ -244,7 +283,10 @@ function(add_zsr_module_test NAME)
     ZSR_TEST "" "TOP_LEVEL_PKG" "")
 
   add_zserio_module(zs-${NAME}
-    ROOT "${TEST}/zserio/${NAME}" ENTRY "${NAME}.zs" TOP_LEVEL_PKG "${ZSR_TEST_TOP_LEVEL_PKG}")
+    ROOT "${TEST}/zserio/${NAME}"
+    ENTRY "${NAME}.zs"
+    TOP_LEVEL_PKG "${ZSR_TEST_TOP_LEVEL_PKG}"
+    SUBDIR_DEPTH 1)
   add_zsr_test(${NAME} "${TEST}/zserio/${NAME}/${NAME}.cpp")
 
   target_link_libraries(${NAME}
