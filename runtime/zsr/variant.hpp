@@ -215,7 +215,7 @@ public:
     template <class _T>
     Variant(_T&& v)
     {
-        set<_T>(std::forward<_T>(v));
+        set(std::forward<_T>(v));
     }
 
     Variant(const Variant&) = default;
