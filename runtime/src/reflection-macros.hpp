@@ -439,7 +439,7 @@
             1u, ArgTupleType>;                                          \
                                                                         \
         sm.call = [&t2c, &s, &sm](::zserio::IService& service,          \
-                                  zsr::Variant request)                 \
+                                  const zsr::Variant& request)          \
             -> zsr::Variant                                             \
         {                                                               \
             ServiceNamespace::Client client(service);                   \
@@ -447,8 +447,11 @@
                                                                         \
             zsr::ServiceMethod::Context ctx{s, sm, request};            \
                                                                         \
-            client. IDENT (zsr::variant_helper<RequestType>::unpack(    \
-                               request, t2c),                           \
+            /* Temporary copy because of zserio requiring non-const */  \
+            /* ref request object. */                                   \
+            auto unpackedRq = zsr::variant_helper<RequestType>::unpack( \
+                request, t2c);                                          \
+            client. IDENT (unpackedRq,                                  \
                            response,                                    \
                            &ctx);                                       \
                                                                         \

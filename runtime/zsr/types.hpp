@@ -321,7 +321,7 @@ struct ZSR_EXPORT ServiceMethod
     TypeRef requestType;
     TypeRef responseType;
 
-    std::function<Variant(::zserio::IService&, Variant)> call;
+    std::function<Variant(::zserio::IService&, const Variant&)> call;
 
     /**
      * Object passed as user-data to zserio generated
