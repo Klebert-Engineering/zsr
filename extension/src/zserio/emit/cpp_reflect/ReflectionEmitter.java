@@ -118,7 +118,7 @@ public class ReflectionEmitter extends EmitterBase
         beginReflect("STRUCTURE_FIELD", args);
         reflectTypeInstantiation(field.getTypeInstantiation());
 
-        if (field.getOptionalClauseExpr() != null) {
+        if (field.isOptional()) {
             List<String> optArgs = Arrays.asList(new String[] {
                 hasName,
                 resetName
