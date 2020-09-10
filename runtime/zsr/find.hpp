@@ -71,4 +71,18 @@ const _Type* find(const _Root& r, const std::string& ident)
     return nullptr;
 }
 
+template <class _Type, class _Root>
+auto resolveType(const _Root& r,
+                 const zsr::TypeRef& type) -> const _Type*
+{
+    auto pkg = zsr::find<zsr::Package>(r, type.package);
+    if (!pkg)
+        return nullptr;
+    auto sub = zsr::find<zsr::SubType>(*pkg, type.ident);
+    if (sub)
+        return resolveType<_Type, _Root>(r, *sub->type);
+
+    return find<_Type>(*pkg, type.ident);
+}
+
 } // namespace zsr
