@@ -198,7 +198,9 @@
                                                    v,                   \
                                                    t2c);                \
         } else {                                                        \
-            throw zsr::ParameterListTypeError{};                        \
+            throw zsr::ParameterListTypeError::listTypeMissmatch(       \
+                typeid(ParameterTupleType).name(),                      \
+                l.list.type().name());                                  \
         }                                                               \
     };
 
@@ -248,8 +250,13 @@
     s.initialize = [&](zsr::Introspectable& i,                          \
                        zsr::ParameterList l)                            \
     {                                                                   \
+        if (!l.list.has_value())                                        \
+            throw zsr::ParameterListTypeError::listEmpty();             \
+                                                                        \
         if (!std::any_cast<ParameterTupleType>(&l.list))                \
-            throw zsr::ParameterListTypeError{};                        \
+            throw zsr::ParameterListTypeError::listTypeMissmatch(       \
+                typeid(ParameterTupleType).name(),                      \
+                l.list.type().name());                                  \
                                                                         \
         /* Introspectable keeps alive parameters */                     \
         auto& params = i.obj->parameters = l.list;                      \

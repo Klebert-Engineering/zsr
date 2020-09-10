@@ -23,18 +23,26 @@ struct ZSR_EXPORT Error : std::exception
 
 struct ZSR_EXPORT ParameterListTypeError : Error
 {
+    std::string msg;
+
+    static ParameterListTypeError listEmpty();
+    static ParameterListTypeError listTypeMissmatch(const std::string& expected,
+                                                    const std::string& got);
+
+    ParameterListTypeError(std::string msg);
+
     const char* what() const noexcept override;
 };
 
 struct ZSR_EXPORT IntrospectableCastError : Error
 {
+    std::string msg;
+
     IntrospectableCastError();
     explicit IntrospectableCastError(const Compound* isa,
                                      const Compound* target);
 
     const char* what() const noexcept override;
-
-    std::string msg;
 };
 
 struct ZSR_EXPORT VariantCastError : Error
