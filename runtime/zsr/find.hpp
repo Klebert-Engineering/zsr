@@ -75,14 +75,14 @@ template <class _Type, class _Root>
 auto resolveType(const _Root& r,
                  const zsr::TypeRef& type) -> const _Type*
 {
-    auto pkg = zsr::find<zsr::Package>(r, type.package);
-    if (!pkg)
+    auto lpkg = zsr::find<zsr::Package>(r, type.package);
+    if (!lpkg)
         return nullptr;
-    auto sub = zsr::find<zsr::SubType>(*pkg, type.ident);
+    auto sub = zsr::find<zsr::SubType>(*lpkg, type.ident);
     if (sub)
         return resolveType<_Type, _Root>(r, *sub->type);
 
-    return find<_Type>(*pkg, type.ident);
+    return find<_Type>(*lpkg, type.ident);
 }
 
 } // namespace zsr
