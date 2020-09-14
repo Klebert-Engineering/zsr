@@ -42,4 +42,14 @@ const Compound* Introspectable::meta() const
     return obj ? obj->meta : nullptr;
 }
 
+bool Introspectable::operator==(const Introspectable& o) const
+{
+    return obj == o.obj;
+}
+
+bool Introspectable::operator!=(const Introspectable& o) const
+{
+    return !(*this == o);
+}
+
 } // namespace zsr
