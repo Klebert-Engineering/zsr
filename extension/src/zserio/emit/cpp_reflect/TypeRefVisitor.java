@@ -120,9 +120,45 @@ class TypeRefVisitor extends ZserioAstDefaultVisitor
     }
 
     @Override
-    public void visitTypeInstantiation(TypeInstantiation typeInstantiation)
+    public void visitSubtype(Subtype type)
     {
-        typeInstantiation.getType().accept(this);
+        class SubtypeVisitor extends TypeRefVisitor
+        {
+            SubtypeVisitor(EmitterBase emitter, boolean inArray, Subtype subtype)
+            {
+                super(emitter, inArray);
+
+                this.subtype = subtype;
+            }
+
+            protected void reflectTypeRef(String typeName, int bitSize, Package pkg, String ident)
+            {
+                /* Overwrite pkg & ident with subtype values */
+                pkg = subtype.getPackage();
+                ident = subtype.getName();
+
+                super.reflectTypeRef(typeName, 0, pkg, ident);
+            }
+
+            private Subtype subtype;
+        }
+
+        type.getBaseTypeReference().getType().accept(new SubtypeVisitor(emitter, inArray, type));
+    }
+
+    @Override
+    public void visitTypeInstantiation(TypeInstantiation type)
+    {
+        if (type instanceof ArrayInstantiation) {
+            try {
+                inArray = true;
+                ((ArrayInstantiation)type).getElementTypeInstantiation().accept(this);
+            } finally {
+                inArray = false;
+            }
+        } else {
+            type.getType().accept(this);
+        }
     }
 
     private EmitterBase emitter;

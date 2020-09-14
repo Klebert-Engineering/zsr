@@ -86,7 +86,7 @@ public class ReflectionEmitter extends EmitterBase
         });
 
         beginReflect("CONST", args);
-        reflectTypeInstantiation(constType.getTypeInstantiation(), false);
+        reflectTypeInstantiation(constType.getTypeInstantiation());
         endReflect("CONST");
     }
 
@@ -95,14 +95,9 @@ public class ReflectionEmitter extends EmitterBase
         type.getType().accept(new TypeRefVisitor(this, false));
     }
 
-    public void reflectTypeInstantiation(TypeInstantiation type, boolean inArray)
+    public void reflectTypeInstantiation(TypeInstantiation type)
     {
-        if (type instanceof ArrayInstantiation) {
-            this.reflectTypeInstantiation(
-                ((ArrayInstantiation)type).getElementTypeInstantiation(), true);
-        } else {
-            type.getType().accept(new TypeRefVisitor(this, inArray));
-        }
+        type.accept(new TypeRefVisitor(this, false));
     }
 
     public void reflectField(Field field)
