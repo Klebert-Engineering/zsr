@@ -48,6 +48,9 @@ public:
     bool isOwning() const;
     const Compound* meta() const;
 
+    bool operator==(const Introspectable&) const;
+    bool operator!=(const Introspectable&) const;
+
     std::shared_ptr<impl::InstanceBase> obj;
 };
 

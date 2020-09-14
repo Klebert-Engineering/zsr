@@ -265,6 +265,16 @@ public:
         return val_.index() == 0;
     }
 
+    bool operator==(const Variant& v) const
+    {
+        return val_ == v.val_;
+    }
+
+    bool operator!=(const Variant& v) const
+    {
+        return !(*this == v);
+    }
+
 private:
 #define GEN(type)                               \
         , type, std::vector<type>
