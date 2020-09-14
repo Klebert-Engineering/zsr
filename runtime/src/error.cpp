@@ -3,9 +3,29 @@
 
 namespace zsr {
 
+ParameterListTypeError ParameterListTypeError::listEmpty()
+{
+    return ParameterListTypeError("Internal type list unset");
+}
+
+ParameterListTypeError ParameterListTypeError::listTypeMissmatch(
+    const std::string& expected,
+    const std::string& got)
+{
+
+    std::string msg = "Parameter list type error. Expected '";
+    msg += expected + "', got '" + got + "'";
+
+    return ParameterListTypeError(std::move(msg));
+}
+
+ParameterListTypeError::ParameterListTypeError(std::string msg)
+    : msg(std::move(msg))
+{}
+
 const char* ParameterListTypeError::what() const noexcept
 {
-    return "Parameter list type error";
+    return msg.c_str();
 }
 
 IntrospectableCastError::IntrospectableCastError()
