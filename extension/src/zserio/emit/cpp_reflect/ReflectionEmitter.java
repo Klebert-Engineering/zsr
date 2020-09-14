@@ -86,18 +86,23 @@ public class ReflectionEmitter extends EmitterBase
         });
 
         beginReflect("CONST", args);
-        reflectTypeInstantiation(constType.getTypeInstantiation());
+        reflectTypeInstantiation(constType.getTypeInstantiation(), false);
         endReflect("CONST");
     }
 
     public void reflectTypeReference(TypeReference type)
     {
-        type.getType().accept(new TypeRefVisitor(this));
+        type.getType().accept(new TypeRefVisitor(this, false));
     }
 
-    public void reflectTypeInstantiation(TypeInstantiation type)
+    public void reflectTypeInstantiation(TypeInstantiation type, boolean inArray)
     {
-        type.getType().accept(new TypeRefVisitor(this));
+        if (type instanceof ArrayInstantiation) {
+            this.reflectTypeInstantiation(
+                ((ArrayInstantiation)type).getElementTypeInstantiation(), true);
+        } else {
+            type.getType().accept(new TypeRefVisitor(this, inArray));
+        }
     }
 
     public void reflectField(Field field)
@@ -313,11 +318,11 @@ public class ReflectionEmitter extends EmitterBase
             }));
 
             beginReflect("SERVICE_METHOD_REQUEST", null);
-            method.getRequestType().accept(new TypeRefVisitor(this));
+            method.getRequestType().accept(new TypeRefVisitor(this, false));
             endReflect("SERVICE_METHOD_REQUEST");
 
             beginReflect("SERVICE_METHOD_RESPONSE", null);
-            method.getResponseType().accept(new TypeRefVisitor(this));
+            method.getResponseType().accept(new TypeRefVisitor(this, false));
             endReflect("SERVICE_METHOD_RESPONSE");
 
             endReflect("SERVICE_METHOD");

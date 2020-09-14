@@ -5,23 +5,30 @@ import zserio.ast.Package;
 import java.util.Arrays;
 import java.util.List;
 
-class TypeRefVisitor extends ZserioAstDefaultVisitor {
-    TypeRefVisitor(EmitterBase emitter)
+class TypeRefVisitor extends ZserioAstDefaultVisitor
+{
+    TypeRefVisitor(EmitterBase emitter, boolean inArray)
     {
         this.emitter = emitter;
+        this.inArray = inArray;
+    }
+
+    protected void reflectTypeRef(String typeName, int bitSize, Package pkg, String ident)
+    {
+        List<String> args = Arrays.asList(new String[] {
+            typeName,
+            Integer.toString(bitSize),
+            this.inArray ? "true" : "false",
+            pkg != null ? pkg.getPackageName().toString() : "",
+            ident != null ? ident : ""
+        });
+
+        emitter.reflect("TYPE_REF", args);
     }
 
     private void reflectTypeRef(String typeName, int bitSize)
     {
-        List<String> args = Arrays.asList(new String[] {
-            typeName,                  // Type
-            Integer.toString(bitSize), // Bit size
-            "false",                   // Is array
-            "",                        // Package
-            ""                         // Ident
-        });
-
-        emitter.reflect("TYPE_REF", args);
+        reflectTypeRef(typeName, bitSize, null, null);
     }
 
     @Override
@@ -33,7 +40,7 @@ class TypeRefVisitor extends ZserioAstDefaultVisitor {
     @Override
     public void visitBitmaskType(BitmaskType type)
     {
-        reflectTypeRef("Bitmask", 0);
+        reflectTypeRef("Bitmask", 0, type.getPackage(), type.getName());
     }
 
     @Override
@@ -89,32 +96,35 @@ class TypeRefVisitor extends ZserioAstDefaultVisitor {
     }
 
     @Override
-    public void visitStructureType(StructureType type)
+    public void visitEnumType(EnumType type)
     {
-        List<String> args = Arrays.asList(new String[] {
-            "Structure",
-            "0",
-            "false",
-            type.getPackage().getPackageName().toString(),
-            type.getName()
-        });
-
-        emitter.reflect("TYPE_REF", args);
+        reflectTypeRef("Enum", 0, type.getPackage(), type.getName());
     }
 
     @Override
-    public void visitArrayType(ArrayType arrayType)
+    public void visitChoiceType(ChoiceType type)
     {
-        List<String> args = Arrays.asList(new String[] {
-            "Int", // FIXME: How to get to the arrays element type?
-            "0",
-            "true",
-            "",
-            ""
-        });
+        reflectTypeRef("Structure", 0, type.getPackage(), type.getName());
+    }
 
-        emitter.reflect("TYPE_REF", args);
+    @Override
+    public void visitUnionType(UnionType type)
+    {
+        reflectTypeRef("Structure", 0, type.getPackage(), type.getName());
+    }
+
+    @Override
+    public void visitStructureType(StructureType type)
+    {
+        reflectTypeRef("Structure", 0, type.getPackage(), type.getName());
+    }
+
+    @Override
+    public void visitTypeInstantiation(TypeInstantiation typeInstantiation)
+    {
+        typeInstantiation.getType().accept(this);
     }
 
     private EmitterBase emitter;
+    private boolean inArray;
 }
