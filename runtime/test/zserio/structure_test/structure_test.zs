@@ -141,3 +141,8 @@ struct N_wrong {
 struct N_parent {
     N_expected a;
 };
+
+/** O - Array field type */
+struct O_parent {
+    string a[3];
+};

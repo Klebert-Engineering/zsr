@@ -92,12 +92,12 @@ public class ReflectionEmitter extends EmitterBase
 
     public void reflectTypeReference(TypeReference type)
     {
-        type.getType().accept(new TypeRefVisitor(this));
+        type.getType().accept(new TypeRefVisitor(this, false));
     }
 
     public void reflectTypeInstantiation(TypeInstantiation type)
     {
-        type.getType().accept(new TypeRefVisitor(this));
+        type.accept(new TypeRefVisitor(this, false));
     }
 
     public void reflectField(Field field)
@@ -313,11 +313,11 @@ public class ReflectionEmitter extends EmitterBase
             }));
 
             beginReflect("SERVICE_METHOD_REQUEST", null);
-            method.getRequestType().accept(new TypeRefVisitor(this));
+            method.getRequestType().accept(new TypeRefVisitor(this, false));
             endReflect("SERVICE_METHOD_REQUEST");
 
             beginReflect("SERVICE_METHOD_RESPONSE", null);
-            method.getResponseType().accept(new TypeRefVisitor(this));
+            method.getResponseType().accept(new TypeRefVisitor(this, false));
             endReflect("SERVICE_METHOD_RESPONSE");
 
             endReflect("SERVICE_METHOD");

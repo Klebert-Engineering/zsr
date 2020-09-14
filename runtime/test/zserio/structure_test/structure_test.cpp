@@ -348,5 +348,19 @@ TEST(StructureTest, n_set_incompatible_type)
                  zsr::IntrospectableCastError);
 }
 
+TEST(StructureTest, o_array_field)
+{
+    auto* meta_parent = zsr::find<zsr::Compound>(pkg, "O_parent");
+    auto* meta_field = zsr::find<zsr::Field>(*meta_parent, "a");
+
+    ASSERT_TRUE(meta_field);
+    ASSERT_TRUE(meta_field->type);
+
+    ASSERT_TRUE(meta_field->type->ztype.array);
+    ASSERT_EQ(meta_field->type->ztype.type, zsr::ZType::String);
+
+    ASSERT_TRUE(meta_field->type->ctype.array);
+    ASSERT_EQ(meta_field->type->ctype.type, zsr::CType::String);
+}
 
 } // namespace
