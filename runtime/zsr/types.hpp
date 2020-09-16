@@ -21,14 +21,28 @@
 #endif
 
 /* Delete copy & move operators */
-#define NOCOPY(TYPE)                            \
+#define META_TYPE_ROOT(TYPE)                    \
     TYPE() {};                                  \
     TYPE(const TYPE &) = delete;                \
     TYPE(TYPE &&) = delete;                     \
     TYPE& operator=(const TYPE &) = delete;     \
     TYPE& operator=(TYPE &&) = delete;
 
+#define META_TYPE(TYPE, PARENT)                 \
+    PARENT& parent;                             \
+    TYPE(PARENT* p) : parent(*p) {};            \
+    TYPE(const TYPE &) = delete;                \
+    TYPE(TYPE &&) = delete;                     \
+    TYPE& operator=(const TYPE &) = delete;     \
+    TYPE& operator=(TYPE &&) = delete;
+
 namespace zsr {
+
+struct Package;
+struct Bitmask;
+struct Enumeration;
+struct Compound;
+struct Service;
 
 /**
  * Generic parameter list.
@@ -106,7 +120,7 @@ struct ZSR_EXPORT TypeRef
  */
 struct ZSR_EXPORT SubType
 {
-    NOCOPY(SubType)
+    META_TYPE(SubType, Package)
 
     std::string ident;
     std::optional<TypeRef> type;
@@ -117,7 +131,7 @@ struct ZSR_EXPORT SubType
  */
 struct ZSR_EXPORT Constant
 {
-    NOCOPY(Constant)
+    META_TYPE(Constant, Package)
 
     std::string ident;
     Variant value;
@@ -129,7 +143,7 @@ struct ZSR_EXPORT Constant
  */
 struct ZSR_EXPORT BitmaskValue
 {
-    NOCOPY(BitmaskValue)
+    META_TYPE(BitmaskValue, Bitmask)
 
     std::string ident;
     Variant value;
@@ -140,7 +154,7 @@ struct ZSR_EXPORT BitmaskValue
  */
 struct ZSR_EXPORT Bitmask
 {
-    NOCOPY(Bitmask)
+    META_TYPE(Bitmask, Package)
 
     std::string ident;
     std::deque<BitmaskValue> values;
@@ -151,7 +165,7 @@ struct ZSR_EXPORT Bitmask
  */
 struct ZSR_EXPORT EnumerationItem
 {
-    NOCOPY(EnumerationItem)
+    META_TYPE(EnumerationItem, Enumeration)
 
     std::string ident;
     Variant value;
@@ -162,7 +176,7 @@ struct ZSR_EXPORT EnumerationItem
  */
 struct ZSR_EXPORT Enumeration
 {
-    NOCOPY(Enumeration)
+    META_TYPE(Enumeration, Package)
 
     std::string ident;
     std::deque<EnumerationItem> items;
@@ -173,7 +187,7 @@ struct ZSR_EXPORT Enumeration
  */
 struct ZSR_EXPORT Field
 {
-    NOCOPY(Field)
+    META_TYPE(Field, Compound)
 
     std::string ident;
     std::optional<TypeRef> type;
@@ -204,7 +218,7 @@ struct ZSR_EXPORT Field
  */
 struct ZSR_EXPORT Parameter
 {
-    NOCOPY(Parameter)
+    META_TYPE(Parameter, Compound)
 
     std::string ident;
     const TypeRef* type = nullptr;
@@ -218,7 +232,7 @@ struct ZSR_EXPORT Parameter
  */
 struct ZSR_EXPORT Function
 {
-    NOCOPY(Function)
+    META_TYPE(Function, Compound)
 
     std::string ident;
     std::optional<TypeRef> type;
@@ -231,7 +245,7 @@ struct ZSR_EXPORT Function
  */
 struct ZSR_EXPORT Compound
 {
-    NOCOPY(Compound)
+    META_TYPE(Compound, Package)
 
     std::string ident;
     enum class Type {
@@ -314,7 +328,7 @@ struct ZSR_EXPORT Compound
  */
 struct ZSR_EXPORT ServiceMethod
 {
-    NOCOPY(ServiceMethod)
+    META_TYPE(ServiceMethod, Service)
 
     std::string ident;
 
@@ -344,7 +358,7 @@ struct ZSR_EXPORT ServiceMethod
  */
 struct ZSR_EXPORT Service
 {
-    NOCOPY(Service)
+    META_TYPE(Service, Package)
 
     std::string ident;
     std::deque<ServiceMethod> methods;
@@ -355,7 +369,7 @@ struct ZSR_EXPORT Service
  */
 struct ZSR_EXPORT Package
 {
-    NOCOPY(Package)
+    META_TYPE_ROOT(Package)
 
     std::string ident;
 
@@ -368,6 +382,9 @@ struct ZSR_EXPORT Package
 };
 
 } // namespace zsr
+
+#undef META_TYPE_ROOT
+#undef META_TYPE
 
 #if _MSC_VER
 #pragma warning(pop)

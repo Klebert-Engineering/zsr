@@ -9,6 +9,7 @@ TEST(EnumTest, check_enum_items)
     auto* meta_enumeration = zsr::find<zsr::Enumeration>(pkg, "Enum");
 
     ASSERT_TRUE(meta_enumeration);
+    ASSERT_EQ(&meta_enumeration->parent, &pkg);
     ASSERT_EQ(meta_enumeration->items.size(), 3);
 
     auto ASSERT_ITEM = [&](auto ident, auto value) {
@@ -16,6 +17,7 @@ TEST(EnumTest, check_enum_items)
             *meta_enumeration, ident);
 
         ASSERT_TRUE(meta_item);
+        ASSERT_EQ(&meta_item->parent, meta_enumeration);
         ASSERT_VARIANT_EQ(meta_item->value, value);
     };
 
