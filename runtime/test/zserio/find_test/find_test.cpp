@@ -23,4 +23,11 @@ TEST(FindTest, resolve_type)
     ASSERT_EQ(meta_struct_a, resolved_b_a);
 }
 
+TEST(FindTest, find_path)
+{
+    auto meta_field_b_a = zsr::findPath<zsr::Field>(zsr::packages(), "find_test.B_struct.a");
+    ASSERT_TRUE(meta_field_b_a);
+    ASSERT_EQ(meta_field_b_a->type->ident, "A_struct");
+}
+
 }

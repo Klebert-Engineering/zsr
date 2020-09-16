@@ -71,6 +71,9 @@ const _Type* find(const _Root& r, const std::string& ident)
     return nullptr;
 }
 
+/**
+ * Recursive resolve typeref.
+ */
 template <class _Type, class _Root>
 auto resolveType(const _Root& r,
                  const zsr::TypeRef& type) -> const _Type*
@@ -83,6 +86,37 @@ auto resolveType(const _Root& r,
         return resolveType<_Type, _Root>(r, *sub->type);
 
     return find<_Type>(*lpkg, type.ident);
+}
+
+/**
+ * Find zsr object by '.' separated class-path.
+ * Resolves subtypes recursively
+ *
+ * Example:
+ *   auto found = zsr::findPath<zsr::Service>(zsr::packages(),
+ *                                            "my.package.sub.Service");
+ */
+template <class _Type, class _Root>
+static auto findPath(const _Root& r,
+                     const std::string& path) -> const _Type*
+{
+    auto prefix = std::string_view(path);
+    auto pkg_iter = std::find_if(r.begin(),
+                                 r.end(),
+                                 [&prefix](const zsr::Package& package) {
+                                     auto& ident = package.ident;
+                                     return
+                                         ident.size() < prefix.size() &&
+                                         prefix.at(ident.size()) == '.' &&
+                                         prefix.compare(0, ident.size(), ident) == 0;
+                                 });
+    if (pkg_iter == r.end())
+        return nullptr;
+
+    auto pkg = &static_cast<const zsr::Package&>(*pkg_iter);
+    prefix.remove_prefix(pkg->ident.size() + 1);
+
+    return zsr::find<_Type>(*pkg, std::string{prefix});
 }
 
 } // namespace zsr
