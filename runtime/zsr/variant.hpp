@@ -26,7 +26,6 @@
     _(int64_t)                                  \
     _(uint64_t)                                 \
     _(double)                                   \
-    _(bool)                                     \
     _(std::string)                              \
     _(zserio::BitBuffer)                        \
     _(zsr::Introspectable)
