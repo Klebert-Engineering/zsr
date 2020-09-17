@@ -9,6 +9,8 @@ TEST(StructureTest, a_alloc_empty)
     auto* meta_struct = zsr::find<zsr::Compound>(pkg, "A_struct");
 
     ASSERT_TRUE(meta_struct);
+    ASSERT_EQ(&meta_struct->parent, &pkg);
+
     ASSERT_TRUE(meta_struct->alloc);
     ASSERT_FALSE(meta_struct->initialize);
     ASSERT_EQ(meta_struct->type, zsr::Compound::Type::Structure);
