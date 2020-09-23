@@ -38,6 +38,7 @@ endif()
 
 add_library(zsr SHARED
   "${SRC}/src/types.cpp"
+  "${SRC}/src/types-json.cpp"
   "${SRC}/src/error.cpp"
   "${SRC}/src/introspectable.cpp")
 
@@ -50,7 +51,8 @@ target_include_directories(zsr
 
 target_link_libraries(zsr
   PUBLIC
-    ZserioCppRuntime)
+    ZserioCppRuntime
+    nlohmann_json::nlohmann_json)
 
 set_target_properties(zsr
   PROPERTIES
