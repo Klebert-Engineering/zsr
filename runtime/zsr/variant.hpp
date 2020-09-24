@@ -71,14 +71,14 @@ namespace impl {
 template <typename _T, class _Enable = void>
 struct Ext2Int;
 
-template <typename _T>
-using Ext2IntT = typename Ext2Int<_T>::Type;
-
 /* Generate `Ext2Int` for `TYPELIST` */
 TYPELIST(GEN_EXT2INT)
 
 #undef GEN_EXT2INT
 #undef TYPELIST
+
+template <typename _T>
+using Ext2IntT = typename Ext2Int<_T>::Type;
 
 /* Specialization for std::vector<T> */
 template <class _T>

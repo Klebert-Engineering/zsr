@@ -80,13 +80,12 @@ struct JsonVisitor
         auto meta = obj.meta();
         for (const auto& field : meta->fields) {
             if (field.get) {
-                const auto isSet = !field.has || field.has(obj);
-
                 auto&& key = field.ident;
-                auto&& value = isSet ? field.get(obj) : zsr::Variant();
 
+                const auto isSet = !field.has || field.has(obj);
                 if (isSet)
-                    j[key] = JsonVisitor<zsr::Field>(&field, pkgs, opts).visit(value);
+                    j[key] = JsonVisitor<zsr::Field>(&field, pkgs, opts)
+                        .visit(field.get(obj));
                 else
                     j[key] = nullptr;
             }
