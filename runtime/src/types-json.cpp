@@ -1,4 +1,5 @@
 #include <zsr/types-json.hpp>
+#include <zsr/introspectable-json.hpp>
 
 #include <zserio/BitBuffer.h>
 
@@ -6,28 +7,12 @@
 
 namespace nlo = nlohmann;
 
-namespace nlohmann
-{
-
-template <>
-struct adl_serializer<zserio::BitBuffer> {
-    static void to_json(json& j, const zserio::BitBuffer& b) {
-        j = std::vector<uint8_t>(b.getBuffer(), b.getBuffer() + b.getByteSize());
-    }
-
-    static void from_json(const json& j, zserio::BitBuffer& b) {
-        b = zserio::BitBuffer(j.get<std::vector<uint8_t>>());
-    }
-};
-
-}
-
 namespace zsr
 {
 
 void to_json(nlo::json& j, const Introspectable& v)
 {
-    j = {}; /* TODO: ! */
+    j = serialize(v);
 }
 
 void to_json(nlo::json& j, const Variant& v)
@@ -185,8 +170,8 @@ void to_json(nlo::json& j, const Compound& m)
         {"ident", m.ident},
         {"type", m.type},
         {"parameters", m.parameters},
-        {"fields", m.parameters},
-        {"functions", m.parameters}
+        {"fields", m.fields},
+        {"functions", m.functions}
     };
 }
 

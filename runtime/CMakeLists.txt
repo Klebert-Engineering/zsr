@@ -40,7 +40,8 @@ add_library(zsr SHARED
   "${SRC}/src/types.cpp"
   "${SRC}/src/types-json.cpp"
   "${SRC}/src/error.cpp"
-  "${SRC}/src/introspectable.cpp")
+  "${SRC}/src/introspectable.cpp"
+  "${SRC}/src/introspectable-json.cpp")
 
 target_compile_features(zsr
   PUBLIC cxx_std_17)

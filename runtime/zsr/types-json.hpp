@@ -38,3 +38,25 @@ void ZSR_EXPORT to_json(nlohmann::json&, const Service&);
 void ZSR_EXPORT to_json(nlohmann::json&, const Package&);
 
 }
+
+/**
+ * Foreign type serializers
+ *
+ * See: https://github.com/nlohmann/json#how-do-i-convert-third-party-types
+ */
+namespace nlohmann
+{
+
+template <>
+struct adl_serializer<zserio::BitBuffer> {
+    static void to_json(json& j, const zserio::BitBuffer& b) {
+        j = std::vector<uint8_t>(b.getBuffer(),
+                                 b.getBuffer() + b.getByteSize());
+    }
+
+    static void from_json(const json& j, zserio::BitBuffer& b) {
+        b = zserio::BitBuffer(j.get<std::vector<uint8_t>>());
+    }
+};
+
+}
