@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.10.2)
 project(zserio-cpp-introspection-runtime)
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/nlohmann_json")
+if (NOT TARGET nlohmann_json)
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/nlohmann_json")
+endif()
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")

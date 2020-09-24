@@ -65,14 +65,20 @@
  *   SUBTYPE_END
  */
 
-#define ZSERIO_REFLECT_SUBTYPE_BEGIN(NAME, PACKAGE, TYPE) \
-    {                                                     \
-        zsr::SubType& t = p.subTypes.emplace_back(&p);    \
-        t.ident = #NAME;                                  \
-                                                          \
-        CUR_TYPE(t);                                      \
-        tr.package = #PACKAGE;                            \
-        tr.ident = #TYPE;
+#define ZSERIO_REFLECT_SUBTYPE_BEGIN(NAME, PACKAGE, TYPE)  \
+    {                                                      \
+        using SubTypeType =                                \
+            std::decay_t<                                  \
+                std::remove_const_t<                       \
+                    PkgNamespace:: NAME>>;                 \
+                                                           \
+        zsr::SubType& t = p.subTypes.emplace_back(&p);     \
+        t.ident = #NAME;                                   \
+                                                           \
+        CUR_TYPE(t);                                       \
+        tr.package = #PACKAGE;                             \
+        tr.ident = #TYPE;                                  \
+        zsr::CTypeTraits< SubTypeType >::set(tr.ctype);
 
 #define ZSERIO_REFLECT_SUBTYPE_END() \
     }
