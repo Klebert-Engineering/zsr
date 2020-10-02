@@ -64,7 +64,7 @@ struct ZSR_EXPORT ParameterList
  */
 struct ZSR_EXPORT ZType
 {
-    enum
+    enum Type
     {
         UInt,
         Int,
@@ -91,7 +91,7 @@ struct ZSR_EXPORT ZType
  */
 struct ZSR_EXPORT CType
 {
-    enum
+    enum Type
     {
         Bool,
         UInt,
