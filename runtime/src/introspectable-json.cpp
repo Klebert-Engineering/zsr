@@ -124,12 +124,16 @@ struct JsonVisitor
     {
         if (opts & zsr::SERIALIZE_RESOLVE_ENUM) {
             if (auto e = getType<zsr::Enumeration>(pkgs, context)) {
-                j = resolveEnum(*e, v);
-                return;
+                j = {
+                    {"ident", resolveEnum(*e, v)},
+                    {"value", v}
+                };
+            } else {
+                j = v;
             }
+        } else {
+            j = v;
         }
-
-        j = v;
     }
 
     template <class _Type>
