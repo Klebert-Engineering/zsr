@@ -25,23 +25,6 @@ using Type2Compound = std::unordered_map<std::type_index, const zsr::Compound*>;
 #pragma warning(disable:4100) /* Unreferenced parameter */
 #endif
 
-[[maybe_unused]]
-static auto identToSnake(const char* ident)
-{
-    std::string snake;
-    snake.reserve(strlen(ident) + 1);
-
-    auto wasLower = islower(*ident);
-    do {
-        if (isupper(*ident) && wasLower)
-            snake.push_back('_');
-        snake.push_back((char)tolower(*ident));
-        wasLower = islower(*ident);
-    } while (*++ident);
-
-    return snake;
-}
-
 <#list includes as include>
 #include "${include}"
 </#list>
