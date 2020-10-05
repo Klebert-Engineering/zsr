@@ -83,11 +83,14 @@ struct JsonVisitor
                 auto&& key = field.ident;
 
                 const auto isSet = !field.has || field.has(obj);
-                if (isSet)
-                    j[key] = JsonVisitor<zsr::Field>(&field, pkgs, opts)
-                        .visit(field.get(obj));
-                else
+                if (isSet) {
+                    try {
+                        j[key] = JsonVisitor<zsr::Field>(&field, pkgs, opts)
+                            .visit(field.get(obj));
+                    } catch (...) {}
+                } else {
                     j[key] = nullptr;
+                }
             }
         }
 
@@ -96,7 +99,9 @@ struct JsonVisitor
                 auto&& key = fun.ident;
                 auto&& value = fun.call(obj);
 
-                j[key] = JsonVisitor<zsr::Function>(&fun, pkgs, opts).visit(value);
+                try {
+                    j[key] = JsonVisitor<zsr::Function>(&fun, pkgs, opts).visit(value);
+                } catch (...) {}
             }
         }
 
