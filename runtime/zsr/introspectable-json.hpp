@@ -3,7 +3,7 @@
 #include <zsr/introspectable.hpp>
 #include <zsr/types.hpp>
 
-#include <nlohmann/json.hpp>
+#include <zsr/speedy-j.hpp>
 
 namespace zsr
 {
@@ -47,8 +47,8 @@ enum ZSR_EXPORT SerializationOptions
  *       }
  *     }
  */
-nlohmann::json ZSR_EXPORT serialize(const zsr::Introspectable& obj,
-                                    const std::deque<zsr::Package>* pkgs = nullptr,
-                                    SerializationOptions opts = SERIALIZE_DEFAULT);
+speedyj::Stream ZSR_EXPORT serialize(const zsr::Introspectable& obj,
+                                     const std::deque<zsr::Package>* pkgs = nullptr,
+                                     SerializationOptions opts = SERIALIZE_DEFAULT);
 
 }

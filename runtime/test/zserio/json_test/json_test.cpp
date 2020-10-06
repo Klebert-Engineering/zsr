@@ -4,8 +4,9 @@
 #include <zsr/types-json.hpp>
 #include <zsr/introspectable-json.hpp>
 
-#include <nlohmann/json.hpp>
 
+#if 0
+#include <nlohmann/json.hpp>
 namespace nlo = nlohmann;
 
 namespace {
@@ -45,3 +46,5 @@ TEST(JsonTest, serialize_introspectable_default)
 }
 
 }
+
+#endif

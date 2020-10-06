@@ -5,204 +5,267 @@
 
 #include <vector>
 
-namespace nlo = nlohmann;
-
 namespace zsr
 {
 
-void to_json(nlo::json& j, const Introspectable& v)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Introspectable& i)
 {
-    j = serialize(v);
+    return s << serialize(i).str();
 }
 
-void to_json(nlo::json& j, const Variant& v)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Variant& v)
 {
-#define GEN(type)                               \
-    if (auto vv = v.get< type >()) { j = *vv; return; }
+#define GEN(TYPE)                                                       \
+    if (auto&& vv = v.get< TYPE >()) { return s << *vv; }               \
+    if (auto&& vv = v.get<std::vector< TYPE >>()) { return s << *vv; }  \
 
-    ZSR_VARIANT_TYPES(GEN);
+    ZSR_VARIANT_TYPES(GEN)
 
 #undef GEN
+
+    return s << speedyj::Null;
 }
 
-NLOHMANN_JSON_SERIALIZE_ENUM(ZType::Type, {
-    {ZType::UInt, "uint"},
-    {ZType::Int, "int"},
-    {ZType::VarUInt, "varuint"},
-    {ZType::VarInt, "varint"},
-    {ZType::Float, "float"},
-    {ZType::Bitmask, "bitmask"},
-    {ZType::Bitfield, "bitfield"},
-    {ZType::UBitfield, "ubitfield"},
-    {ZType::VarBitfield, "varbitfield"},
-    {ZType::VarUBitfield, "varubitfield"},
-    {ZType::Bool, "bool"},
-    {ZType::Enum, "enum"},
-    {ZType::String, "string"},
-    {ZType::Structure, "structure"},
-})
-
-void to_json(nlo::json& j, const ZType& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const ZType::Type& m)
 {
-    j = {
-        {"type", m.type},
-        {"size", m.size},
-        {"array", m.array}
-    };
+    switch (m) {
+    case ZType::UInt:
+        return s << "uint";
+    case ZType::Int:
+        return s << "int";
+    case ZType::VarUInt:
+        return s << "varuint";
+    case ZType::VarInt:
+        return s << "varint";
+    case ZType::Float:
+        return s << "float";
+    case ZType::Bitmask:
+        return s << "bitmask";
+    case ZType::Bitfield:
+        return s << "bitfield";
+    case ZType::UBitfield:
+        return s << "ubitfield";
+    case ZType::VarBitfield:
+        return s << "varbitfield";
+    case ZType::VarUBitfield:
+        return s << "varubitfield";
+    case ZType::Bool:
+        return s << "bool";
+    case ZType::Enum:
+        return s << "enum";
+    case ZType::String:
+        return s << "string";
+    case ZType::Structure:
+        return s << "structure";
+    }
+
+    return s << speedyj::Null;
 }
 
-NLOHMANN_JSON_SERIALIZE_ENUM(CType::Type, {
-    {CType::Bool, "bool"},
-    {CType::UInt, "uint"},
-    {CType::Int, "int"},
-    {CType::Float, "float"},
-    {CType::String, "string"},
-    {CType::Structure, "structure"},
-    {CType::BitBuffer, "bitbuffer"},
-})
-
-void to_json(nlo::json& j, const CType& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const ZType& m)
 {
-    j = {
-        {"type", m.type},
-        {"size", m.size},
-        {"array", m.array}
-    };
+    return s << speedyj::Object
+             << "type" << m.type
+             << "size" << m.size
+             << "array" << m.array
+             << speedyj::End;
 }
 
-void to_json(nlo::json& j, const TypeRef& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const CType::Type& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"package", m.package},
-        {"ctype", m.ctype},
-        {"ztype", m.ztype}
-    };
+    switch (m) {
+    case CType::Bool:
+        return s << "bool";
+    case CType::UInt:
+        return s << "uint";
+    case CType::Int:
+        return s << "int";
+    case CType::Float:
+        return s << "float";
+    case CType::String:
+        return s << "string";
+    case CType::Structure:
+        return s << "structure";
+    case CType::BitBuffer:
+        return s << "bitbuffer";
+    }
+
+    return s << speedyj::Null;
 }
 
-void to_json(nlo::json& j, const SubType& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const CType& m)
 {
-    j = {
-        {"ident", m.ident},
-    };
+    return s << speedyj::Object
+             << "type" << m.type
+             << "size" << m.size
+             << "array" << m.array
+             << speedyj::End;
+}
+
+speedyj::Stream& operator<<(speedyj::Stream& s, const TypeRef& m)
+{
+    return s << speedyj::Object
+             << "ident" << m.ident
+             << "package" << m.package
+             << "ctype" << m.ctype
+             << "ztype" << m.ztype
+             << speedyj::End;
+}
+
+speedyj::Stream& operator<<(speedyj::Stream& s, const SubType& m)
+{
+    s << speedyj::Object
+      << "ident" << m.ident;
+
     if (m.type)
-        j["type"] = *m.type;
+        s << "type" << *m.type;
+
+    return s << speedyj::End;
 }
 
-void to_json(nlo::json& j, const Constant& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Constant& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"value", m.value}
-    };
+    s << speedyj::Object
+      << "ident" << m.ident;
+
     if (m.type)
-        j["type"] = *m.type;
+        s << "type" << *m.type;
+
+    return s << speedyj::End;
 }
 
-void to_json(nlo::json& j, const BitmaskValue& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const BitmaskValue& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"value", m.value}
-    };
+    return s << speedyj::Object
+             << "ident" << m.ident
+             << "value" << m.value
+             << speedyj::End;
 }
 
-void to_json(nlo::json& j, const Bitmask& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Bitmask& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"values", m.values}
-    };
+    return s << speedyj::Object
+             << "ident" << m.ident
+             << "values" << m.values
+             << speedyj::End;
 }
 
-void to_json(nlo::json& j, const EnumerationItem& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const EnumerationItem& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"value", m.value}
-    };
+    return s << speedyj::Object
+             << "ident" << m.ident
+             << "value" << m.value
+             << speedyj::End;
 }
 
-void to_json(nlo::json& j, const Enumeration& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Enumeration& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"items", m.items}
-    };
+    return s << speedyj::Object
+             << "ident" << m.ident
+             << "items" << m.items
+             << speedyj::End;
 }
 
-void to_json(nlo::json& j, const Parameter& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Parameter& m)
 {
-    j = {
-        {"ident", m.ident},
-    };
+    s << speedyj::Object
+      << "ident" << m.ident;
+
     if (m.type)
-        j["type"] = *m.type;
+        s << "type" << *m.type;
+
+    return s << speedyj::End;
 }
 
-void to_json(nlo::json& j, const Field& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Field& m)
 {
-    j = {
-        {"ident", m.ident},
-    };
+    s << speedyj::Object
+      << "ident" << m.ident;
+
     if (m.type)
-        j["type"] = *m.type;
+        s << "type" << *m.type;
+
+    return s << speedyj::End;
 }
 
-void to_json(nlo::json& j, const Function& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Function& m)
 {
-    j = {
-        {"ident", m.ident},
-    };
+    s << speedyj::Object
+      << "ident" << m.ident;
+
     if (m.type)
-        j["type"] = *m.type;
+        s << "type" << *m.type;
+
+    return s << speedyj::End;
 }
 
-NLOHMANN_JSON_SERIALIZE_ENUM(Compound::Type, {
-    {Compound::Type::Structure, "structure"},
-    {Compound::Type::Union, "union"},
-    {Compound::Type::Choice, "choice"},
-})
-
-void to_json(nlo::json& j, const Compound& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Compound::Type& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"type", m.type},
-        {"parameters", m.parameters},
-        {"fields", m.fields},
-        {"functions", m.functions}
-    };
+    switch (m) {
+    case Compound::Type::Structure:
+        return s << "structure";
+    case Compound::Type::Union:
+        return s << "union";
+    case Compound::Type::Choice:
+        return s << "choice";
+    }
+
+    return s << speedyj::Null;
 }
 
-void to_json(nlo::json& j, const ServiceMethod& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Compound& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"request_type", m.requestType},
-        {"response_type", m.responseType}
-    };
+    return s << speedyj::Object
+             << "ident" << m.ident
+             << "type" << m.type
+             << "parameters" << m.parameters
+             << "fields" << m.fields
+             << "functions" << m.functions
+             << speedyj::End;
 }
 
-void to_json(nlo::json& j, const Service& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const ServiceMethod& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"methods", m.methods}
-    };
+    return s << speedyj::Object
+             << "ident" << m.ident
+             << "request_type" << m.requestType
+             << "response_type" << m.responseType
+             << speedyj::End;
 }
 
-void to_json(nlo::json& j, const Package& m)
+speedyj::Stream& operator<<(speedyj::Stream& s, const Service& m)
 {
-    j = {
-        {"ident", m.ident},
-        {"sub_types", m.subTypes},
-        {"constants", m.constants},
-        {"enumerations", m.enumerations},
-        {"bitmasks", m.bitmasks},
-        {"compounds", m.compounds},
-        {"services", m.services}
-    };
+    return s << speedyj::Object
+             << "ident" << m.ident
+             << "methods" << m.methods
+             << speedyj::End;
 }
 
+speedyj::Stream& operator<<(speedyj::Stream& s, const Package& m)
+{
+    return s << speedyj::Object
+             << "ident" << m.ident
+             << "sub_types" << m.subTypes
+             << "constants" << m.constants
+             << "enumerations" << m.enumerations
+             << "bitmasks" << m.bitmasks
+             << "compounds" << m.compounds
+             << "services" << m.services
+             << speedyj::End;
+}
+
+}
+
+namespace zserio
+{
+speedyj::Stream& operator<<(speedyj::Stream& s, const zserio::BitBuffer& b)
+{
+    s << speedyj::Array;
+    std::for_each(b.getBuffer(), b.getBuffer() + b.getByteSize(),
+                  [&](auto v) {
+                      s << (uint64_t)v;
+                  });
+
+    return s << speedyj::End;
+}
 }
