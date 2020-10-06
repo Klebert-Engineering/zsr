@@ -1,16 +1,5 @@
 /* clang-format off */
 
-#ifdef ZSR_PYTHONIC_IDENTIFIERS
-    #define FIELD_IDENT(x) (identToSnake(x))
-    #define PARAMETER_IDENT(x) (identToSnake(x))
-    #define FUNCTION_IDENT(x) (identToSnake(x))
-#else
-    #define FIELD_IDENT(x) (x)
-    #define PARAMETER_IDENT(x) (x)
-    #define FUNCTION_IDENT(x) (x)
-#endif
-
-
 /**
  * Expose the current objects `type` member for further
  * use by `ZSERIO_REFLECT_TYPE_REF`.
@@ -231,13 +220,13 @@
         };                                                                     \
                                                                                \
         zsr::Parameter& param = s.parameters.emplace_back(&s);                 \
-        param.ident = PARAMETER_IDENT(#NAME);                                  \
+        param.ident = #NAME;                                                   \
                                                                                \
         param.set = GEN_INIT_PARAMETER_LIST_SET(IDX);                          \
                                                                                \
         zsr::Field& f = s.fields.emplace_back(&s);                             \
         param.field = &f;                                                      \
-        f.ident = FIELD_IDENT(#NAME);                                          \
+        f.ident = #NAME;                                                       \
                                                                                \
         f.get = Helper::getFun<CompoundType>(fieldGetter, &f, t2c);            \
         f.set = {}; /* Read-only */                                            \
@@ -327,7 +316,7 @@
                     decltype(((CompoundType*)0)-> GETTER ())>>;       \
                                                                       \
         zsr::Field& f = s.fields.emplace_back(&s);                    \
-        f.ident = FIELD_IDENT(#NAME);                                 \
+        f.ident = #NAME;                                              \
                                                                       \
         GEN_FIELD_ACCESSORS(GETTER, SETTER)                           \
                                                                       \
@@ -345,7 +334,7 @@
                     decltype(((CompoundType*)0)-> FUNNAME ())>>;        \
                                                                         \
         zsr::Function& f = s.functions.emplace_back(&s);                \
-        f.ident = FUNCTION_IDENT(#NAME);                                \
+        f.ident = #NAME;                                                \
                                                                         \
         f.call = [&](const zsr::Introspectable& i) -> zsr::Variant {    \
             return zsr::variant_helper<ReturnType>::pack(               \
@@ -442,7 +431,7 @@
 #define ZSERIO_REFLECT_SERVICE_METHOD_BEGIN(NAME, IDENT)                \
     {                                                                   \
         auto& sm = s.methods.emplace_back(&s);                          \
-        sm.ident = FUNCTION_IDENT(#NAME);                               \
+        sm.ident = #NAME;                                               \
                                                                         \
         using ArgTupleType = zsr::argument_tuple_t<                     \
             decltype(&ServiceNamespace::Client:: IDENT)>;               \

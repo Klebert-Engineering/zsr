@@ -14,7 +14,7 @@ enum ZSR_EXPORT SerializationOptions
     SERIALIZE_TYPE =         1u << 0, /// Serialize TypeRef to '__type'
     SERIALIZE_METADATA =     1u << 1, /// Serialize Compound to '__meta' for compounds
     SERIALIZE_FUNCTIONS =    1u << 2, /// Serialize function return values
-    SERIALIZE_RESOLVE_ENUM = 1u << 3, /// Resolve enum values to key ident
+    SERIALIZE_RESOLVE_ENUM = 1u << 3, /// Serialize enum values to {ident, value} objects
     SERIALIZE_BITBUFFER =    1u << 4, /// Serialize bitbuffers as arrays
 };
 
