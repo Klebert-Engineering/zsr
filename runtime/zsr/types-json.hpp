@@ -8,37 +8,37 @@
 
 namespace zsr
 {
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Introspectable&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Introspectable&);
 
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Variant&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Variant&);
 
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const ZType::Type&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const ZType&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const CType::Type&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const CType&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const TypeRef&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const ZType::Type&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const ZType&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const CType::Type&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const CType&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const TypeRef&);
 
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const SubType&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Constant&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const SubType&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Constant&);
 
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const BitmaskValue&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Bitmask&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const BitmaskValue&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Bitmask&);
 
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const EnumerationItem&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Enumeration&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const EnumerationItem&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Enumeration&);
 
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Parameter&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Field&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Function&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Compound&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Parameter&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Field&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Function&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Compound&);
 
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const ServiceMethod&);
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Service&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const ServiceMethod&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Service&);
 
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const Package&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Package&);
 }
 
 namespace zserio
 {
-speedyj::Stream& ZSR_EXPORT operator<<(speedyj::Stream&, const BitBuffer&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const BitBuffer&);
 }

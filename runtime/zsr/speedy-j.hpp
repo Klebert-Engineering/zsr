@@ -21,7 +21,7 @@ struct StreamState
     } type;
     int itemIdx;
 
-    StreamState(Type);
+    ZSR_EXPORT StreamState(Type);
 };
 
 /**
@@ -31,8 +31,8 @@ struct StreamState
 class Stream
 {
 public:
-    Stream(Stream&&) = default;
-    Stream& operator=(Stream&&) = default;
+    ZSR_EXPORT Stream(Stream&&) = default;
+    ZSR_EXPORT Stream& operator=(Stream&&) = default;
 
     /**
      * Create an empty json stream.
@@ -40,20 +40,20 @@ public:
      * Note: Push either Object or Array first, otherwise
      *       pushing values will throw.
      */
-    Stream();
+    ZSR_EXPORT Stream();
 
     /**
      * Returns the streams string value.
      */
-    std::string str() const;
+    ZSR_EXPORT std::string str() const;
 
     /**
      * Push next value. Use operator << implementation.
      */
-    Stream& push(const std::string&);
-    Stream& push(uint64_t);
-    Stream& push(int64_t);
-    Stream& push(double);
+    ZSR_EXPORT Stream& push(const std::string&);
+    ZSR_EXPORT Stream& push(uint64_t);
+    ZSR_EXPORT Stream& push(int64_t);
+    ZSR_EXPORT Stream& push(double);
 
 /* private */
     std::stringstream ss_;
