@@ -51,8 +51,12 @@ public:
      * Push next value. Use operator << implementation.
      */
     ZSR_EXPORT Stream& push(const std::string&);
-    ZSR_EXPORT Stream& push(uint64_t);
-    ZSR_EXPORT Stream& push(int64_t);
+    ZSR_EXPORT Stream& push(unsigned long long);
+    ZSR_EXPORT Stream& push(unsigned long);
+    ZSR_EXPORT Stream& push(unsigned int);
+    ZSR_EXPORT Stream& push(long long);
+    ZSR_EXPORT Stream& push(long);
+    ZSR_EXPORT Stream& push(int);
     ZSR_EXPORT Stream& push(double);
 
 /* private */
@@ -84,12 +88,12 @@ static constexpr struct Array_ {} Array;
 static constexpr struct Object_ {} Object;
 static constexpr struct End_ {} End;
 
-Stream& operator<<(Stream&, const Null_&);
-Stream& operator<<(Stream&, const True_&);
-Stream& operator<<(Stream&, const False_&);
-Stream& operator<<(Stream&, const Array_&);
-Stream& operator<<(Stream&, const Object_&);
-Stream& operator<<(Stream&, const End_&);
+ZSR_EXPORT Stream& operator<<(Stream&, const Null_&);
+ZSR_EXPORT Stream& operator<<(Stream&, const True_&);
+ZSR_EXPORT Stream& operator<<(Stream&, const False_&);
+ZSR_EXPORT Stream& operator<<(Stream&, const Array_&);
+ZSR_EXPORT Stream& operator<<(Stream&, const Object_&);
+ZSR_EXPORT Stream& operator<<(Stream&, const End_&);
 
 struct ScopedObject
 {

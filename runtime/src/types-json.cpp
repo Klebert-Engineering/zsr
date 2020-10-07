@@ -16,7 +16,7 @@ speedyj::Stream& operator<<(speedyj::Stream& s, const Introspectable& i)
 speedyj::Stream& operator<<(speedyj::Stream& s, const Variant& v)
 {
 #define GEN(TYPE)                                                       \
-    if (auto&& vv = v.get< TYPE >()) { return s << *vv; }               \
+    if (auto&& vv = v.get< TYPE >()) { return s << (TYPE)*vv; }         \
     if (auto&& vv = v.get<std::vector< TYPE >>()) { return s << *vv; }  \
 
     ZSR_VARIANT_TYPES(GEN)

@@ -5,46 +5,56 @@
 #include <zsr/introspectable-json.hpp>
 
 
-#if 0
-#include <nlohmann/json.hpp>
-namespace nlo = nlohmann;
+#include <zsr/speedy-j.hpp>
 
 namespace {
 
 PKG;
 
+TEST(JsonTest, empty_object)
+{
+    speedyj::Stream ss;
+    ss << speedyj::Object << speedyj::End;
+
+    ASSERT_EQ(ss.str(), R"({})");
+}
+
+TEST(JsonTest, empty_array)
+{
+    speedyj::Stream ss;
+    ss << speedyj::Array << speedyj::End;
+
+    ASSERT_EQ(ss.str(), R"([])");
+}
+
+TEST(JsonTest, key_value_pair)
+{
+    speedyj::Stream ss;
+    ss << speedyj::Object
+       << "key" << "value"
+       << speedyj::End;
+
+    ASSERT_EQ(ss.str(), R"({"key":"value"})");
+}
+
+TEST(JsonTest, json_string_escaping)
+{
+    speedyj::Stream ss;
+    ss << speedyj::Object
+       << "\"hello\"" << "\\world\\"
+       << speedyj::End;
+
+    ASSERT_EQ(ss.str(), "{\"\\\"hello\\\"\":\"\\\\world\\\\\"}");
+}
+
 TEST(JsonTest, serialize_meta_subtype)
 {
-    auto s1 = zsr::find<zsr::SubType>(pkg, "S1");
-    auto s1j = nlo::json(*s1);
+    speedyj::Stream ss;
 
-    ASSERT_EQ(s1j["ident"], "S1");
-    ASSERT_EQ(s1j["type"]["ztype"]["type"], "int");
-}
+    auto m = zsr::find<zsr::SubType>(pkg, "S1");
+    auto s = (ss << *m).str();
 
-/* TODO: Add more useful tests */
-
-TEST(JsonTest, serialize_introspectable_default)
-{
-    auto meta_struct_a = zsr::find<zsr::Compound>(pkg, "A_struct");
-    ASSERT_TRUE(meta_struct_a);
-
-    auto meta_field_a = zsr::find<zsr::Field>(*meta_struct_a, "a");
-    ASSERT_TRUE(meta_field_a);
-
-    auto meta_field_b = zsr::find<zsr::Field>(*meta_struct_a, "b");
-    ASSERT_TRUE(meta_field_b);
-
-    auto obj = meta_struct_a->alloc();
-    meta_field_a->set(obj, static_cast<int64_t>(123));
-    meta_field_b->set(obj, static_cast<std::string>("Hello"));
-
-    ASSERT_EQ(zsr::serialize(obj), R"({
-        "a": 123,
-        "b": "Hello"
-    })"_json);
+    ASSERT_EQ(s, R"({"ident":"S1","type":{"ident":"","package":"","ctype":{"type":"int","size":8,"array":false},"ztype":{"type":"int","size":64,"array":false}}})");
 }
 
 }
-
-#endif

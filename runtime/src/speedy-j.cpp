@@ -103,14 +103,42 @@ Stream& Stream::push(const std::string& s)
     return *this;
 }
 
-Stream& Stream::push(uint64_t u)
+Stream& Stream::push(unsigned long long u)
 {
     checkedNext(*this);
     ss_ << u;
     return *this;
 }
 
-Stream& Stream::push(int64_t s)
+Stream& Stream::push(unsigned long u)
+{
+    checkedNext(*this);
+    ss_ << u;
+    return *this;
+}
+
+Stream& Stream::push(unsigned int u)
+{
+    checkedNext(*this);
+    ss_ << u;
+    return *this;
+}
+
+Stream& Stream::push(long long s)
+{
+    checkedNext(*this);
+    ss_ << s;
+    return *this;
+}
+
+Stream& Stream::push(long s)
+{
+    checkedNext(*this);
+    ss_ << s;
+    return *this;
+}
+
+Stream& Stream::push(int s)
 {
     checkedNext(*this);
     ss_ << s;
