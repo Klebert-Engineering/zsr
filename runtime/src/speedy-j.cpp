@@ -3,12 +3,14 @@
 namespace speedyj
 {
 
+#define IS_EVEN(x) (bool)((x) % 2 == 0)
+
 static std::string jsonEncoded(const std::string& s)
 {
     std::string res;
     res.reserve(s.size());
 
-    for (auto c : s) {
+    for (char c : s) {
         switch (c) {
         case '"':
             res += "\\\"";
@@ -18,8 +20,30 @@ static std::string jsonEncoded(const std::string& s)
             res += "\\\\";
             break;
 
+        case '\n':
+            res += "\\n";
+            break;
+
+        case '\r':
+            res += "\\r";
+            break;
+
+        case 0x08: /* backspace */
+            res += "\\b";
+            break;
+
+        case 0x0c: /* form-feed */
+            res += "\\f";
+            break;
+
+        case '\t':
+            res += "\\t";
+            break;
+
         default:
-            if (c <= ' ') {
+            if (c < ' ') {
+                /* Not optimal for multibyte codepoints, but
+                 * it should work. */
                 char uliteral[7] = {0};
                 snprintf(uliteral, sizeof(uliteral), "\\u%04d", (int)c);
                 res += uliteral;
@@ -43,7 +67,7 @@ static void next(Stream& s)
             s.ss_ << ',';
             break;
         case StreamState::Object:
-            s.ss_ << (s.state().itemIdx % 2 == 0 ? ',' : ':');
+            s.ss_ << (IS_EVEN(s.state().itemIdx) ? ',' : ':');
             break;
         }
     }
@@ -54,7 +78,7 @@ static void next(Stream& s)
 static void checkedNext(Stream& s)
 {
     if (s.state_.empty())
-        throw std::runtime_error("checkedNext: stack is empty");
+        throw Error("checkedNext: Stack is empty");
 
     next(s);
 }
@@ -78,10 +102,16 @@ static void finish(Stream& s)
         s.ss_ << ']';
         break;
     case StreamState::Object:
+        if (!IS_EVEN(s.state().itemIdx))
+            throw Error("finish: Key value count missmatch");
         s.ss_ << '}';
         break;
     }
 }
+
+Error::Error(const char* msg)
+    : std::runtime_error(msg)
+{}
 
 StreamState::StreamState(StreamState::Type t)
     : type(t)
@@ -164,7 +194,7 @@ Stream& Stream::push(StreamState s)
 Stream& Stream::pop()
 {
     if (state_.empty())
-        throw std::runtime_error("pop: stack is empty");
+        throw Error("pop: Stack is empty");
 
     finish(*this);
     state_.pop();
@@ -175,7 +205,7 @@ Stream& Stream::pop()
 StreamState& Stream::state()
 {
     if (state_.empty())
-        throw std::runtime_error("state: stack is empty");
+        throw Error("state: Stack is empty");
 
     return state_.top();
 }
@@ -183,7 +213,7 @@ StreamState& Stream::state()
 const StreamState& Stream::state() const
 {
     if (state_.empty())
-        throw std::runtime_error("state: stack is empty");
+        throw Error("state: Stack is empty");
 
     return state_.top();
 }

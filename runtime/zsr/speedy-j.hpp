@@ -6,9 +6,15 @@
 #include <stack>
 #include <vector>
 #include <sstream>
+#include <stdexcept>
 
 namespace speedyj
 {
+
+struct Error : public std::runtime_error
+{
+    ZSR_EXPORT Error(const char*);
+};
 
 /**
  * Internal stream state.
@@ -18,8 +24,8 @@ struct StreamState
     enum Type {
         Object,
         Array
-    } type;
-    int itemIdx;
+    } type {Object};
+    int itemIdx {0};
 
     ZSR_EXPORT StreamState(Type);
 };
