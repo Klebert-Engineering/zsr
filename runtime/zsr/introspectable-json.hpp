@@ -3,7 +3,7 @@
 #include <zsr/introspectable.hpp>
 #include <zsr/types.hpp>
 
-#include <nlohmann/json.hpp>
+#include <zsr/speedy-j.hpp>
 
 namespace zsr
 {
@@ -12,7 +12,7 @@ enum ZSR_EXPORT SerializationOptions
 {
     SERIALIZE_DEFAULT =           0u, /// Default serialization without metadata
     SERIALIZE_TYPE =         1u << 0, /// Serialize TypeRef to '__type'
-    SERIALIZE_METADATA =     1u << 1, /// Serialize Compound to '__meta' for compounds
+    SERIALIZE_METADATA =     1u << 1, /// Add root object with '__meta' array (see examples)
     SERIALIZE_FUNCTIONS =    1u << 2, /// Serialize function return values
     SERIALIZE_RESOLVE_ENUM = 1u << 3, /// Serialize enum values to {ident, value} objects
     SERIALIZE_BITBUFFER =    1u << 4, /// Serialize bitbuffers as arrays
@@ -27,7 +27,7 @@ enum ZSR_EXPORT SerializationOptions
  * \param opt   Serialization options.
  * \return      JSON object
  *
- * \example
+ * \example without metadata
  *   zserio:
  *     struct B {
  *       int32 a;
@@ -38,17 +38,28 @@ enum ZSR_EXPORT SerializationOptions
  *
  *   JSON:
  *     {
- *       __meta: {
- *         ... <see zsr::Compound>
- *       },
  *       a: {
- *         __meta: { ... },
  *         a: 123
  *       }
  *     }
+ *
+ * \example same zserio object with metadata
+ *   JSON:
+ *     {
+ *       "__meta": [ ← Root __meta array, containing all meta objects
+ *         {...}, {...}
+ *       ],
+ *       "__object": {
+ *         "__meta": 0, ← Index to root __meta array
+ *         a: {
+ *           "__meta": 1,
+ *           a: 123
+ *         }
+ *       }
+ *     }
  */
-nlohmann::json ZSR_EXPORT serialize(const zsr::Introspectable& obj,
-                                    const std::deque<zsr::Package>* pkgs = nullptr,
-                                    SerializationOptions opts = SERIALIZE_DEFAULT);
+speedyj::Stream ZSR_EXPORT serialize(const zsr::Introspectable& obj,
+                                     const std::deque<zsr::Package>* pkgs = nullptr,
+                                     SerializationOptions opts = SERIALIZE_DEFAULT);
 
 }

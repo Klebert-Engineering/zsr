@@ -6,17 +6,28 @@
 #include <zsr/reflection-main.hpp>
 #include <zsr/types-json.hpp>
 
-namespace nlo = nlohmann;
-
 namespace
 {
 
 template <class _Type>
 auto resolveEnum(const zsr::Enumeration& e,
-                 const _Type& v) -> nlo::json
+                 const _Type& v) -> std::string
 {
     for (auto&& i : e.items) {
         if (auto iv = i.value.get<_Type>())
+            if (*iv == v)
+                return i.ident;
+    }
+
+    return std::to_string(v);
+}
+
+template <>
+auto resolveEnum(const zsr::Enumeration& e,
+                 const std::string& v) -> std::string
+{
+    for (auto&& i : e.items) {
+        if (auto iv = i.value.get<std::string>())
             if (*iv == v)
                 return i.ident;
     }
@@ -54,29 +65,36 @@ auto getType(const std::deque<zsr::Package>* pkgs,
 template <class _Context>
 struct JsonVisitor
 {
+    speedyj::Stream& s;      /* Json stream */
+    std::vector<const zsr::Compound*>& metaTypes;
+
     const std::deque<zsr::Package>* pkgs;
     const zsr::SerializationOptions opts;
     const _Context* context; /* Object meta type being visited */
-    nlo::json j;             /* Json result value */
 
-    JsonVisitor(const _Context* ctx,
+    JsonVisitor(speedyj::Stream& s,
+                std::vector<const zsr::Compound*>& metaTypes,
+                const _Context* ctx,
                 const std::deque<zsr::Package>* pkgs,
                 zsr::SerializationOptions opts)
-        : pkgs(pkgs)
+        : s(s)
+        , metaTypes(metaTypes)
+        , pkgs(pkgs)
         , opts(opts)
         , context(ctx)
     {}
 
-    auto visit(const zsr::Variant& v) -> nlo::json
+    auto visit(const zsr::Variant& v)
     {
         zsr::visit(v, *this);
-        return j;
     }
 
     /* Visitor functions */
 
     void operator()(const zsr::Introspectable& obj)
     {
+        speedyj::ScopedObject _(s);
+
         auto meta = obj.meta();
         for (const auto& field : meta->fields) {
             if (field.get) {
@@ -85,11 +103,14 @@ struct JsonVisitor
                 const auto isSet = !field.has || field.has(obj);
                 if (isSet) {
                     try {
-                        j[key] = JsonVisitor<zsr::Field>(&field, pkgs, opts)
-                            .visit(field.get(obj));
+                        const auto& value = field.get(obj);
+
+                        s << key;
+                        JsonVisitor<zsr::Field>(s, metaTypes, &field, pkgs, opts)
+                            .visit(value);
                     } catch (...) {}
                 } else {
-                    j[key] = nullptr;
+                    s << key << speedyj::Null;
                 }
             }
         }
@@ -97,30 +118,36 @@ struct JsonVisitor
         if (opts & zsr::SERIALIZE_FUNCTIONS) {
             for (const auto& fun : meta->functions) {
                 auto&& key = fun.ident;
-                auto&& value = fun.call(obj);
 
                 try {
-                    j[key] = JsonVisitor<zsr::Function>(&fun, pkgs, opts).visit(value);
+                    const auto& value = fun.call(obj);
+
+                    s << key;
+                    JsonVisitor<zsr::Function>(s, metaTypes, &fun, pkgs, opts)
+                        .visit(value);
                 } catch (...) {}
             }
         }
 
-        if (opts & zsr::SERIALIZE_TYPE) {
-            j["__type"] = {
-                {"package", obj.meta()->parent.ident},
-                {"ident", obj.meta()->ident}
-            };
-        }
-
         if (opts & zsr::SERIALIZE_METADATA) {
-            j["__meta"] = *obj.meta();
+            /* Add the index to this objects metadata
+             * in the metadata-list. */
+            auto i = std::find(metaTypes.begin(), metaTypes.end(), obj.meta());
+            if (i != metaTypes.end()) {
+                s << "__meta" << std::distance(metaTypes.begin(), i);
+            } else {
+                s << "__meta" << metaTypes.size();
+                metaTypes.push_back(obj.meta());
+            }
         }
     }
 
     void operator()(const zserio::BitBuffer& v)
     {
         if (opts & zsr::SERIALIZE_BITBUFFER) {
-            j = v;
+            s << v;
+        } else {
+            s << speedyj::Null;
         }
     }
 
@@ -129,31 +156,29 @@ struct JsonVisitor
     {
         if (opts & zsr::SERIALIZE_RESOLVE_ENUM) {
             if (auto e = getType<zsr::Enumeration>(pkgs, context)) {
-                j = {
-                    {"ident", resolveEnum(*e, v)},
-                    {"value", v}
-                };
+                s << speedyj::Object
+                  << "ident" << resolveEnum(*e, v)
+                  << "value" << v
+                  << speedyj::End;
             } else {
-                j = v;
+                s << v;
             }
         } else {
-            j = v;
+            s << v;
         }
     }
 
     template <class _Type>
     void operator()(const std::vector<_Type>& vec)
     {
-        std::vector<nlo::json> array(vec.size());
-        std::transform(vec.begin(),
-                       vec.end(),
-                       array.begin(),
-                       [this](const auto& item) {
-                           return JsonVisitor<_Context>(context, pkgs, opts)
-                               .visit(item);
-                       });
+        speedyj::ScopedArray _(s);
 
-        j = std::move(array);
+        std::for_each(vec.begin(),
+                      vec.end(),
+                      [this](const auto& item) {
+                          JsonVisitor<_Context>(s, metaTypes, context, pkgs, opts)
+                              .visit(item);
+                      });
     }
 };
 
@@ -162,11 +187,32 @@ struct JsonVisitor
 namespace zsr
 {
 
-nlo::json serialize(const Introspectable& i,
-                    const std::deque<zsr::Package>* pkgs,
-                    SerializationOptions opts)
+speedyj::Stream serialize(const Introspectable& i,
+                          const std::deque<zsr::Package>* pkgs,
+                          SerializationOptions opts)
 {
-    return JsonVisitor<void>(nullptr, pkgs, opts).visit(i);
+    std::vector<const zsr::Compound*> metaTypes;
+
+    auto s = speedyj::Stream();
+
+    if (opts & zsr::SERIALIZE_METADATA)
+        s << speedyj::Object
+          << "__object";
+
+    JsonVisitor<void>(s, metaTypes, nullptr, pkgs, opts).visit(i);
+
+    if (opts & zsr::SERIALIZE_METADATA) {
+        s << "__meta"
+          << speedyj::Array;
+        std::for_each(metaTypes.begin(), metaTypes.end(),
+                      [&](const auto compound) {
+                          s << *compound;
+                      });
+        s << speedyj::End;
+        s << speedyj::End;
+    }
+
+    return s;
 }
 
 }

@@ -4,59 +4,41 @@
 #include <zsr/types.hpp>
 #include <zsr/variant.hpp>
 #include <zsr/introspectable.hpp>
-
-#include <nlohmann/json.hpp>
+#include <zsr/speedy-j.hpp>
 
 namespace zsr
 {
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Introspectable&);
 
-void ZSR_EXPORT to_json(nlohmann::json&, const Introspectable&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Variant&);
 
-void ZSR_EXPORT to_json(nlohmann::json&, const Variant&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const ZType::Type&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const ZType&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const CType::Type&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const CType&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const TypeRef&);
 
-void ZSR_EXPORT to_json(nlohmann::json&, const ZType&);
-void ZSR_EXPORT to_json(nlohmann::json&, const CType&);
-void ZSR_EXPORT to_json(nlohmann::json&, const TypeRef&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const SubType&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Constant&);
 
-void ZSR_EXPORT to_json(nlohmann::json&, const SubType&);
-void ZSR_EXPORT to_json(nlohmann::json&, const Constant&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const BitmaskValue&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Bitmask&);
 
-void ZSR_EXPORT to_json(nlohmann::json&, const BitmaskValue&);
-void ZSR_EXPORT to_json(nlohmann::json&, const Bitmask&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const EnumerationItem&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Enumeration&);
 
-void ZSR_EXPORT to_json(nlohmann::json&, const EnumerationItem&);
-void ZSR_EXPORT to_json(nlohmann::json&, const Enumeration&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Parameter&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Field&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Function&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Compound&);
 
-void ZSR_EXPORT to_json(nlohmann::json&, const Parameter&);
-void ZSR_EXPORT to_json(nlohmann::json&, const Field&);
-void ZSR_EXPORT to_json(nlohmann::json&, const Function&);
-void ZSR_EXPORT to_json(nlohmann::json&, const Compound&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const ServiceMethod&);
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Service&);
 
-void ZSR_EXPORT to_json(nlohmann::json&, const ServiceMethod&);
-void ZSR_EXPORT to_json(nlohmann::json&, const Service&);
-
-void ZSR_EXPORT to_json(nlohmann::json&, const Package&);
-
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const Package&);
 }
 
-/**
- * Foreign type serializers
- *
- * See: https://github.com/nlohmann/json#how-do-i-convert-third-party-types
- */
-namespace nlohmann
+namespace zserio
 {
-
-template <>
-struct adl_serializer<zserio::BitBuffer> {
-    static void to_json(json& j, const zserio::BitBuffer& b) {
-        j = std::vector<uint8_t>(b.getBuffer(),
-                                 b.getBuffer() + b.getByteSize());
-    }
-
-    static void from_json(const json& j, zserio::BitBuffer& b) {
-        b = zserio::BitBuffer(j.get<std::vector<uint8_t>>());
-    }
-};
-
+ZSR_EXPORT speedyj::Stream& operator<<(speedyj::Stream&, const BitBuffer&);
 }

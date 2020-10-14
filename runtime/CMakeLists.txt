@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 project(zserio-cpp-introspection-runtime)
 
-if (NOT TARGET nlohmann_json)
-  set(JSON_BuildTests OFF CACHE INTERNAL "")
-  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/nlohmann_json")
-endif()
-
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
 
@@ -42,7 +37,8 @@ add_library(zsr SHARED
   "${SRC}/src/types-json.cpp"
   "${SRC}/src/error.cpp"
   "${SRC}/src/introspectable.cpp"
-  "${SRC}/src/introspectable-json.cpp")
+  "${SRC}/src/introspectable-json.cpp"
+  "${SRC}/src/speedy-j.cpp")
 
 target_compile_features(zsr
   PUBLIC cxx_std_17)
@@ -53,8 +49,7 @@ target_include_directories(zsr
 
 target_link_libraries(zsr
   PUBLIC
-    ZserioCppRuntime
-    nlohmann_json::nlohmann_json)
+    ZserioCppRuntime)
 
 set_target_properties(zsr
   PROPERTIES
