@@ -17,12 +17,6 @@
         tr.ztype.array = IS_ARRAY;                                         \
     }
 
-
-/* C does not expand symbols used with # or ##
- * so we need to use this common workaround. */
-#define UID2(prefix, x) prefix ## x
-#define UID(prefix, x) UID2(prefix, x)
-
 /**
  * Package
  *
