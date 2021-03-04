@@ -36,9 +36,9 @@ jobs:
       run: |
         cmake --build .
     - name: Run CTest
-      working-directory: build
+      working-directory: build/runtime
       run: |
-        ctest --verbose
+        ctest --verbose --no-tests=error
 
   build-windows:
     name: Windows
@@ -71,9 +71,9 @@ jobs:
         cmake --build .
       shell: cmd
     - name: Run CTest
-      working-directory: build
+      working-directory: build/runtime
       run: |
-        ctest -C Debug --verbose
+        ctest -C Debug --verbose --no-tests=error
       shell: cmd
 
   build-macos:
@@ -107,6 +107,6 @@ jobs:
       run: |
         cmake --build .
     - name: Run CTest
-      working-directory: build
+      working-directory: build/runtime
       run: |
-        ctest -C Debug --verbose
+        ctest -C Debug --verbose --no-tests=error

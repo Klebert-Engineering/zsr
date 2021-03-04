@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(zserio-cpp-introspection-runtime)
+project(zsr-runtime)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
@@ -296,14 +296,12 @@ function(add_zsr_module_test NAME)
     PRIVATE zs-${NAME} zs-${NAME}-reflection)
 endfunction()
 
-# Enable tests by default
-if (NOT DEFINED ZSR_ENABLE_TESTING)
-  set(ZSR_ENABLE_TESTING On)
-endif()
-
-if (ZSR_ENABLE_TESTING)
-  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/googletest/googletest")
+if (ZSR_BUILD_TESTS)
   enable_testing()
+
+  if (NOT TARGET gtest)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/googletest/googletest")
+  endif()
 
   add_zsr_test(variant-test "${TEST}/variant-test.cpp")
 
