@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(zserio-cpp-introspection)
 
-enable_testing()
+if (NOT DEFINED PROJECT_NAME)
+  project(zsr)
+
+  set(NOT_SUBPROJECT ON)
+  set(ZSR_BUILD_TESTS ON)
+endif()
 
 add_subdirectory(extension)
 add_subdirectory(runtime)

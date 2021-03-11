@@ -22,4 +22,4 @@ Build
 Test
 ====
 
-> ctest --verbose
+> cd runtime && ctest --verbose
