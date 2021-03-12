@@ -1,10 +1,6 @@
 name: CI
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   build-linux:
@@ -13,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: true
+        submodules: recursive
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
       with:
@@ -46,7 +42,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: true
+        submodules: recursive
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
       with:
@@ -82,7 +78,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: true
+        submodules: recursive
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
       with:
@@ -99,7 +95,7 @@ jobs:
       run: >
         cmake
         -DCMAKE_BUILD_TYPE=Debug
-        -DCMAKE_CXX_STANDARD=11
+        -DCMAKE_CXX_STANDARD=17
         -DZSERIO_RT_DIR=../zserio/compiler/extensions/cpp/runtime/src
         ..
     - name: Build runtime

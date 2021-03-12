@@ -23,4 +23,34 @@ TEST(FindTest, resolve_type)
     ASSERT_EQ(meta_struct_a, resolved_b_a);
 }
 
+TEST(FindTest, recursive)
+{
+    auto resolved_b_a = zsr::find<zsr::Field>(zsr::packages(), "find_test.B_struct.a");
+    ASSERT_TRUE(resolved_b_a);
+    ASSERT_EQ(resolved_b_a->ident, "a");
+
+    auto unresolved_nested_service_method = zsr::find<zsr::ServiceMethod>(
+        zsr::packages(),
+        "find_test.nested_schema.child");
+    ASSERT_FALSE(unresolved_nested_service_method);
+
+    auto resolved_nested_service_method = zsr::find<zsr::ServiceMethod>(
+        zsr::packages(),
+        "nested_schema.child.X_service.serviceMethod");
+    ASSERT_TRUE(resolved_nested_service_method);
+}
+
+TEST(FindTest, recursive_fail)
+{
+    /* Path is empty */ {
+        auto resolved = zsr::find<zsr::Field>(zsr::packages(), "");
+        ASSERT_FALSE(resolved);
+    }
+
+    /* Package name is missing */ {
+        auto resolved = zsr::find<zsr::Field>(zsr::packages(), "B_struct.a");
+        ASSERT_FALSE(resolved);
+    }
+}
+
 }
