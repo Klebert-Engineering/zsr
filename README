@@ -16,7 +16,7 @@ Build
 =====
 
 > mkdir build && cd build
-> cmake -DZSERIO_RT_DIR=<path-to-zserio-cpp-rt-dir> ..
+> cmake -DZSERIO_RT_DIR=<path/to/zserio/compiler/extensions/cpp/runtime/src> ..
 > cmake --build .
 
 Test

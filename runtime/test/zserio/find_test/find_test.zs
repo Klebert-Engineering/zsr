@@ -1,5 +1,7 @@
 package find_test;
 
+import nested_schema.child.*;
+
 /**
  * A
  */

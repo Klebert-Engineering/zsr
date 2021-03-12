@@ -4,8 +4,7 @@ project(zsr-runtime)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
 
-set(SRC  "${CMAKE_CURRENT_SOURCE_DIR}")
-set(TEST "${SRC}/test")
+set(TEST "${CMAKE_CURRENT_SOURCE_DIR}/test")
 
 define_property(GLOBAL PROPERTY ZSERIO_DEPENDS_PY
     BRIEF_DOCS "Zserio dependency grepper."
@@ -15,6 +14,13 @@ set_property(GLOBAL PROPERTY ZSERIO_DEPENDS_PY "${CMAKE_CURRENT_SOURCE_DIR}/subm
 if (NOT MSVC)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON) # This does not set -fPIC :(
   set(CMAKE_CXX_FLAGS -fPIC)
+endif()
+
+## STX (standard library utilities)
+####
+
+if (NOT TARGET stx)
+  add_subdirectory(3rdparty/stx)
 endif()
 
 ## ZSERIO C++ runtime (optional)
@@ -33,12 +39,25 @@ endif()
 ####
 
 add_library(zsr SHARED
-  "${SRC}/src/types.cpp"
-  "${SRC}/src/types-json.cpp"
-  "${SRC}/src/error.cpp"
-  "${SRC}/src/introspectable.cpp"
-  "${SRC}/src/introspectable-json.cpp"
-  "${SRC}/src/speedy-j.cpp")
+  src/types.cpp
+  src/types-json.cpp
+  src/error.cpp
+  src/introspectable.cpp
+  src/introspectable-json.cpp
+  src/speedy-j.cpp
+
+  zsr/error.hpp
+  zsr/export.hpp
+  zsr/find.hpp
+  zsr/introspectable.hpp
+  zsr/introspectable-json.hpp
+  zsr/introspectable-private.hpp
+  zsr/reflection-main.hpp
+  zsr/speedy-j.hpp
+  zsr/speedy-j-impl.hpp
+  zsr/types.hpp
+  zsr/types-json.hpp
+  zsr/variant.hpp)
 
 target_compile_features(zsr
   PUBLIC cxx_std_17)
@@ -49,7 +68,7 @@ target_include_directories(zsr
 
 target_link_libraries(zsr
   PUBLIC
-    ZserioCppRuntime)
+    ZserioCppRuntime stx)
 
 set_target_properties(zsr
   PROPERTIES

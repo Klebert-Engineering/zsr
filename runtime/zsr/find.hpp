@@ -1,6 +1,7 @@
 #pragma once
 
 #include "zsr/types.hpp"
+#include "stx/string.h"
 
 namespace zsr {
 namespace impl {
@@ -12,6 +13,7 @@ struct ZSR_EXPORT child_iter
 template <>
 struct ZSR_EXPORT child_iter<zsr::Package>
 {
+    using ParentType = std::deque<zsr::Package>;
     static auto get(const std::deque<zsr::Package>& r)
     {
         return std::make_pair(r.cbegin(), r.cend());
@@ -22,6 +24,7 @@ struct ZSR_EXPORT child_iter<zsr::Package>
     template <>                                                              \
     struct child_iter<TYPE>                                                  \
     {                                                                        \
+        using ParentType = PARENT_TYPE;                                      \
         static auto get(const PARENT_TYPE& r)                                \
         {                                                                    \
             return std::make_pair(r.LIST.cbegin(), r.LIST.cend());           \
@@ -51,16 +54,8 @@ DECL_ITER(ServiceMethod,   Service,     methods)
 
 #undef DECL_ITER
 
-} // namespace impl
-
-/**
- * Utility functions for searching metadata.
- *
- * Example:
- *   auto field = zsr::find<zsr::Field>(compound, "name")
- */
 template <class _Type, class _Root>
-const _Type* find(const _Root& r, const std::string& ident)
+const _Type* find(const _Root& r, const std::string_view& ident)
 {
     auto [begin, end] = impl::child_iter<_Type>::get(r);
     auto iter = std::find_if(begin, end, [&](const auto& c) {
@@ -69,6 +64,55 @@ const _Type* find(const _Root& r, const std::string& ident)
     if (iter != end)
         return &(*iter);
     return nullptr;
+}
+
+template <class _Root, class _Type>
+struct TypeHierarchyHelper
+{
+    template<class _ReverseIter>
+    static const _Type* find(_Root const& x, _ReverseIter begin, _ReverseIter end)
+    {
+        if (begin == end)
+            return nullptr;
+        auto parent = TypeHierarchyHelper<_Root, typename child_iter<_Type>::ParentType>::find(x, begin+1, end);
+        if (!parent)
+            return nullptr;
+        return impl::find<_Type>(*parent, *begin);
+    }
+};
+
+template <class _Type>
+struct TypeHierarchyHelper<typename child_iter<_Type>::ParentType, _Type>
+{
+    template<class _Root, class _ReverseIter>
+    static const _Type* find(_Root const& parent, _ReverseIter begin, _ReverseIter end)
+    {
+        if (begin == end)
+            return nullptr;
+        auto ident = stx::join(end.base(), begin.base(), ".");
+        return impl::find<_Type>(parent, ident);
+    }
+};
+
+} // namespace impl
+
+/**
+ * Utility functions for searching metadata.
+ *
+ * Example:
+ *   auto field = zsr::find<zsr::Field>(compound, "member")
+ *
+ * Example (with recursive field resolution from given package):
+ *   auto field = zsr::find<zsr::Field>(package, "compound.member")
+ *
+ * Example (with absolute path resolution):
+ *   auto field = zsr::find<zsr::Field>(zsr::packages(), "package.compound.member")
+ */
+template <class _Type, class _Root>
+const _Type* find(const _Root& r, const std::string& ident)
+{
+    auto parts = stx::split<std::vector<std::string_view>>(ident, ".");
+    return impl::TypeHierarchyHelper<_Root, _Type>::find(r, parts.rbegin(), parts.rend());
 }
 
 template <class _Type, class _Root>
