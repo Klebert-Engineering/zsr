@@ -40,4 +40,17 @@ TEST(FindTest, recursive)
     ASSERT_TRUE(resolved_nested_service_method);
 }
 
+TEST(FindTest, recursive_fail)
+{
+    /* Path is empty */ {
+        auto resolved = zsr::find<zsr::Field>(zsr::packages(), "");
+        ASSERT_FALSE(resolved);
+    }
+
+    /* Package name is missing */ {
+        auto resolved = zsr::find<zsr::Field>(zsr::packages(), "B_struct.a");
+        ASSERT_FALSE(resolved);
+    }
+}
+
 }
