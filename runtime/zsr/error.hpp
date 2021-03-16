@@ -19,35 +19,46 @@ struct Compound;
  * Exception base class.
  */
 struct ZSR_EXPORT Error : std::exception
-{};
-
-struct ZSR_EXPORT ParameterListTypeError : Error
 {
     std::string msg;
 
+    explicit Error(std::string what);
+
+    const char* what() const noexcept override;
+};
+
+struct ZSR_EXPORT ParameterListTypeError : public Error
+{
     static ParameterListTypeError listEmpty();
     static ParameterListTypeError listTypeMissmatch(const std::string& expected,
                                                     const std::string& got);
 
-    ParameterListTypeError(std::string msg);
-
-    const char* what() const noexcept override;
+    using Error::Error;
 };
 
-struct ZSR_EXPORT IntrospectableCastError : Error
+struct ZSR_EXPORT IntrospectableCastError : public Error
 {
-    std::string msg;
-
     IntrospectableCastError();
     explicit IntrospectableCastError(const Compound* isa,
                                      const Compound* target);
-
-    const char* what() const noexcept override;
 };
 
-struct ZSR_EXPORT VariantCastError : Error
+struct ZSR_EXPORT VariantCastError : public Error
 {
-    const char* what() const noexcept override;
+    explicit VariantCastError();
+};
+
+struct ZSR_EXPORT UnknownIdentifierError : public Error
+{
+    std::string identifier;
+    std::string identifierType;
+
+    explicit UnknownIdentifierError(std::string const& identifierType, std::string const& identifier);
+};
+
+struct ZSR_EXPORT ParameterizedStructNotAllowedError : public Error
+{
+    explicit ParameterizedStructNotAllowedError(std::string const& identifier);
 };
 
 } // namespace zsr

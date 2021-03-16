@@ -2,6 +2,7 @@
 
 #include "zsr/types.hpp"
 #include "stx/string.h"
+#include "zsr/reflection-main.hpp"
 
 namespace zsr {
 namespace impl {
@@ -105,14 +106,21 @@ struct TypeHierarchyHelper<typename child_iter<_Type>::ParentType, _Type>
  * Example (with recursive field resolution from given package):
  *   auto field = zsr::find<zsr::Field>(package, "compound.member")
  *
- * Example (with absolute path resolution):
+ * Example (with absolute path resolution, incl. equivalent single-param version):
  *   auto field = zsr::find<zsr::Field>(zsr::packages(), "package.compound.member")
+ *   auto field = zsr::find<zsr::Field>("package.compound.member")
  */
 template <class _Type, class _Root>
 const _Type* find(const _Root& r, const std::string& ident)
 {
     auto parts = stx::split<std::vector<std::string_view>>(ident, ".");
     return impl::TypeHierarchyHelper<_Root, _Type>::find(r, parts.rbegin(), parts.rend());
+}
+
+template <class _Type>
+const _Type* find(const std::string& ident)
+{
+    return find<_Type, std::deque<zsr::Package>>(zsr::packages(), ident);
 }
 
 template <class _Type, class _Root>

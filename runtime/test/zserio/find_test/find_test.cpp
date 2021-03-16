@@ -38,6 +38,10 @@ TEST(FindTest, recursive)
         zsr::packages(),
         "nested_schema.child.X_service.serviceMethod");
     ASSERT_TRUE(resolved_nested_service_method);
+
+    auto resolved_nested_service_method_single_arg = zsr::find<zsr::ServiceMethod>(
+        "nested_schema.child.X_service.serviceMethod");
+    ASSERT_TRUE(resolved_nested_service_method_single_arg);
 }
 
 TEST(FindTest, recursive_fail)
