@@ -90,6 +90,10 @@ struct JsonVisitor
     }
 
     /* Visitor functions */
+    void operator()()
+    {
+        /* Empty variant */
+    }
 
     void operator()(const zsr::Introspectable& obj)
     {
