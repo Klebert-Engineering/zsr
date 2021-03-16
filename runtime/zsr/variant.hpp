@@ -291,7 +291,7 @@ private:
 /**
  * Function for visiting variant values.
  *
- * _Fun must implement ()(T) and ()(std::vector<T>).
+ * _Fun must implement ()(T) and ()(std::vector<T>) and ()(void).
  */
 template <class _Fun>
 auto visit(const zsr::Variant& v, _Fun& f)
@@ -306,6 +306,7 @@ auto visit(const zsr::Variant& v, _Fun& f)
 
     ZSR_VARIANT_TYPES(GEN)
 
+    return f(); /* Fallback: empty variant */
 #undef GEN
 }
 
