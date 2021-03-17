@@ -3,6 +3,7 @@
 #include "export.hpp"
 #include <exception>
 #include <string>
+#include <string_view>
 
 #ifdef _MSC_VER
 /* Disable warning about inheriting from/using unexported class */
@@ -27,7 +28,7 @@ struct ZSR_EXPORT Error : std::exception
     const char* what() const noexcept override;
 };
 
-struct ZSR_EXPORT ParameterListTypeError : public Error
+struct ZSR_EXPORT ParameterListTypeError : Error
 {
     static ParameterListTypeError listEmpty();
     static ParameterListTypeError listTypeMissmatch(const std::string& expected,
@@ -36,29 +37,30 @@ struct ZSR_EXPORT ParameterListTypeError : public Error
     using Error::Error;
 };
 
-struct ZSR_EXPORT IntrospectableCastError : public Error
+struct ZSR_EXPORT IntrospectableCastError : Error
 {
     IntrospectableCastError();
     explicit IntrospectableCastError(const Compound* isa,
                                      const Compound* target);
 };
 
-struct ZSR_EXPORT VariantCastError : public Error
+struct ZSR_EXPORT VariantCastError : Error
 {
     explicit VariantCastError();
 };
 
-struct ZSR_EXPORT UnknownIdentifierError : public Error
+struct ZSR_EXPORT UnknownIdentifierError : Error
 {
-    std::string identifier;
-    std::string identifierType;
+    std::string type;
+    std::string ident;
 
-    explicit UnknownIdentifierError(std::string const& identifierType, std::string const& identifier);
+    UnknownIdentifierError(std::string type,
+                           std::string ident);
 };
 
-struct ZSR_EXPORT ParameterizedStructNotAllowedError : public Error
+struct ZSR_EXPORT ParameterizedStructNotAllowedError : Error
 {
-    explicit ParameterizedStructNotAllowedError(std::string const& identifier);
+    explicit ParameterizedStructNotAllowedError(std::string_view ident);
 };
 
 } // namespace zsr

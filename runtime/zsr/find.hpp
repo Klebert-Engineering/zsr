@@ -4,6 +4,8 @@
 #include "stx/string.h"
 #include "zsr/reflection-main.hpp"
 
+#include <string_view>
+
 namespace zsr {
 namespace impl {
 
@@ -56,7 +58,7 @@ DECL_ITER(ServiceMethod,   Service,     methods)
 #undef DECL_ITER
 
 template <class _Type, class _Root>
-const _Type* find(const _Root& r, const std::string_view& ident)
+const _Type* find(const _Root& r, std::string_view ident)
 {
     auto [begin, end] = impl::child_iter<_Type>::get(r);
     auto iter = std::find_if(begin, end, [&](const auto& c) {
@@ -75,10 +77,10 @@ struct TypeHierarchyHelper
     {
         if (begin == end)
             return nullptr;
-        auto parent = TypeHierarchyHelper<_Root, typename child_iter<_Type>::ParentType>::find(x, begin+1, end);
-        if (!parent)
-            return nullptr;
-        return impl::find<_Type>(*parent, *begin);
+        if (auto parent = TypeHierarchyHelper<_Root, typename child_iter<_Type>::ParentType>::find(x, begin+1, end))
+            return impl::find<_Type>(*parent, *begin);
+
+        return nullptr;
     }
 };
 
@@ -111,14 +113,14 @@ struct TypeHierarchyHelper<typename child_iter<_Type>::ParentType, _Type>
  *   auto field = zsr::find<zsr::Field>("package.compound.member")
  */
 template <class _Type, class _Root>
-const _Type* find(const _Root& r, const std::string& ident)
+const _Type* find(const _Root& r, std::string_view ident)
 {
     auto parts = stx::split<std::vector<std::string_view>>(ident, ".");
     return impl::TypeHierarchyHelper<_Root, _Type>::find(r, parts.rbegin(), parts.rend());
 }
 
 template <class _Type>
-const _Type* find(const std::string& ident)
+const _Type* find(std::string_view ident)
 {
     return find<_Type, std::deque<zsr::Package>>(zsr::packages(), ident);
 }
