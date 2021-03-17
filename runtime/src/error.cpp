@@ -1,59 +1,52 @@
 #include "zsr/error.hpp"
 #include "zsr/types.hpp"
+#include "stx/string.h"
 
 namespace zsr {
+
+Error::Error(std::string what)
+    : msg(std::move(what))
+{}
+
+const char* Error::what() const noexcept
+{
+    return msg.c_str();
+}
 
 ParameterListTypeError ParameterListTypeError::listEmpty()
 {
     return ParameterListTypeError("Internal type list unset");
 }
 
-ParameterListTypeError ParameterListTypeError::listTypeMissmatch(
-    const std::string& expected,
-    const std::string& got)
+ParameterListTypeError ParameterListTypeError::listTypeMissmatch(const std::string& expected,
+                                                                 const std::string& got)
 {
-
-    std::string msg = "Parameter list type error. Expected '";
-    msg += expected + "', got '" + got + "'";
-
-    return ParameterListTypeError(std::move(msg));
+    return ParameterListTypeError(stx::replace_with(
+        "Parameter list type error. Expected '?', got '?'", "?", expected, got));
 }
 
-ParameterListTypeError::ParameterListTypeError(std::string msg)
-    : msg(std::move(msg))
-{}
-
-const char* ParameterListTypeError::what() const noexcept
-{
-    return msg.c_str();
-}
-
-IntrospectableCastError::IntrospectableCastError()
+IntrospectableCastError::IntrospectableCastError() : Error("Introspectable cast error")
 {}
 
 IntrospectableCastError::IntrospectableCastError(const Compound* isa,
                                                  const Compound* target)
-{
-    auto sourceIdent = isa ? isa->ident.c_str() : "<null>";
-    auto targetIdent = target ? target->ident.c_str() : "<null>";
+    : Error(stx::replace_with("Introspectable cast error from '?' to '?'", "?",
+                              isa ? isa->ident.c_str() : "<null>",
+                              target ? target->ident.c_str() : "<null>"))
+{}
 
-    msg = "Introspectable cast error from '";
-    msg += sourceIdent;
-    msg += "' to '";
-    msg += targetIdent;
-    msg += "'";
-}
+VariantCastError::VariantCastError() : Error("Variant cast error")
+{}
 
-const char* IntrospectableCastError::what() const noexcept
-{
-    if (!msg.empty())
-        return msg.c_str();
-    return "Introspectable cast error";
-}
+UnknownIdentifierError::UnknownIdentifierError(std::string type,
+                                               std::string ident)
+    : Error(stx::replace_with("Could not find ? '?'", "?", type, ident))
+    , type(std::move(type))
+    , ident(std::move(ident))
+{}
 
-const char* VariantCastError::what() const noexcept
-{
-    return "Variant cast error";
-}
+ParameterizedStructNotAllowedError::ParameterizedStructNotAllowedError(std::string_view ident)
+    : Error(stx::replace_with("Refusing to construct ? without parameters.", "?", ident))
+{}
 
 }

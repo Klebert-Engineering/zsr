@@ -3,6 +3,7 @@
 #include "export.hpp"
 #include <exception>
 #include <string>
+#include <string_view>
 
 #ifdef _MSC_VER
 /* Disable warning about inheriting from/using unexported class */
@@ -19,35 +20,47 @@ struct Compound;
  * Exception base class.
  */
 struct ZSR_EXPORT Error : std::exception
-{};
-
-struct ZSR_EXPORT ParameterListTypeError : Error
 {
     std::string msg;
 
+    explicit Error(std::string what);
+
+    const char* what() const noexcept override;
+};
+
+struct ZSR_EXPORT ParameterListTypeError : Error
+{
     static ParameterListTypeError listEmpty();
     static ParameterListTypeError listTypeMissmatch(const std::string& expected,
                                                     const std::string& got);
 
-    ParameterListTypeError(std::string msg);
-
-    const char* what() const noexcept override;
+    using Error::Error;
 };
 
 struct ZSR_EXPORT IntrospectableCastError : Error
 {
-    std::string msg;
-
     IntrospectableCastError();
     explicit IntrospectableCastError(const Compound* isa,
                                      const Compound* target);
-
-    const char* what() const noexcept override;
 };
 
 struct ZSR_EXPORT VariantCastError : Error
 {
-    const char* what() const noexcept override;
+    explicit VariantCastError();
+};
+
+struct ZSR_EXPORT UnknownIdentifierError : Error
+{
+    std::string type;
+    std::string ident;
+
+    UnknownIdentifierError(std::string type,
+                           std::string ident);
+};
+
+struct ZSR_EXPORT ParameterizedStructNotAllowedError : Error
+{
+    explicit ParameterizedStructNotAllowedError(std::string_view ident);
 };
 
 } // namespace zsr

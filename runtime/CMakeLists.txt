@@ -45,6 +45,7 @@ add_library(zsr SHARED
   src/introspectable.cpp
   src/introspectable-json.cpp
   src/speedy-j.cpp
+  src/getset.cpp
 
   zsr/error.hpp
   zsr/export.hpp
@@ -52,6 +53,7 @@ add_library(zsr SHARED
   zsr/introspectable.hpp
   zsr/introspectable-json.hpp
   zsr/introspectable-private.hpp
+  zsr/getset.hpp
   zsr/reflection-main.hpp
   zsr/speedy-j.hpp
   zsr/speedy-j-impl.hpp
@@ -333,4 +335,5 @@ if (ZSR_BUILD_TESTS)
   add_zsr_module_test(service_test TOP_LEVEL_PKG zsr)
   add_zsr_module_test(find_test TOP_LEVEL_PKG zsr)
   add_zsr_module_test(json_test TOP_LEVEL_PKG zsr)
+  add_zsr_module_test(getset_test TOP_LEVEL_PKG zsr)
 endif()
