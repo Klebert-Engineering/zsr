@@ -1,6 +1,7 @@
 #include "zsr/error.hpp"
 #include "zsr/types.hpp"
-#include "stx/string.h"
+
+#include "stx/format.h"
 
 namespace zsr {
 
@@ -21,32 +22,34 @@ ParameterListTypeError ParameterListTypeError::listEmpty()
 ParameterListTypeError ParameterListTypeError::listTypeMissmatch(const std::string& expected,
                                                                  const std::string& got)
 {
-    return ParameterListTypeError(stx::replace_with(
-        "Parameter list type error. Expected '?', got '?'", "?", expected, got));
+    return ParameterListTypeError(stx::format(
+        "Parameter list type error; expected '{}', got '{}'", expected, got));
 }
 
-IntrospectableCastError::IntrospectableCastError() : Error("Introspectable cast error")
+IntrospectableCastError::IntrospectableCastError()
+    : Error("Introspectable cast error")
 {}
 
 IntrospectableCastError::IntrospectableCastError(const Compound* isa,
                                                  const Compound* target)
-    : Error(stx::replace_with("Introspectable cast error from '?' to '?'", "?",
-                              isa ? isa->ident.c_str() : "<null>",
-                              target ? target->ident.c_str() : "<null>"))
+    : Error(stx::format("Introspectable cast error from '{}' to '{}'",
+                        isa ? isa->ident.c_str() : "<null>",
+                        target ? target->ident.c_str() : "<null>"))
 {}
 
-VariantCastError::VariantCastError() : Error("Variant cast error")
+VariantCastError::VariantCastError()
+    : Error("Variant cast error")
 {}
 
 UnknownIdentifierError::UnknownIdentifierError(std::string type,
                                                std::string ident)
-    : Error(stx::replace_with("Could not find ? '?'", "?", type, ident))
+    : Error(stx::format("Could not find '{}::{}'", type, ident))
     , type(std::move(type))
     , ident(std::move(ident))
 {}
 
 ParameterizedStructNotAllowedError::ParameterizedStructNotAllowedError(std::string_view ident)
-    : Error(stx::replace_with("Refusing to construct ? without parameters.", "?", ident))
+    : Error(stx::format("Refusing to construct '{}' without parameters.", ident))
 {}
 
 }
