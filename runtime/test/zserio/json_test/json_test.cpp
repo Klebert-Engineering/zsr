@@ -47,6 +47,16 @@ TEST(JsonTest, json_string_escaping)
     ASSERT_EQ(ss.str(), "{\"\\\"hello\\\"\":\"\\\\world\\\\\"}");
 }
 
+TEST(JsonTest, json_uchar_string_escaping)
+{
+    speedyj::Stream ss;
+    ss << speedyj::Object
+       << "\"hello\x02\"" << "\\\xC2\xB9\\"
+       << speedyj::End;
+
+    ASSERT_EQ(ss.str(), "{\"\\\"hello\\u0002\\\"\":\"\\\\\\u00C2\\u00B9\\\\\"}");
+}
+
 TEST(JsonTest, serialize_meta_subtype)
 {
     speedyj::Stream ss;

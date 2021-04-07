@@ -1,5 +1,7 @@
 #include <zsr/speedy-j.hpp>
 
+#include <limits>
+
 namespace speedyj
 {
 
@@ -41,11 +43,12 @@ static std::string jsonEncoded(const std::string& s)
             break;
 
         default:
-            if (c < ' ') {
+            if (c < ' ' || c > std::numeric_limits<signed char>::max()) {
                 /* Not optimal for multibyte codepoints, but
                  * it should work. */
                 char uliteral[7] = {0};
-                snprintf(uliteral, sizeof(uliteral), "\\u%04d", (int)c);
+                snprintf(uliteral, sizeof(uliteral), "\\u%04X",
+                         (unsigned)(c < 0 ? std::numeric_limits<unsigned char>::max() + 1u + c : c));
                 res += uliteral;
             } else {
                 res.push_back(c);
