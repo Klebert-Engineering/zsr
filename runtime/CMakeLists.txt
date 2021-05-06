@@ -140,7 +140,9 @@ function (add_submodule_lib target top_level_pkg zs_root gen_src_root subdir mod
   set(module_name "zsr--${module_name}")
 
   file(GLOB_RECURSE subdir_sources "${subdir}/*.cpp")
-  if (subdir_sources)
+  file(GLOB_RECURSE subdir_headers "${subdir}/*.h" "${subdir}/*.hpp")
+
+  if (subdir_sources OR subdir_headers)
     message("Added target ${module_name}")
 
     file(RELATIVE_PATH rel_subdir "${gen_src_root}" "${subdir}")
@@ -151,33 +153,44 @@ function (add_submodule_lib target top_level_pkg zs_root gen_src_root subdir mod
     list(REMOVE_ITEM dependencies "${module_name}")
     message("Dependencies for ${module_name}: ${dependencies}")
 
-    add_library(${module_name} SHARED
-      ${subdir_sources})
+    if (subdir_sources)
 
-    target_include_directories(${module_name}
-      PUBLIC "${gen_src_root}")
+      add_library(${module_name} SHARED
+        ${subdir_sources}
+        ${subdir_headers})
 
-    target_link_libraries(${module_name}
-      PUBLIC ZserioCppRuntime ${dependencies})
+      target_include_directories(${module_name}
+        PUBLIC "${gen_src_root}")
+      target_link_libraries(${module_name}
+        PUBLIC ZserioCppRuntime ${dependencies})
 
-    target_link_libraries(${target}
-      INTERFACE ${module_name})
-
-    set_target_properties(${module_name}
-      PROPERTIES
+      set_target_properties(${module_name}
+        PROPERTIES
         WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-    if (MSVC)
-      target_compile_options(${module_name}
-        PUBLIC
+      if (MSVC)
+        target_compile_options(${module_name}
+          PUBLIC
           /bigobj
           /EHsc
           /wd4100)
-    else()
-      target_compile_options(${module_name}
-        PUBLIC
+      else()
+        target_compile_options(${module_name}
+          PUBLIC
           -fPIC)
+      endif()
+
+    else() # No sources, only headers
+
+      message("Target ${module_name} is header-only.")
+      add_library(${module_name} INTERFACE)
+      target_include_directories(${module_name}
+        INTERFACE "${gen_src_root}")
+
     endif()
+
+    target_link_libraries(${target}
+      INTERFACE ${module_name})
   endif()
 endfunction()
 
