@@ -5,6 +5,7 @@ if (NOT DEFINED PROJECT_NAME)
 
   set(NOT_SUBPROJECT ON)
   set(ZSR_BUILD_TESTS ON)
+  enable_testing()
 endif()
 
 add_subdirectory(extension)
