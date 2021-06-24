@@ -1,5 +1,15 @@
 #pragma once
 
+#if defined(_MSC_VER)
+    #if defined(SPEEDYJ_BUILD)
+        #define SPEEDYJ_EXPORT __declspec(dllexport)
+    #else
+        #define SPEEDYJ_EXPORT __declspec(dllimport)
+    #endif
+#else
+    #define SPEEDYJ_EXPORT __attribute__ ((visibility ("default")))
+#endif
+
 #include "export.hpp"
 
 #include <string>
@@ -13,7 +23,7 @@ namespace speedyj
 
 struct Error : public std::runtime_error
 {
-    ZSR_EXPORT Error(const char*);
+    SPEEDYJ_EXPORT Error(const char*);
 };
 
 /**
@@ -27,7 +37,7 @@ struct StreamState
     } type {Object};
     int itemIdx {0};
 
-    ZSR_EXPORT StreamState(Type);
+    SPEEDYJ_EXPORT StreamState(Type);
 };
 
 /**
@@ -37,8 +47,8 @@ struct StreamState
 class Stream
 {
 public:
-    ZSR_EXPORT Stream(Stream&&) = default;
-    ZSR_EXPORT Stream& operator=(Stream&&) = default;
+    SPEEDYJ_EXPORT Stream(Stream&&) = default;
+    SPEEDYJ_EXPORT Stream& operator=(Stream&&) = default;
 
     /**
      * Create an empty json stream.
@@ -46,24 +56,24 @@ public:
      * Note: Push either Object or Array first, otherwise
      *       pushing values will throw.
      */
-    ZSR_EXPORT Stream();
+    SPEEDYJ_EXPORT Stream();
 
     /**
      * Returns the streams string value.
      */
-    ZSR_EXPORT std::string str() const;
+    SPEEDYJ_EXPORT std::string str() const;
 
     /**
      * Push next value. Use operator << implementation.
      */
-    ZSR_EXPORT Stream& push(const std::string&);
-    ZSR_EXPORT Stream& push(unsigned long long);
-    ZSR_EXPORT Stream& push(unsigned long);
-    ZSR_EXPORT Stream& push(unsigned int);
-    ZSR_EXPORT Stream& push(long long);
-    ZSR_EXPORT Stream& push(long);
-    ZSR_EXPORT Stream& push(int);
-    ZSR_EXPORT Stream& push(double);
+    SPEEDYJ_EXPORT Stream& push(const std::string&);
+    SPEEDYJ_EXPORT Stream& push(unsigned long long);
+    SPEEDYJ_EXPORT Stream& push(unsigned long);
+    SPEEDYJ_EXPORT Stream& push(unsigned int);
+    SPEEDYJ_EXPORT Stream& push(long long);
+    SPEEDYJ_EXPORT Stream& push(long);
+    SPEEDYJ_EXPORT Stream& push(int);
+    SPEEDYJ_EXPORT Stream& push(double);
 
 /* private */
     std::stringstream ss_;
@@ -94,12 +104,12 @@ static constexpr struct Array_ {} Array;
 static constexpr struct Object_ {} Object;
 static constexpr struct End_ {} End;
 
-ZSR_EXPORT Stream& operator<<(Stream&, const Null_&);
-ZSR_EXPORT Stream& operator<<(Stream&, const True_&);
-ZSR_EXPORT Stream& operator<<(Stream&, const False_&);
-ZSR_EXPORT Stream& operator<<(Stream&, const Array_&);
-ZSR_EXPORT Stream& operator<<(Stream&, const Object_&);
-ZSR_EXPORT Stream& operator<<(Stream&, const End_&);
+SPEEDYJ_EXPORT Stream& operator<<(Stream&, const Null_&);
+SPEEDYJ_EXPORT Stream& operator<<(Stream&, const True_&);
+SPEEDYJ_EXPORT Stream& operator<<(Stream&, const False_&);
+SPEEDYJ_EXPORT Stream& operator<<(Stream&, const Array_&);
+SPEEDYJ_EXPORT Stream& operator<<(Stream&, const Object_&);
+SPEEDYJ_EXPORT Stream& operator<<(Stream&, const End_&);
 
 struct ScopedObject
 {

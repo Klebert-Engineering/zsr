@@ -35,6 +35,35 @@ if (NOT TARGET ZserioCppRuntime)
   endif()
 endif()
 
+## SpeedyJ
+####
+
+add_library(speedyj SHARED
+  src/speedy-j.cpp
+  zsr/speedy-j.hpp
+  zsr/speedy-j-impl.hpp
+  )
+
+target_compile_features(speedyj
+  PUBLIC cxx_std_17)
+
+target_include_directories(speedyj
+  PUBLIC
+    "${SRC}")
+
+set_target_properties(speedyj
+  PROPERTIES
+    src_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+
+target_compile_definitions(speedyj
+  PRIVATE
+    SPEEDYJ_BUILD=1)
+
+target_compile_options(speedyj
+  PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -fvisibility=hidden>)
+
 ## ZSR Runtime
 ####
 
@@ -44,7 +73,6 @@ add_library(zsr SHARED
   src/error.cpp
   src/introspectable.cpp
   src/introspectable-json.cpp
-  src/speedy-j.cpp
   src/getset.cpp
 
   zsr/error.hpp
@@ -55,8 +83,6 @@ add_library(zsr SHARED
   zsr/introspectable-private.hpp
   zsr/getset.hpp
   zsr/reflection-main.hpp
-  zsr/speedy-j.hpp
-  zsr/speedy-j-impl.hpp
   zsr/types.hpp
   zsr/types-json.hpp
   zsr/variant.hpp)
@@ -70,7 +96,7 @@ target_include_directories(zsr
 
 target_link_libraries(zsr
   PUBLIC
-    ZserioCppRuntime stx)
+    speedyj ZserioCppRuntime stx)
 
 set_target_properties(zsr
   PROPERTIES
