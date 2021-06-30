@@ -1,62 +1,110 @@
 #include <zsr/speedy-j.hpp>
 
 #include <limits>
+#include <ostream>
+#include <cassert>
 
 namespace speedyj
 {
 
 #define IS_EVEN(x) (bool)((x) % 2 == 0)
 
-static std::string jsonEncoded(const std::string& s)
+static auto wantsEscape(int c)
 {
-    std::string res;
-    res.reserve(s.size());
+    switch (c) {
+    case '"':
+    case '\\':
+    case '\n':
+    case '\r':
+    case 0x08: /* backspace */
+    case 0x0c: /* form-feed */
+    case '\t':
+        return true;
 
-    for (char c : s) {
-        switch (c) {
+    default:
+        return c < ' ' || c > std::numeric_limits<signed char>::max();
+    }
+}
+
+static auto writeEscapeSeq(const char* begin, const char* end, std::ostream& os)
+{
+
+    while (begin != end) {
+        auto size = 2; /* Size of backslash escape seq. */
+        char buf[7];   /* Sequence buffer. */
+        buf[0] = '\\'; /* Default to backslash escape. */
+
+        switch (auto c = *begin) {
         case '"':
-            res += "\\\"";
+            buf[1] = '"';
             break;
 
         case '\\':
-            res += "\\\\";
+            buf[1] = '\\';
             break;
 
         case '\n':
-            res += "\\n";
+            buf[1] = 'n';
             break;
 
         case '\r':
-            res += "\\r";
+            buf[1] = 'r';
             break;
 
         case 0x08: /* backspace */
-            res += "\\b";
+            buf[1] = 'b';
             break;
 
         case 0x0c: /* form-feed */
-            res += "\\f";
+            buf[1] = 'f';
             break;
 
         case '\t':
-            res += "\\t";
+            buf[1] = 't';
             break;
 
         default:
             if (c < ' ' || c > std::numeric_limits<signed char>::max()) {
                 /* Not optimal for multibyte codepoints, but
                  * it should work. */
-                char uliteral[7] = {0};
-                snprintf(uliteral, sizeof(uliteral), "\\u%04X",
-                         (unsigned)(c < 0 ? std::numeric_limits<unsigned char>::max() + 1u + c : c));
-                res += uliteral;
+                size = snprintf(buf, sizeof(buf), "\\u%04X",
+                                (unsigned)(c < 0 ? std::numeric_limits<unsigned char>::max() + 1u + c : c));
             } else {
-                res.push_back(c);
+                return begin;
             }
         }
+
+        os.write(buf, size);
+        ++begin;
     }
 
-    return res;
+    return begin;
+}
+
+static auto writeRange(const char* begin, const char* end, std::ostream& os)
+{
+    os.write(begin, end - begin);
+    return end;
+}
+
+static auto writeEncoded(const std::string& s, std::ostream& os)
+{
+    auto begin = s.data();
+    const auto end = s.data() + s.size();
+
+    while (begin != end) {
+        auto cursor = begin;
+        while (cursor != end && !wantsEscape(*cursor))
+            ++cursor;
+
+        begin = writeRange(begin, cursor, os);
+        if (begin == end)
+            break;
+
+        begin = writeEscapeSeq(begin, end, os);
+    }
+
+    assert(begin == end);
 }
 
 static void next(Stream& s)
@@ -67,10 +115,10 @@ static void next(Stream& s)
     if (s.state().itemIdx > 0) {
         switch (s.state().type) {
         case StreamState::Array:
-            s.ss_ << ',';
+            s.ss_.put(',');
             break;
         case StreamState::Object:
-            s.ss_ << (IS_EVEN(s.state().itemIdx) ? ',' : ':');
+            s.ss_.put(IS_EVEN(s.state().itemIdx) ? ',' : ':');
             break;
         }
     }
@@ -90,10 +138,10 @@ static void begin(Stream& s)
 {
     switch (s.state().type) {
     case StreamState::Array:
-        s.ss_ << '[';
+        s.ss_.put('[');
         break;
     case StreamState::Object:
-        s.ss_ << '{';
+        s.ss_.put('{');
         break;
     }
 }
@@ -102,12 +150,12 @@ static void finish(Stream& s)
 {
     switch (s.state().type) {
     case StreamState::Array:
-        s.ss_ << ']';
+        s.ss_.put(']');
         break;
     case StreamState::Object:
         if (!IS_EVEN(s.state().itemIdx))
             throw Error("finish: Key value count missmatch");
-        s.ss_ << '}';
+        s.ss_.put('}');
         break;
     }
 }
@@ -132,7 +180,9 @@ std::string Stream::str() const
 Stream& Stream::push(const std::string& s)
 {
     checkedNext(*this);
-    ss_ << '"' << jsonEncoded(s) << '"';
+    ss_.put('"');
+    writeEncoded(s, ss_);
+    ss_.put('"');
     return *this;
 }
 
@@ -226,21 +276,21 @@ const StreamState& Stream::state() const
 speedyj::Stream& operator<<(speedyj::Stream& s, const Null_&)
 {
     next(s);
-    s.ss_ << "null";
+    s.ss_.write("null", 4);
     return s;
 }
 
 speedyj::Stream& operator<<(speedyj::Stream& s, const True_&)
 {
     next(s);
-    s.ss_ << "true";
+    s.ss_.write("true", 4);
     return s;
 }
 
 speedyj::Stream& operator<<(speedyj::Stream& s, const False_&)
 {
     next(s);
-    s.ss_ << "false";
+    s.ss_.write("false", 5);
     return s;
 }
 
