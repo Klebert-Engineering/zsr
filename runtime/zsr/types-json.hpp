@@ -4,7 +4,8 @@
 #include <zsr/types.hpp>
 #include <zsr/variant.hpp>
 #include <zsr/introspectable.hpp>
-#include <zsr/speedy-j.hpp>
+
+#include "speedyj/speedyj.hpp"
 
 namespace zsr
 {

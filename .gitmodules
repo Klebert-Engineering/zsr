@@ -1,6 +1,0 @@
-[submodule "runtime/3rdparty/googletest"]
-	path = runtime/3rdparty/googletest
-	url = https://github.com/google/googletest.git
-[submodule "runtime/3rdparty/stx"]
-	path = runtime/3rdparty/stx
-	url = https://github.com/klebert-engineering/stx.git

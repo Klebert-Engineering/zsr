@@ -4,8 +4,7 @@
 #include <zsr/types-json.hpp>
 #include <zsr/introspectable-json.hpp>
 
-
-#include <zsr/speedy-j.hpp>
+#include "speedyj/speedyj.hpp"
 
 namespace {
 

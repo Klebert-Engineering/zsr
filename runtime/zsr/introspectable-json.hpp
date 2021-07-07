@@ -3,7 +3,7 @@
 #include <zsr/introspectable.hpp>
 #include <zsr/types.hpp>
 
-#include <zsr/speedy-j.hpp>
+#include "speedyj/speedyj.hpp"
 
 namespace zsr
 {

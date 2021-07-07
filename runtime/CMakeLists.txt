@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(zsr-runtime)
+enable_testing()
+
+include(FetchContent)
+
+if (NOT PROJECT_NAME)
+  project(zsr-runtime)
+  set(NOT_SUBPROJECT TRUE)
+  set(ZSR_BUILD_TESTS TRUE)
+endif()
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
@@ -20,7 +28,28 @@ endif()
 ####
 
 if (NOT TARGET stx)
-  add_subdirectory(3rdparty/stx)
+  FetchContent_Declare(stx
+    GIT_REPOSITORY "https://github.com/Klebert-Engineering/stx.git"
+    GIT_TAG        "main"
+    GIT_SHALLOW    On
+    GIT_PROGRESS   ON)
+  FetchContent_MakeAvailable(stx)
+endif()
+
+if (NOT TARGET speedyj)
+  FetchContent_Declare(speedyj
+    GIT_REPOSITORY "https://github.com/Klebert-Engineering/speedyj.git"
+    GIT_TAG        "master"
+    GIT_SHALLOW    On
+    GIT_PROGRESS   ON)
+  FetchContent_MakeAvailable(speedyj)
+endif()
+
+if (ZSR_BUILD_TESTS AND NOT TARGET gtest)
+  FetchContent_Declare(gtest
+    GIT_REPOSITORY "https://github.com/google/googletest.git"
+    GIT_TAG        "release-1.11.0")
+  FetchContent_MakeAvailable(gtest)
 endif()
 
 ## ZSERIO C++ runtime (optional)
@@ -34,35 +63,6 @@ if (NOT TARGET ZserioCppRuntime)
     message(FATAL_ERROR "Option ZSERIO_RT_DIR is empty.")
   endif()
 endif()
-
-## SpeedyJ
-####
-
-add_library(speedyj SHARED
-  src/speedy-j.cpp
-  zsr/speedy-j.hpp
-  zsr/speedy-j-impl.hpp
-  )
-
-target_compile_features(speedyj
-  PUBLIC cxx_std_17)
-
-target_include_directories(speedyj
-  PUBLIC
-    "${SRC}")
-
-set_target_properties(speedyj
-  PROPERTIES
-    src_dir "${CMAKE_CURRENT_SOURCE_DIR}")
-
-target_compile_definitions(speedyj
-  PRIVATE
-    SPEEDYJ_BUILD=1)
-
-target_compile_options(speedyj
-  PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -fvisibility=hidden>)
 
 ## ZSR Runtime
 ####
@@ -96,7 +96,9 @@ target_include_directories(zsr
 
 target_link_libraries(zsr
   PUBLIC
-    speedyj ZserioCppRuntime stx)
+    ZserioCppRuntime
+    speedyj::speedyj
+    stx::stx)
 
 set_target_properties(zsr
   PROPERTIES
@@ -357,14 +359,7 @@ function(add_zsr_module_test NAME)
 endfunction()
 
 if (ZSR_BUILD_TESTS)
-  enable_testing()
-
-  if (NOT TARGET gtest)
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/googletest/googletest")
-  endif()
-
   add_zsr_test(variant-test "${TEST}/variant-test.cpp")
-
   add_zsr_module_test(bitmask_test TOP_LEVEL_PKG zsr)
   add_zsr_module_test(choice_test TOP_LEVEL_PKG zsr)
   add_zsr_module_test(union_test TOP_LEVEL_PKG zsr)
