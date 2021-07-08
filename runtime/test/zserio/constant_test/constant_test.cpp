@@ -4,13 +4,13 @@ namespace {
 
 PKG;
 
-TEST(ConstantTest, check_enum_items)
+TEST_CASE("check_enum_items", "[ConstantTest::check_enum_items]")
 {
     auto ASSERT_VALUE = [&](auto ident, auto value) {
         auto* meta_constant = zsr::find<zsr::Constant>(pkg, ident);
 
-        ASSERT_TRUE(meta_constant);
-        ASSERT_VARIANT_EQ(meta_constant->value, value);
+        REQUIRE(meta_constant);
+        REQUIRE(meta_constant->value == value);
     };
 
     ASSERT_VALUE("A", (uint32_t)1);

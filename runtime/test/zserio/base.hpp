@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gtest/gtest.h"
+#include <catch2/catch.hpp>
 
 #include "zsr/variant.hpp"
 #include "zsr/types.hpp"
@@ -10,6 +10,7 @@
 #define PKG                                     \
     static const auto& pkg = zsr::packages().front();
 
+/*
 template <class _Type>
 ::testing::AssertionResult AssertVariantEq(const char* expr1,
                                            const char* expr2,
@@ -28,6 +29,7 @@ template <class _Type>
 
     return ::testing::AssertionSuccess();
 }
+*/
 
 #define ASSERT_VARIANT_EQ(a, b)                 \
-    EXPECT_PRED_FORMAT2(AssertVariantEq, a, b)
+    REQUIRE(a == b)

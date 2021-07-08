@@ -1,13 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)
-enable_testing()
+project(zsr-runtime)
 
 include(FetchContent)
-
-if (NOT PROJECT_NAME)
-  project(zsr-runtime)
-  set(NOT_SUBPROJECT TRUE)
-  set(ZSR_BUILD_TESTS TRUE)
-endif()
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
@@ -27,12 +21,23 @@ endif()
 ## STX (standard library utilities)
 ####
 
+if (ZSR_BUILD_TESTS AND NOT TARGET Catch2)
+  FetchContent_Declare(Catch2
+    GIT_REPOSITORY "https://github.com/catchorg/Catch2.git"
+    GIT_TAG        "v2.13.6"
+    GIT_SHALLOW    ON)
+  FetchContent_MakeAvailable(Catch2)
+endif()
+
+if (catch2_SOURCE_DIR)
+  list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
+endif()
+
 if (NOT TARGET stx)
   FetchContent_Declare(stx
     GIT_REPOSITORY "https://github.com/Klebert-Engineering/stx.git"
     GIT_TAG        "main"
-    GIT_SHALLOW    On
-    GIT_PROGRESS   ON)
+    GIT_SHALLOW    ON)
   FetchContent_MakeAvailable(stx)
 endif()
 
@@ -40,16 +45,8 @@ if (NOT TARGET speedyj)
   FetchContent_Declare(speedyj
     GIT_REPOSITORY "https://github.com/Klebert-Engineering/speedyj.git"
     GIT_TAG        "master"
-    GIT_SHALLOW    On
-    GIT_PROGRESS   ON)
+    GIT_SHALLOW    ON)
   FetchContent_MakeAvailable(speedyj)
-endif()
-
-if (ZSR_BUILD_TESTS AND NOT TARGET gtest)
-  FetchContent_Declare(gtest
-    GIT_REPOSITORY "https://github.com/google/googletest.git"
-    GIT_TAG        "release-1.11.0")
-  FetchContent_MakeAvailable(gtest)
 endif()
 
 ## ZSERIO C++ runtime (optional)
@@ -321,15 +318,19 @@ endfunction()
 ## Test
 ####
 
+include(CTest)
+include(Catch)
+
 function(add_zsr_test TARGET FILE)
   add_executable(${TARGET}
+    "test/main.cpp"
     "${FILE}")
 
   target_include_directories(${TARGET}
     PRIVATE "${TEST}/zserio")
 
   target_link_libraries(${TARGET}
-    PRIVATE zsr gtest gtest_main)
+    PRIVATE zsr Catch2::Catch2)
 
   target_compile_options(${TARGET}
     PRIVATE
@@ -339,8 +340,7 @@ function(add_zsr_test TARGET FILE)
   target_compile_features(${TARGET}
     PUBLIC cxx_std_17)
 
-  add_test(NAME "${TARGET}"
-    COMMAND ${TARGET})
+  catch_discover_tests(${TARGET})
 endfunction()
 
 function(add_zsr_module_test NAME)
