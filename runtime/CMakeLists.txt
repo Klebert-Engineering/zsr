@@ -18,7 +18,7 @@ if (NOT MSVC)
   set(CMAKE_CXX_FLAGS -fPIC)
 endif()
 
-## STX (standard library utilities)
+## Dependencies
 ####
 
 if (ZSR_BUILD_TESTS AND NOT TARGET Catch2)
@@ -28,9 +28,9 @@ if (ZSR_BUILD_TESTS AND NOT TARGET Catch2)
     GIT_SHALLOW    ON)
   FetchContent_MakeAvailable(Catch2)
 endif()
-
-if (catch2_SOURCE_DIR)
-  list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
+if (TARGET Catch2)
+  get_target_property(CATCH2_SOURCE_DIR Catch2 SOURCE_DIR)
+  list(APPEND CMAKE_MODULE_PATH "${CATCH2_SOURCE_DIR}/contrib")
 endif()
 
 if (NOT TARGET stx)
