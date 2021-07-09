@@ -198,7 +198,7 @@
         using MemberType =                                                     \
             std::decay_t<                                                      \
                 std::remove_reference_t<                                       \
-                    decltype(((CompoundType*)0)-> GETTER ())>>;                \
+                    decltype(std::declval<CompoundType>(). GETTER ())>>;       \
                                                                                \
         constexpr bool IsStruct =                                              \
             zsr::is_compound<                                                  \
@@ -302,43 +302,43 @@
             .RESETFUN();                                          \
     };
 
-#define ZSERIO_REFLECT_STRUCTURE_FIELD_BEGIN(NAME, GETTER, SETTER)    \
-    {                                                                 \
-        using MemberType =                                            \
-            std::decay_t<                                             \
-                std::remove_reference_t<                              \
-                    decltype(((CompoundType*)0)-> GETTER ())>>;       \
-                                                                      \
-        zsr::Field& f = s.fields.emplace_back(&s);                    \
-        f.ident = #NAME;                                              \
-                                                                      \
-        GEN_FIELD_ACCESSORS(GETTER, SETTER)                           \
-                                                                      \
-        CUR_TYPE(f);                                                  \
+#define ZSERIO_REFLECT_STRUCTURE_FIELD_BEGIN(NAME, GETTER, SETTER)      \
+    {                                                                   \
+        using MemberType =                                              \
+            std::decay_t<                                               \
+                std::remove_reference_t<                                \
+                    decltype(std::declval<CompoundType>(). GETTER ())>>;\
+                                                                        \
+        zsr::Field& f = s.fields.emplace_back(&s);                      \
+        f.ident = #NAME;                                                \
+                                                                        \
+        GEN_FIELD_ACCESSORS(GETTER, SETTER)                             \
+                                                                        \
+        CUR_TYPE(f);                                                    \
         zsr::CTypeTraits<MemberType>::set(tr.ctype);
 
 #define ZSERIO_REFLECT_STRUCTURE_FIELD_END() \
     }
 
-#define ZSERIO_REFLECT_STRUCTURE_FUNCTION_BEGIN(NAME, FUNNAME)          \
-    {                                                                   \
-        using ReturnType =                                              \
-            std::decay_t<                                               \
-                std::remove_reference_t<                                \
-                    decltype(((CompoundType*)0)-> FUNNAME ())>>;        \
-                                                                        \
-        zsr::Function& f = s.functions.emplace_back(&s);                \
-        f.ident = #NAME;                                                \
-                                                                        \
-        f.call = [&](const zsr::Introspectable& i) -> zsr::Variant {    \
-            return zsr::variant_helper<ReturnType>::pack(               \
-                zsr::introspectable_cast<CompoundType>(i, t2c)          \
-                    . FUNNAME (),                                       \
-                t2c                                                     \
-            );                                                          \
-        };                                                              \
-                                                                        \
-        CUR_TYPE(f);                                                    \
+#define ZSERIO_REFLECT_STRUCTURE_FUNCTION_BEGIN(NAME, FUNNAME)            \
+    {                                                                     \
+        using ReturnType =                                                \
+            std::decay_t<                                                 \
+                std::remove_reference_t<                                  \
+                    decltype(std::declval<CompoundType>(). FUNNAME ())>>; \
+                                                                          \
+        zsr::Function& f = s.functions.emplace_back(&s);                  \
+        f.ident = #NAME;                                                  \
+                                                                          \
+        f.call = [&](const zsr::Introspectable& i) -> zsr::Variant {      \
+            return zsr::variant_helper<ReturnType>::pack(                 \
+                zsr::introspectable_cast<CompoundType>(i, t2c)            \
+                    . FUNNAME (),                                         \
+                t2c                                                       \
+            );                                                            \
+        };                                                                \
+                                                                          \
+        CUR_TYPE(f);                                                      \
         zsr::CTypeTraits<ReturnType>::set(tr.ctype);
 
 #define ZSERIO_REFLECT_STRUCTURE_FUNCTION_END() \

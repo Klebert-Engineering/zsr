@@ -6,7 +6,7 @@ namespace {
 
 PKG;
 
-TEST(GetSetTest, make_and_set_and_get)
+TEST_CASE("make_and_set_and_get", "[GetSetTest::make_and_set_and_get]")
 {
     auto s = zsr::make(zsr::packages(), "getset_test.Compound", {
         {"x", 1},
@@ -14,9 +14,9 @@ TEST(GetSetTest, make_and_set_and_get)
         {"y.b", 3}
     });
 
-    ASSERT_EQ(zsr::get(s, "x"), 1);
-    ASSERT_EQ(zsr::get(s, "y.a"), 2);
-    ASSERT_EQ(zsr::get(s, "y.b"), 3);
+    REQUIRE(zsr::get(s, "x") == 1);
+    REQUIRE(zsr::get(s, "y.a") == 2);
+    REQUIRE(zsr::get(s, "y.b") == 3);
 
     zsr::set(s, "x", 4);
     zsr::set(s, {{
@@ -26,15 +26,15 @@ TEST(GetSetTest, make_and_set_and_get)
         }
     }});
 
-    ASSERT_EQ(zsr::get(s, "x"), 4);
-    ASSERT_EQ(zsr::get(s, "y.a"), 5);
-    ASSERT_EQ(zsr::get(s, "y.b"), 6);
+    REQUIRE(zsr::get(s, "x") == 4);
+    REQUIRE(zsr::get(s, "y.a") == 5);
+    REQUIRE(zsr::get(s, "y.b") == 6);
 
-    ASSERT_THROW(zsr::make(zsr::packages(), "unknown"), zsr::UnknownIdentifierError);
-    ASSERT_THROW(zsr::set(s, "y.c", 66), zsr::UnknownIdentifierError);
-    ASSERT_THROW(zsr::set(s, "y.b.c", 66), zsr::VariantCastError);
-    ASSERT_THROW(zsr::get(s, "y.c"), zsr::UnknownIdentifierError);
-    ASSERT_THROW(zsr::get(s, "y.b.c"), zsr::VariantCastError);
+    REQUIRE_THROWS_AS(zsr::make(zsr::packages(), "unknown"), zsr::UnknownIdentifierError);
+    REQUIRE_THROWS_AS(zsr::set(s, "y.c", 66), zsr::UnknownIdentifierError);
+    REQUIRE_THROWS_AS(zsr::set(s, "y.b.c", 66), zsr::VariantCastError);
+    REQUIRE_THROWS_AS(zsr::get(s, "y.c"), zsr::UnknownIdentifierError);
+    REQUIRE_THROWS_AS(zsr::get(s, "y.b.c"), zsr::VariantCastError);
 }
 
 }

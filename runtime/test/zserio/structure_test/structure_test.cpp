@@ -4,35 +4,35 @@ namespace {
 
 PKG;
 
-TEST(StructureTest, a_alloc_empty)
+TEST_CASE("a_alloc_empty", "[StructureTest::a_alloc_empty]")
 {
     auto* meta_struct = zsr::find<zsr::Compound>(pkg, "A_struct");
 
-    ASSERT_TRUE(meta_struct);
-    ASSERT_EQ(&meta_struct->parent, &pkg);
+    REQUIRE(meta_struct);
+    REQUIRE(&meta_struct->parent == &pkg);
 
-    ASSERT_TRUE(meta_struct->alloc);
-    ASSERT_FALSE(meta_struct->initialize);
-    ASSERT_EQ(meta_struct->type, zsr::Compound::Type::Structure);
+    REQUIRE(meta_struct->alloc);
+    REQUIRE(!meta_struct->initialize);
+    REQUIRE(meta_struct->type == zsr::Compound::Type::Structure);
 
     auto introspectable = meta_struct->alloc();
-    ASSERT_EQ(introspectable.meta(), meta_struct);
+    REQUIRE(introspectable.meta() == meta_struct);
 }
 
-TEST(StructureTest, b_alloc_init_parameterized)
+TEST_CASE("b_alloc_init_parameterized", "[StructureTest::b_alloc_init_parameterized]")
 {
     auto* meta_struct = zsr::find<zsr::Compound>(pkg, "B_struct");
 
-    ASSERT_TRUE(meta_struct);
-    ASSERT_TRUE(meta_struct->alloc);
-    ASSERT_TRUE(meta_struct->initialize);
+    REQUIRE(meta_struct);
+    REQUIRE(meta_struct->alloc);
+    REQUIRE(meta_struct->initialize);
 
     auto introspectable = meta_struct->alloc();
 
     /*  Initialize with parameter list */
     auto* meta_parameter_a = zsr::find<zsr::Parameter>(*meta_struct, "a");
 
-    ASSERT_TRUE(meta_parameter_a);
+    REQUIRE(meta_parameter_a);
 
     zsr::ParameterList l;
     meta_parameter_a->set(l, uint8_t{123});
@@ -43,23 +43,23 @@ TEST(StructureTest, b_alloc_init_parameterized)
     auto* meta_field =
         zsr::find<zsr::Field>(*meta_struct, meta_parameter_a->ident);
 
-    ASSERT_TRUE(meta_field);
-    ASSERT_TRUE(meta_field->get);
+    REQUIRE(meta_field);
+    REQUIRE(meta_field->get);
 
-    ASSERT_VARIANT_EQ(meta_field->get(introspectable), uint8_t{123});
+    REQUIRE(meta_field->get(introspectable) == uint8_t{123});
 }
 
-TEST(StructureTest, c_alloc_init_parameterized_instance)
+TEST_CASE("c_alloc_init_parameterized_instance", "[StructureTest::c_alloc_init_parameterized_instance]")
 {
     auto* s_parent = zsr::find<zsr::Compound>(pkg, "C_struct");
     auto* s_parameter = zsr::find<zsr::Compound>(pkg, "C_parameter_struct");
 
-    ASSERT_TRUE(s_parent);
-    ASSERT_TRUE(s_parameter);
+    REQUIRE(s_parent);
+    REQUIRE(s_parameter);
 
     auto* p_a = zsr::find<zsr::Parameter>(*s_parent, "a");
 
-    ASSERT_TRUE(p_a);
+    REQUIRE(p_a);
 
     /* Set parameter instance */
     zsr::ParameterList l;
@@ -77,31 +77,31 @@ TEST(StructureTest, c_alloc_init_parameterized_instance)
 
     auto* m_parameter = zsr::find<zsr::Parameter>(*s_parent, "a");
 
-    ASSERT_TRUE(m_parameter);
-    ASSERT_TRUE(m_parameter->field);
+    REQUIRE(m_parameter);
+    REQUIRE(m_parameter->field);
 
     auto value = m_parameter->field->get(i_parent);
     auto instance = value.get<zsr::Introspectable>();
 
-    ASSERT_TRUE(instance);
-    ASSERT_TRUE(instance->meta());
-    ASSERT_EQ("C_parameter_struct", instance->meta()->ident);
+    REQUIRE(instance);
+    REQUIRE(instance->meta());
+    REQUIRE("C_parameter_struct" == instance->meta()->ident);
 
     auto* m_ca_a = zsr::find<zsr::Field>(*s_parameter, "a");
-    ASSERT_VARIANT_EQ(m_ca_a->get(*instance), std::string{"Hola"});
+    REQUIRE(m_ca_a->get(*instance) == std::string{"Hola"});
 }
 
-TEST(StructureTest, d_call_function)
+TEST_CASE("d_call_function", "[StructureTest::d_call_function]")
 {
     auto* s_struct = zsr::find<zsr::Compound>(pkg, "D_struct");
-    ASSERT_TRUE(s_struct);
+    REQUIRE(s_struct);
    
     auto* f_struct_a = zsr::find<zsr::Field>(*s_struct, "a");
     auto* f_fun_1 = zsr::find<zsr::Function>(*s_struct, "fun");
     auto* f_fun_2 = zsr::find<zsr::Function>(*s_struct, "fun2");
 
     auto* s_res = zsr::find<zsr::Compound>(pkg, "D_res");
-    ASSERT_TRUE(s_res);
+    REQUIRE(s_res);
 
     auto* f_res_a = zsr::find<zsr::Field>(*s_res, "a");
 
@@ -109,14 +109,14 @@ TEST(StructureTest, d_call_function)
     auto instance = s_struct->alloc();
 
     /* Call function 1 (Integer) */ {
-        ASSERT_TRUE(f_fun_1);
+        REQUIRE(f_fun_1);
 
         auto value = f_fun_1->call(instance);
-        ASSERT_VARIANT_EQ(value, uint8_t{10});
+        REQUIRE(value == uint8_t{10});
     }
 
     /* Call function 2 (Compound) */ {
-        ASSERT_TRUE(f_fun_2);
+        REQUIRE(f_fun_2);
 
         /* Set-up child struct */ {
             auto res_instance = s_res->alloc();
@@ -127,12 +127,12 @@ TEST(StructureTest, d_call_function)
         auto value = f_fun_2->call(instance);
         auto introspectable = value.get<zsr::Introspectable>();
 
-        ASSERT_TRUE(introspectable);
-        ASSERT_VARIANT_EQ(f_res_a->get(*introspectable), int32_t(123));
+        REQUIRE(introspectable);
+        REQUIRE(f_res_a->get(*introspectable) == int32_t(123));
     }
 }
 
-TEST(StructureTest, e_set_get_builtin_field)
+TEST_CASE("e_set_get_builtin_field", "[StructureTest::e_set_get_builtin_field]")
 {
     auto* s_struct = zsr::find<zsr::Compound>(pkg, "E_struct");
     auto* m_value = zsr::find<zsr::Field>(*s_struct, "a");
@@ -142,14 +142,14 @@ TEST(StructureTest, e_set_get_builtin_field)
 
     /* Write & read parameter */
     m_value->set(instance, std::string{"Hello"});
-    ASSERT_VARIANT_EQ(m_value->get(instance), std::string{"Hello"});
+    REQUIRE(m_value->get(instance) == std::string{"Hello"});
 
     /* Overwrite & read parameter */
     m_value->set(instance, std::string{"World"});
-    ASSERT_VARIANT_EQ(m_value->get(instance), std::string{"World"});
+    REQUIRE(m_value->get(instance) == std::string{"World"});
 }
 
-TEST(StructureTest, f_set_get_compound_field)
+TEST_CASE("f_set_get_compound_field", "[StructureTest::f_set_get_compound_field]")
 {
     auto* s_parent = zsr::find<zsr::Compound>(pkg, "F_parent");
     auto* m_parent = zsr::find<zsr::Field>(*s_parent, "a");
@@ -168,14 +168,14 @@ TEST(StructureTest, f_set_get_compound_field)
 
     /* Access child */
     auto child_ref = m_parent->get(parent);
-    ASSERT_TRUE(child_ref.get<zsr::Introspectable>());
+    REQUIRE(child_ref.get<zsr::Introspectable>());
 
     /* Call function */
     auto value = f_parent->call(parent);
-    ASSERT_VARIANT_EQ(value, int32_t{123});
+    REQUIRE(value == int32_t{123});
 }
 
-TEST(StructureTest, g_set_get_builtin_array_field)
+TEST_CASE("g_set_get_builtin_array_field", "[StructureTest::g_set_get_builtin_array_field]")
 {
     auto* s_struct = zsr::find<zsr::Compound>(pkg, "G_struct");
     auto* m_value = zsr::find<zsr::Field>(*s_struct, "a");
@@ -188,15 +188,15 @@ TEST(StructureTest, g_set_get_builtin_array_field)
 
     if (auto result = m_value->get(instance).get<std::vector<std::string>>()) {
         auto value = *result;
-        ASSERT_EQ(value[0], "Hello");
-        ASSERT_EQ(value[1], "World");
-        ASSERT_EQ(value[2], "!");
+        REQUIRE(value[0] == "Hello");
+        REQUIRE(value[1] == "World");
+        REQUIRE(value[2] == "!");
     } else {
-        FAIL() << "Not a vector of string!";
+        FAIL("Not a vector of string!");
     }
 }
 
-TEST(StructureTest, h_invalid_field_access)
+TEST_CASE("h_invalid_field_access", "[StructureTest::h_invalid_field_access]")
 {
     auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "H_struct_a");
     auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "H_struct_b");
@@ -206,34 +206,34 @@ TEST(StructureTest, h_invalid_field_access)
     auto instance = meta_struct_b->alloc();
 
     /* Try write a::a with (wrong) instance of b */
-    EXPECT_THROW(meta_value->set(instance, std::string{"Hello"}),
-                 zsr::IntrospectableCastError);
+    REQUIRE_THROWS_AS(meta_value->set(instance, std::string{"Hello"}),
+                      zsr::IntrospectableCastError);
 }
 
-TEST(StructureTest, i_check_has_initialize_children)
+TEST_CASE("i_check_has_initialize_children", "[StructureTest::i_check_has_initialize_children]")
 {
     auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "I_struct_a");
-    ASSERT_FALSE(meta_struct_a->initializeChildren);
+    REQUIRE(!meta_struct_a->initializeChildren);
 
     auto* meta_struct_b = zsr::find<zsr::Compound>(pkg, "I_struct_b");
-    ASSERT_TRUE(meta_struct_b->initializeChildren);
+    REQUIRE(meta_struct_b->initializeChildren);
 }
 
-TEST(StructureTest, j_conditional_field)
+TEST_CASE("j_conditional_field", "[StructureTest::j_conditional_field]")
 {
     auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "J_struct");
     auto* meta_field_a = zsr::find<zsr::Field>(*meta_struct_a, "a");
 
-    ASSERT_FALSE(meta_field_a->has);
-    ASSERT_FALSE(meta_field_a->reset);
+    REQUIRE(!meta_field_a->has);
+    REQUIRE(!meta_field_a->reset);
 
     auto* meta_field_b = zsr::find<zsr::Field>(*meta_struct_a, "b");
 
-    ASSERT_TRUE(meta_field_b->has);
-    ASSERT_TRUE(meta_field_b->reset);
+    REQUIRE(meta_field_b->has);
+    REQUIRE(meta_field_b->reset);
 }
 
-TEST(StructureTest, k_nested_compounds)
+TEST_CASE("k_nested_compounds", "[StructureTest::k_nested_compounds]")
 {
     auto* meta_struct_a = zsr::find<zsr::Compound>(pkg, "K_struct_a");
     auto* meta_field_a_a = zsr::find<zsr::Field>(*meta_struct_a, "a");
@@ -259,14 +259,14 @@ TEST(StructureTest, k_nested_compounds)
     auto opt_children_a =
         meta_field_b_a->get(instance_b).get<std::vector<zsr::Introspectable>>();
 
-    ASSERT_TRUE(opt_children_a);
-    ASSERT_EQ(opt_children_a->size(), 10);
+    REQUIRE(opt_children_a);
+    REQUIRE(opt_children_a->size() == 10);
 
     {
         int32_t idx{0};
         for (const auto& child : *opt_children_a) {
-            ASSERT_FALSE(child.isOwning());
-            ASSERT_VARIANT_EQ(meta_field_a_a->get(child), idx);
+            REQUIRE(!child.isOwning());
+            REQUIRE(meta_field_a_a->get(child) == idx);
 
             ++idx;
         }
@@ -279,15 +279,15 @@ TEST(StructureTest, k_nested_compounds)
     {
         int32_t idx{0};
         for (const auto& child : *opt_children_a) {
-            ASSERT_TRUE(child.isOwning());
-            ASSERT_VARIANT_EQ(meta_field_a_a->get(child), idx);
+            REQUIRE(child.isOwning());
+            REQUIRE(meta_field_a_a->get(child) == idx);
 
             ++idx;
         }
     }
 }
 
-TEST(StructureTest, l_later_registered_member_type)
+TEST_CASE("l_later_registered_member_type", "[StructureTest::l_later_registered_member_type]")
 {
     auto* meta_parent = zsr::find<zsr::Compound>(pkg, "L_parent");
     auto* meta_field = zsr::find<zsr::Field>(*meta_parent, "a");
@@ -298,12 +298,12 @@ TEST(StructureTest, l_later_registered_member_type)
     /* Access child instance */
     auto member = meta_field->get(instance).get<zsr::Introspectable>();
 
-    ASSERT_TRUE(member);
-    ASSERT_TRUE(member->obj);
-    ASSERT_TRUE(member->meta());
+    REQUIRE(member);
+    REQUIRE(member->obj);
+    REQUIRE(member->meta());
 }
 
-TEST(StructureTest, m_field_type_info)
+TEST_CASE("m_field_type_info", "[StructureTest::m_field_type_info]")
 {
     auto* meta_parent = zsr::find<zsr::Compound>(pkg, "M_parent");
     auto* meta_field_a = zsr::find<zsr::Field>(*meta_parent, "a");
@@ -312,28 +312,28 @@ TEST(StructureTest, m_field_type_info)
     auto* meta_field_d = zsr::find<zsr::Field>(*meta_parent, "d");
     auto* meta_field_e = zsr::find<zsr::Field>(*meta_parent, "e");
 
-    ASSERT_TRUE(meta_field_a);
-    ASSERT_EQ(zsr::ZType::Int, meta_field_a->type->ztype.type);
-    ASSERT_EQ(32, meta_field_a->type->ztype.size);
+    REQUIRE(meta_field_a);
+    REQUIRE(zsr::ZType::Int == meta_field_a->type->ztype.type);
+    REQUIRE(32 == meta_field_a->type->ztype.size);
 
-    ASSERT_TRUE(meta_field_b);
-    ASSERT_EQ(zsr::ZType::UInt, meta_field_b->type->ztype.type);
-    ASSERT_EQ(16, meta_field_b->type->ztype.size);
+    REQUIRE(meta_field_b);
+    REQUIRE(zsr::ZType::UInt == meta_field_b->type->ztype.type);
+    REQUIRE(16 == meta_field_b->type->ztype.size);
 
-    ASSERT_TRUE(meta_field_c);
-    ASSERT_EQ(zsr::ZType::Float, meta_field_c->type->ztype.type);
-    ASSERT_EQ(32, meta_field_c->type->ztype.size);
+    REQUIRE(meta_field_c);
+    REQUIRE(zsr::ZType::Float == meta_field_c->type->ztype.type);
+    REQUIRE(32 == meta_field_c->type->ztype.size);
 
-    ASSERT_TRUE(meta_field_d);
-    ASSERT_EQ(zsr::ZType::String, meta_field_d->type->ztype.type);
-    ASSERT_EQ(0, meta_field_d->type->ztype.size);
+    REQUIRE(meta_field_d);
+    REQUIRE(zsr::ZType::String == meta_field_d->type->ztype.type);
+    REQUIRE(0 == meta_field_d->type->ztype.size);
 
-    ASSERT_TRUE(meta_field_e);
-    ASSERT_EQ(zsr::ZType::Structure, meta_field_e->type->ztype.type);
-    ASSERT_EQ("M_child", meta_field_e->type->ident);
+    REQUIRE(meta_field_e);
+    REQUIRE(zsr::ZType::Structure == meta_field_e->type->ztype.type);
+    REQUIRE("M_child" == meta_field_e->type->ident);
 }
 
-TEST(StructureTest, n_set_incompatible_type)
+TEST_CASE("n_set_incompatible_type", "[StructureTest::n_set_incompatible_type]")
 {
     auto* meta_parent = zsr::find<zsr::Compound>(pkg, "N_parent");
     auto* meta_field = zsr::find<zsr::Field>(*meta_parent, "a");
@@ -346,23 +346,23 @@ TEST(StructureTest, n_set_incompatible_type)
     auto wrong_instance = meta_wrong->alloc();
 
     /* Set incompatible type. Expected N_expected, got N_wrong */
-    EXPECT_THROW(meta_field->set(instance, wrong_instance),
-                 zsr::IntrospectableCastError);
+    REQUIRE_THROWS_AS(meta_field->set(instance, wrong_instance),
+                      zsr::IntrospectableCastError);
 }
 
-TEST(StructureTest, o_array_field)
+TEST_CASE("o_array_field", "[StructureTest::o_array_field]")
 {
     auto* meta_parent = zsr::find<zsr::Compound>(pkg, "O_parent");
     auto* meta_field = zsr::find<zsr::Field>(*meta_parent, "a");
 
-    ASSERT_TRUE(meta_field);
-    ASSERT_TRUE(meta_field->type);
+    REQUIRE(meta_field);
+    REQUIRE(meta_field->type);
 
-    ASSERT_TRUE(meta_field->type->ztype.array);
-    ASSERT_EQ(meta_field->type->ztype.type, zsr::ZType::String);
+    REQUIRE(meta_field->type->ztype.array);
+    REQUIRE(meta_field->type->ztype.type == zsr::ZType::String);
 
-    ASSERT_TRUE(meta_field->type->ctype.array);
-    ASSERT_EQ(meta_field->type->ctype.type, zsr::CType::String);
+    REQUIRE(meta_field->type->ctype.array);
+    REQUIRE(meta_field->type->ctype.type == zsr::CType::String);
 }
 
 } // namespace
