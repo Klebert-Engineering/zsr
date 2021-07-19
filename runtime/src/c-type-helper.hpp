@@ -112,6 +112,17 @@ struct CTypeTraits<zserio::BitBuffer>
     }
 };
 
+template <class _Char>
+struct CTypeTraits<zserio::BasicStringView<_Char>>
+{
+    static auto set(CType& type)
+    {
+        type.type = CType::String;
+        type.size = 0u;
+        type.array = false;
+    }
+};
+
 template <class _Type>
 struct CTypeTraits<_Type, std::enable_if_t<is_compound<_Type>::value>>
 {

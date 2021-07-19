@@ -8,5 +8,5 @@ package zserio.emit.cpp_reflect;
 public class CppReflectExtensionVersion
 {
     /** C++ reflection extension version string. */
-    public static final String VERSION_STRING = "2.0.0";
+    public static final String VERSION_STRING = "2.4.0-pre2";
 }

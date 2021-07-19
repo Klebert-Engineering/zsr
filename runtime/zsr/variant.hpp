@@ -12,6 +12,7 @@
 
 #include "zsr/introspectable.hpp"
 #include "zserio/BitBuffer.h"
+#include "zserio/StringView.h"
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -38,23 +39,24 @@ namespace impl {
  * List of types and their internal representation.
  */
 /* clang-format off */
-#define TYPELIST(_)                         \
-    /* external          internal */        \
-    _(bool,              uint64_t)          \
-    _(uint8_t,           uint64_t)          \
-    _(uint16_t,          uint64_t)          \
-    _(uint32_t,          uint64_t)          \
-    _(uint64_t,          uint64_t)          \
-    _(int8_t,            int64_t)           \
-    _(int16_t,           int64_t)           \
-    _(int32_t,           int64_t)           \
-    _(int64_t,           int64_t)           \
-    _(float,             double)            \
-    _(double,            double)            \
-    _(const char*,       std::string)       \
-    _(std::string,       std::string)       \
-    _(zserio::BitBuffer, zserio::BitBuffer) \
-    _(Introspectable,    Introspectable)
+#define TYPELIST(_)                                     \
+    /* external                      internal */        \
+    _(bool,                          uint64_t)          \
+    _(uint8_t,                       uint64_t)          \
+    _(uint16_t,                      uint64_t)          \
+    _(uint32_t,                      uint64_t)          \
+    _(uint64_t,                      uint64_t)          \
+    _(int8_t,                        int64_t)           \
+    _(int16_t,                       int64_t)           \
+    _(int32_t,                       int64_t)           \
+    _(int64_t,                       int64_t)           \
+    _(float,                         double)            \
+    _(double,                        double)            \
+    _(const char*,                   std::string)       \
+    _(zserio::BasicStringView<char>, std::string)       \
+    _(std::string,                   std::string)       \
+    _(zserio::BitBuffer,             zserio::BitBuffer) \
+    _(Introspectable,                Introspectable)
 /* clang-format on */
 
 #define GEN_EXT2INT(from, to)                                                  \
@@ -126,6 +128,20 @@ struct VariantCast<_Target, _Target, void>
         return std::forward<_Input>(s);
     }
 };
+
+/**
+ * BasicStringView<A> -> B
+ */
+template <class _Char, class _Target>
+struct VariantCast<zserio::BasicStringView<_Char>, _Target, void>
+{
+    template <class _Input>
+    static _Target cast(_Input&& s)
+    {
+        return _Target(s.begin(), s.end());
+    }
+};
+
 
 /**
  * Bitmask<A> -> B

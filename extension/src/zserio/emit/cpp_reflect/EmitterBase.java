@@ -1,35 +1,35 @@
 package zserio.emit.cpp_reflect;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.lang.Integer;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import zserio.ast.*;
 import zserio.ast.Package;
-import zserio.emit.common.ZserioEmitException;
-import zserio.emit.common.DefaultEmitter;
-import zserio.tools.Parameters;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import java.lang.Integer;
-import zserio.emit.common.FreeMarkerUtil;
+import zserio.extension.common.DefaultTreeWalker;
+import zserio.extension.common.ZserioExtensionException;
+import zserio.extension.common.FreeMarkerUtil;
+import zserio.tools.ExtensionParameters;
 
-public class EmitterBase extends DefaultEmitter
+public class EmitterBase extends DefaultTreeWalker
 {
-    public EmitterBase(Path outputDir, Parameters extensionParameters)
+    public EmitterBase(Path outputDir, ExtensionParameters extensionParameters)
     {
         this.outputDir = outputDir;
-        this.topLevelPackageList = extensionParameters.getTopLevelPackageNameList();
+        this.topLevelPackageList = extensionParameters.getTopLevelPackageNameIds();
 
         this.libData = new LibraryTemplateData();
     }
 
-    public void processPackage(Package pkg) throws ZserioEmitException
+    public void processPackage(Package pkg) throws ZserioExtensionException
     {
         final String pkgName = pkg.getPackageName().toString(".");
         final String cppFilename = outputDir.resolve(pkgName + ".cpp").toString();
@@ -58,14 +58,20 @@ public class EmitterBase extends DefaultEmitter
                                            libData,
                                            new File(cppFilename),
                                            false);
-        } catch (ZserioEmitException e) {
+        } catch (ZserioExtensionException e) {
             System.out.println("Failed to generate reflection-main.cpp.\n" +
                                "Error: " + e);
         }
     }
 
     @Override
-    public void beginPackage(Package pkg) throws ZserioEmitException
+    public boolean traverseTemplateInstantiations()
+    {
+        return true;
+    }
+
+    @Override
+    public void beginPackage(Package pkg) throws ZserioExtensionException
     {
         packageData = new PackageTemplateData(
             pkg.getPackageName().toString("."),
@@ -73,11 +79,11 @@ public class EmitterBase extends DefaultEmitter
     }
 
     @Override
-    public void endPackage(Package pkg) throws ZserioEmitException
+    public void endPackage(Package pkg) throws ZserioExtensionException
     {
         try {
             processPackage(pkg);
-        } catch (ZserioEmitException e) {
+        } catch (ZserioExtensionException e) {
             System.out.println("Failed to generate package template.\n" +
                                "Error: " + e);
         }
@@ -133,21 +139,12 @@ public class EmitterBase extends DefaultEmitter
 
     protected String packageNameToNamespace(PackageName name)
     {
-        return Stream.concat(StreamSupport.stream(topLevelPackageList.spliterator(), false),
-                             name.getIdList().stream())
-            .collect(Collectors.joining("::"));
+        return name.getIdList().stream().collect(Collectors.joining("::"));
     }
 
     protected void writeInclude(Package pkg, String objectName)
     {
-        String prefix = StreamSupport.stream(topLevelPackageList.spliterator(), false)
-            .collect(Collectors.joining("/"));
-
-        if (prefix.length() > 0)
-            prefix += "/";
-
-        packageData.includes.add(prefix
-                                 + pkg.getPackageName().toFilesystemPath()
+        packageData.includes.add(pkg.getPackageName().toFilesystemPath()
                                  + "/"
                                  + objectName
                                  + ".h");
