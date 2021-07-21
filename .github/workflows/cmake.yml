@@ -30,7 +30,7 @@ jobs:
     - name: Build runtime
       working-directory: build
       run: |
-        cmake --build .
+        cmake --build . -- -j8
     - name: Run CTest
       working-directory: build/runtime
       run: |
@@ -101,7 +101,7 @@ jobs:
     - name: Build runtime
       working-directory: build
       run: |
-        cmake --build .
+        cmake --build . -- -j8
     - name: Run CTest
       working-directory: build/runtime
       run: |
