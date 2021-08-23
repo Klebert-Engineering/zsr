@@ -8,7 +8,7 @@ PKG;
 
 TEST_CASE("make_and_set_and_get", "[GetSetTest::make_and_set_and_get]")
 {
-    auto s = zsr::make(zsr::packages(), "getset_test.Compound", {
+    auto s = zsr::make(zsr::packages(), "zsr.getset_test.Compound", {
         {"x", 1},
         {"y", zsr::VariantMap{{"a", 2}}},
         {"y.b", 3}

@@ -277,13 +277,13 @@ function (add_zserio_module ZSR_MODULE_NAME)
   # Create sub-libs recursive per directory
   message("Scanning zsr library subdirectories")
   add_submodule_lib_recursive(
-    ${ZSR_MODULE_NAME}
-    ${ZSR_MODULE_TOP_LEVEL_PKG}
-    ${ZSR_MODULE_ROOT}
-    ${GEN_SRC_ROOT}
+    "${ZSR_MODULE_NAME}"
+    "${ZSR_MODULE_TOP_LEVEL_PKG}"
+    "${ZSR_MODULE_ROOT}"
+    "${GEN_SRC_ROOT}"
     "${GEN_SRC_ROOT}/${ZSR_MODULE_TOP_LEVEL_PKG}"
-    FALSE
-    ${ZSR_MODULE_SUBDIR_DEPTH})
+    "${ZSR_MODULE_NAME}"
+    "${ZSR_MODULE_SUBDIR_DEPTH}")
 
   target_include_directories(${ZSR_MODULE_NAME}
     INTERFACE "${GEN_SRC_ROOT}")

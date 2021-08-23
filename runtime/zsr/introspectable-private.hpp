@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <zserio/BitStreamReader.h>
+
 namespace zsr {
 
 struct Compound;
@@ -155,6 +157,13 @@ auto makeUniqueInstance()
 {
     return std::make_shared<Instance<_T>>(
         std::make_shared<_T>(), true);
+}
+
+template <class _T, class... _Args>
+auto readUniqueInstance(::zserio::BitStreamReader& reader, _Args&& ...args)
+{
+    return std::make_shared<Instance<_T>>(
+        std::make_shared<_T>(reader, std::forward<_Args>(args)...), true);
 }
 
 template <class _T>

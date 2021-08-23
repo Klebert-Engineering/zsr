@@ -2,9 +2,10 @@ package zserio.emit.cpp_reflect;
 
 import zserio.ast.*;
 import zserio.ast.Package;
-import zserio.emit.common.ZserioEmitException;
-import zserio.emit.common.DefaultEmitter;
-import zserio.tools.Parameters;
+import zserio.extension.common.DefaultTreeWalker;
+import zserio.extension.common.ZserioExtensionException;
+import zserio.extension.common.FreeMarkerUtil;
+import zserio.tools.ExtensionParameters;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.io.File;
@@ -14,11 +15,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import zserio.emit.common.FreeMarkerUtil;
 
 public class TraitsEmitter extends EmitterBase
 {
-    public TraitsEmitter(Path outputDir, Parameters extensionParameters)
+    public TraitsEmitter(Path outputDir, ExtensionParameters extensionParameters)
     {
         super(outputDir, extensionParameters);
 
@@ -35,7 +35,7 @@ public class TraitsEmitter extends EmitterBase
                                            data,
                                            new File(hppFilename),
                                            false);
-        } catch (ZserioEmitException e) {
+        } catch (ZserioExtensionException e) {
             System.out.println("Failed to generate reflection-traits.\n" +
                                "Error: " + e);
         }
@@ -94,14 +94,7 @@ public class TraitsEmitter extends EmitterBase
     @Override
     protected void writeInclude(Package pkg, String objectName)
     {
-        String prefix = StreamSupport.stream(topLevelPackageList.spliterator(), false)
-            .collect(Collectors.joining("/"));
-
-        if (prefix.length() > 0)
-            prefix += "/";
-
-        data.includes.add(prefix
-                          + pkg.getPackageName().toFilesystemPath()
+        data.includes.add(pkg.getPackageName().toFilesystemPath()
                           + "/"
                           + objectName
                           + ".h");

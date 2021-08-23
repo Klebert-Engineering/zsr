@@ -125,6 +125,17 @@
         };                                                \
     };
 
+#define ZSERIO_REFLECT_STRUCTURE_NO_PARAMETERS()                   \
+    s.read = [s = &s](::zserio::BitStreamReader& r,                \
+                      zsr::ParameterList l)                        \
+        -> zsr::Introspectable                                     \
+    {                                                              \
+        return zsr::Introspectable{                                \
+            s,                                                     \
+            zsr::impl::readUniqueInstance<CompoundType>(r)         \
+        };                                                         \
+    };                                                             \
+
 #define ZSERIO_REFLECT_STRUCTURE_BEGIN(NAME, TYPE)                   \
     {                                                                \
         using CompoundType = PkgNamespace::NAME;                     \
@@ -152,12 +163,6 @@
         s.bitSize = [&](const zsr::Introspectable& i) -> size_t {    \
             return zsr::introspectable_cast<CompoundType>(i, t2c).   \
                 bitSizeOf();                                         \
-        };                                                           \
-                                                                     \
-        s.read = [&](zsr::Introspectable& i,                         \
-                     ::zserio::BitStreamReader& r) {                 \
-            return zsr::introspectable_cast<CompoundType>(i, t2c).   \
-                read(r);                                             \
         };                                                           \
                                                                      \
         s.write = [&](zsr::Introspectable& i,                        \
@@ -258,6 +263,36 @@
                         zsr::parameterlist::deref_if_shared(vals)...);  \
             }, *args);                                                  \
         }                                                               \
+    };                                                                  \
+                                                                        \
+    s.read = [s = &s](::zserio::BitStreamReader& r,                     \
+                      zsr::ParameterList l)                             \
+        -> zsr::Introspectable                                          \
+    {                                                                   \
+        if (!l.list.has_value())                                        \
+            throw zsr::ParameterListTypeError::listEmpty();             \
+                                                                        \
+        auto args = std::any_cast<ParameterTupleType>(&l.list);         \
+        if (args) {                                                     \
+            auto instance = std::apply([s, &r](auto&&... vals) {        \
+                return zsr::Introspectable{                             \
+                    s,                                                  \
+                    zsr::impl::readUniqueInstance<CompoundType>(        \
+                        r,                                              \
+                        zsr::parameterlist::deref_if_shared(vals)...    \
+                    )                                                   \
+                };                                                      \
+            }, *args);                                                  \
+                                                                        \
+            /* Introspectable keeps alive parameters */                 \
+            instance.obj->parameters = l.list;                          \
+                                                                        \
+            return instance;                                            \
+        }                                                               \
+                                                                        \
+        throw zsr::ParameterListTypeError::listTypeMissmatch(           \
+            typeid(ParameterTupleType).name(),                          \
+            l.list.type().name());                                      \
     };
 
 #define ZSERIO_REFLECT_STRUCTURE_CHILD_INITIALIZATION()                 \
@@ -431,25 +466,22 @@
             decltype(&ServiceNamespace::Client:: IDENT)>;               \
         using RequestType = std::tuple_element_t<                       \
             0u, ArgTupleType>;                                          \
-        using ResponseType = std::tuple_element_t<                      \
-            1u, ArgTupleType>;                                          \
+        using ResponseType = zsr::member_function_traits<               \
+            decltype(&ServiceNamespace::Client:: IDENT)>::return_type;  \
                                                                         \
         sm.call = [&t2c, &s, &sm](::zserio::IService& service,          \
                                   const zsr::Variant& request)          \
             -> zsr::Variant                                             \
         {                                                               \
             ServiceNamespace::Client client(service);                   \
-            ResponseType response;                                      \
-                                                                        \
             zsr::ServiceMethod::Context ctx{s, sm, request};            \
                                                                         \
             /* Temporary copy because of zserio requiring non-const */  \
             /* ref request object. */                                   \
             auto unpackedRq = zsr::variant_helper<RequestType>::unpack( \
                 request, t2c);                                          \
-            client. IDENT (unpackedRq,                                  \
-                           response,                                    \
-                           &ctx);                                       \
+            auto response = client. IDENT (unpackedRq,                  \
+                                           &ctx);                       \
                                                                         \
             return zsr::variant_helper<ResponseType>::pack(             \
                 std::move(response), t2c);                              \

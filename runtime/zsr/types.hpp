@@ -267,6 +267,18 @@ struct ZSR_EXPORT Compound
     std::function<Introspectable()> alloc = nullptr;
 
     /**
+     * Returns a new instance of the compound read from the given
+     * bitstream reader.
+     *
+     * @param BitStreamReader  Zserio bit stream reader.
+     * @param Parameter list, see `Parameter::set`.
+     *
+     * Maps to zserio generated ctor with `BitStreamReader`.
+     */
+    std::function<Introspectable(::zserio::BitStreamReader&,
+                                 ParameterList)> read = nullptr;
+
+    /**
      * Optional initialization function.
      * Set for compounds that have parameters.
      *
@@ -304,14 +316,6 @@ struct ZSR_EXPORT Compound
      * Maps to zserio generated `bitSizeOf` function.
      */
     std::function<size_t(const Introspectable&)> bitSize =
-        nullptr;
-
-    /**
-     * Deserialization function.
-     *
-     * Maps to zserio generated `read` function.
-     */
-    std::function<void(Introspectable&, ::zserio::BitStreamReader&)> read =
         nullptr;
 
     /**

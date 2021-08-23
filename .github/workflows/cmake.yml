@@ -19,7 +19,7 @@ jobs:
         mkdir build
     - name: Clone zserio
       run: |
-        git clone --recurse-submodules -b v2.3.0 https://github.com/ndsev/zserio.git zserio
+        git clone --recurse-submodules -b v2.4.0-pre2 https://github.com/ndsev/zserio.git zserio
     - name: Configure
       working-directory: build
       run: >
@@ -30,7 +30,7 @@ jobs:
     - name: Build runtime
       working-directory: build
       run: |
-        cmake --build .
+        cmake --build . -- -j8
     - name: Run CTest
       working-directory: build/runtime
       run: |
@@ -52,7 +52,7 @@ jobs:
         mkdir build
     - name: Clone zserio
       run: |
-        git clone --recurse-submodules -b v2.3.0 https://github.com/ndsev/zserio.git zserio
+        git clone --recurse-submodules -b v2.4.0-pre2 https://github.com/ndsev/zserio.git zserio
     - name: Configure
       working-directory: build
       run: >
@@ -89,7 +89,7 @@ jobs:
         brew install ant
     - name: Clone zserio
       run: |
-        git clone --recurse-submodules -b v2.3.0 https://github.com/ndsev/zserio.git zserio
+        git clone --recurse-submodules -b v2.4.0-pre2 https://github.com/ndsev/zserio.git zserio
     - name: Configure
       working-directory: build
       run: >
@@ -101,7 +101,7 @@ jobs:
     - name: Build runtime
       working-directory: build
       run: |
-        cmake --build .
+        cmake --build . -- -j8
     - name: Run CTest
       working-directory: build/runtime
       run: |

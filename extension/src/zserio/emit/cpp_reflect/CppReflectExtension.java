@@ -3,14 +3,14 @@ package zserio.emit.cpp_reflect;
 import org.apache.commons.cli.Option;
 
 import zserio.ast.Root;
-import zserio.emit.common.ZserioEmitException;
 import zserio.tools.Extension;
-import zserio.tools.Parameters;
+import zserio.tools.ExtensionParameters;
 import java.io.BufferedWriter;
 import java.nio.file.Path;
 import java.nio.file.FileSystems;
 import java.io.FileWriter;
 import java.io.IOException;
+import zserio.extension.common.ZserioExtensionException;
 
 /**
  * The extension which generates C++ API Reflection sources.
@@ -42,23 +42,27 @@ public class CppReflectExtension implements Extension
     }
 
     @Override
-    public boolean isEnabled(Parameters parameters)
+    public boolean isEnabled(ExtensionParameters parameters)
     {
         return parameters.argumentExists(OptionCpp);
     }
 
     @Override
-    public void generate(Parameters parameters, Root rootNode) throws ZserioEmitException
+    public void check(Root rootNode, ExtensionParameters parameters)
+    {}
+
+    @Override
+    public void process(Root rootNode, ExtensionParameters parameters) throws ZserioExtensionException
     {
         final Path outputDir = FileSystems.getDefault()
             .getPath(parameters.getCommandLineArg(OptionCpp));
 
         TraitsEmitter traitsEmitter = new TraitsEmitter(outputDir, parameters);
-        rootNode.emit(traitsEmitter);
+        rootNode.walk(traitsEmitter);
         traitsEmitter.process();
 
         ReflectionEmitter emitter = new ReflectionEmitter(outputDir, parameters);
-        rootNode.emit(emitter);
+        rootNode.walk(emitter);
         emitter.process();
     }
 
