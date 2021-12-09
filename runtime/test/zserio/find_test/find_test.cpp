@@ -24,22 +24,22 @@ TEST_CASE("resolve_type", "[FindTest::resolve_type]")
 
 TEST_CASE("recursive", "[FindTest::recursive]")
 {
-    auto resolved_b_a = zsr::find<zsr::Field>(zsr::packages(), "find_test.B_struct.a");
+    auto resolved_b_a = zsr::find<zsr::Field>(zsr::packages(), "zsr.find_test.B_struct.a");
     REQUIRE(resolved_b_a);
     REQUIRE(resolved_b_a->ident == "a");
 
     auto unresolved_nested_service_method = zsr::find<zsr::ServiceMethod>(
         zsr::packages(),
-        "find_test.nested_schema.child");
+        "zsr.find_test.nested_schema.child");
     REQUIRE(!unresolved_nested_service_method);
 
     auto resolved_nested_service_method = zsr::find<zsr::ServiceMethod>(
         zsr::packages(),
-        "nested_schema.child.X_service.serviceMethod");
+        "zsr.nested_schema.child.X_service.serviceMethod");
     REQUIRE(resolved_nested_service_method);
 
     auto resolved_nested_service_method_single_arg = zsr::find<zsr::ServiceMethod>(
-        "nested_schema.child.X_service.serviceMethod");
+        "zsr.nested_schema.child.X_service.serviceMethod");
     REQUIRE(resolved_nested_service_method_single_arg);
 }
 

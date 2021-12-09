@@ -2,9 +2,9 @@ package zserio.emit.cpp_reflect;
 
 import zserio.ast.*;
 import zserio.ast.Package;
-import zserio.emit.common.ZserioEmitException;
-import zserio.emit.common.DefaultEmitter;
-import zserio.tools.Parameters;
+import zserio.extension.common.DefaultTreeWalker;
+import zserio.extension.common.ZserioExtensionException;
+import zserio.tools.ExtensionParameters;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,13 +28,13 @@ public class ReflectionEmitter extends EmitterBase
     final String COMPOUND_TYPE_CHOICE    = "Choice";
     final String COMPOUND_TYPE_UNION     = "Union";
 
-    public ReflectionEmitter(Path outputDir, Parameters extensionParameters)
+    public ReflectionEmitter(Path outputDir, ExtensionParameters extensionParameters)
     {
         super(outputDir, extensionParameters);
     }
    
     @Override
-    public void beginPackage(Package pkg) throws ZserioEmitException
+    public void beginPackage(Package pkg) throws ZserioExtensionException
     {
         super.beginPackage(pkg);
 
@@ -50,7 +50,7 @@ public class ReflectionEmitter extends EmitterBase
     }
     
     @Override
-    public void endPackage(Package pkg) throws ZserioEmitException
+    public void endPackage(Package pkg) throws ZserioExtensionException
     {
         endReflect("PACKAGE");
 
@@ -58,7 +58,7 @@ public class ReflectionEmitter extends EmitterBase
     }
 
     @Override
-    public void beginSubtype(Subtype subtype) throws ZserioEmitException
+    public void beginSubtype(Subtype subtype)
     {
         writeInclude(subtype.getPackage(), subtype.getName());
 
@@ -77,7 +77,7 @@ public class ReflectionEmitter extends EmitterBase
     }
 
     @Override
-    public void beginConst(Constant constType) throws ZserioEmitException
+    public void beginConst(Constant constType)
     {
         writeInclude(constType.getPackage(), constType.getName());
 
@@ -106,7 +106,7 @@ public class ReflectionEmitter extends EmitterBase
         String accessorName = name.substring(0, 1).toUpperCase() + name.substring(1);
         String getName = "get" + accessorName;
         String setName = "set" + accessorName;
-        String hasName = "has" + accessorName;
+        String hasName = "is" + accessorName + "Used";
         String resetName = "reset" + accessorName;
 
         List<String> args = Arrays.asList(new String[] {
@@ -161,7 +161,7 @@ public class ReflectionEmitter extends EmitterBase
         endReflect("STRUCTURE_FUNCTION");
     }
 
-    private void reflectCompoundType(CompoundType type) throws ZserioEmitException
+    private void reflectCompoundType(CompoundType type)
     {
         writeInclude(type.getPackage(), type.getName());
 
@@ -176,6 +176,8 @@ public class ReflectionEmitter extends EmitterBase
             }
 
             endReflect("STRUCTURE_INITIALIZE");
+        } else {
+            reflect("STRUCTURE_NO_PARAMETERS", null);
         }
 
         if (type.needsChildrenInitialization()) {
@@ -192,7 +194,7 @@ public class ReflectionEmitter extends EmitterBase
     }
 
     @Override
-    public void beginStructure(StructureType structureType) throws ZserioEmitException
+    public void beginStructure(StructureType structureType)
     {
         List<String> args = Arrays.asList(new String[] {
             structureType.getName(),
@@ -205,7 +207,7 @@ public class ReflectionEmitter extends EmitterBase
     }
 
     @Override
-    public void beginChoice(ChoiceType choiceType) throws ZserioEmitException
+    public void beginChoice(ChoiceType choiceType)
     {
         List<String> args = Arrays.asList(new String[] {
             choiceType.getName(),
@@ -218,7 +220,7 @@ public class ReflectionEmitter extends EmitterBase
     }
 
     @Override
-    public void beginUnion(UnionType unionType) throws ZserioEmitException
+    public void beginUnion(UnionType unionType)
     {
         List<String> args = Arrays.asList(new String[] {
             unionType.getName(),
@@ -240,7 +242,7 @@ public class ReflectionEmitter extends EmitterBase
     }
 
     @Override
-    public void beginEnumeration(EnumType enumType) throws ZserioEmitException
+    public void beginEnumeration(EnumType enumType)
     {
         writeInclude(enumType.getPackage(), enumType.getName());
 
@@ -267,7 +269,7 @@ public class ReflectionEmitter extends EmitterBase
     }
 
     @Override
-    public void beginBitmask(BitmaskType bitmaskType) throws ZserioEmitException
+    public void beginBitmask(BitmaskType bitmaskType)
     {
         writeInclude(bitmaskType.getPackage(), bitmaskType.getName());
 
@@ -286,19 +288,19 @@ public class ReflectionEmitter extends EmitterBase
 
     @Override
 
-    public void beginSqlTable(SqlTableType sqlTableType) throws ZserioEmitException
+    public void beginSqlTable(SqlTableType sqlTableType)
     {
         /* TODO */
     }
 
     @Override
-    public void beginSqlDatabase(SqlDatabaseType sqlDatabaseType) throws ZserioEmitException
+    public void beginSqlDatabase(SqlDatabaseType sqlDatabaseType)
     {
         /* TODO */
     }
 
     @Override
-    public void beginService(ServiceType service) throws ZserioEmitException
+    public void beginService(ServiceType service)
     {
         writeInclude(service.getPackage(), service.getName());
 
@@ -325,11 +327,4 @@ public class ReflectionEmitter extends EmitterBase
 
         endReflect("SERVICE");
     }
-
-    /* TODO
-    @Override
-    public void beginPubsub(PubsubType pubsub) throws ZserioEmitException
-    {
-    }
-    */
 }

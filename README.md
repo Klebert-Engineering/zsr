@@ -79,10 +79,10 @@ Usage example:
 ...
 
 /* Finding a compound named "Test" */
-auto compound = zsr::find<zsr::Compound>(zsr::packages(), "Test");
+auto compound = zsr::find<zsr::Compound>(zsr::packages(), "pkg.Test");
 
 /* Finding field "a" of compound "A" */
-auto field = zsr::find<zsr::Field>(zsr::packages(), "A.a");
+auto field = zsr::find<zsr::Field>(zsr::packages(), "pkg.A.a");
 
 /* Instantiate compound "Test" */
 auto instance = compound->alloc();
