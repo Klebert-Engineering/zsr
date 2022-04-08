@@ -93,6 +93,7 @@ target_include_directories(zsr
 
 target_link_libraries(zsr
   PUBLIC
+    sqlite3
     ZserioCppRuntime
     speedyj::speedyj
     stx::stx)
@@ -187,7 +188,7 @@ function (add_submodule_lib target top_level_pkg zs_root gen_src_root subdir mod
       target_include_directories(${module_name}
         PUBLIC "${gen_src_root}")
       target_link_libraries(${module_name}
-        PUBLIC ZserioCppRuntime ${dependencies})
+        PUBLIC ZserioCppRuntime sqlite3 ${dependencies})
 
       set_target_properties(${module_name}
         PROPERTIES
@@ -312,7 +313,8 @@ function (add_zserio_module ZSR_MODULE_NAME)
 
   target_link_libraries(${ZSR_MODULE_NAME}-reflection
     zsr
-    ${ZSR_MODULE_NAME})
+    ${ZSR_MODULE_NAME}
+    sqlite3)
 endfunction()
 
 ## Test
